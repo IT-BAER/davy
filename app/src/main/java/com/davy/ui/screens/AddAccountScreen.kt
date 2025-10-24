@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -263,6 +264,74 @@ fun AddAccountScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
             )
+            
+            // Demo mode hint
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Want to explore the app first?",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "Use these demo credentials:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Column(
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Text(
+                            text = "• Server: demo.local",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = "• Username: demo",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = "• Password: demo",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
         }
     }
     
@@ -490,6 +559,17 @@ class AddAccountViewModel @Inject constructor(
         }
         
         if (hasError) return
+        
+        // Check for demo account credentials
+        val isDemoAccount = state.username.equals("demo", ignoreCase = true) && 
+                           state.password.equals("demo", ignoreCase = true) &&
+                           state.serverUrl.equals("demo.local", ignoreCase = true)
+        
+        if (isDemoAccount) {
+            Timber.d("=== Demo account detected - creating local-only demo account ===")
+            createDemoAccount(state)
+            return
+        }
         
         // Combine protocol + serverUrl for validation
         val fullUrl = state.protocol + state.serverUrl
@@ -746,6 +826,145 @@ class AddAccountViewModel @Inject constructor(
         } catch (e: Exception) {
             Timber.w(e, "Failed to parse color: %s", colorHex)
             0xFF2196F3.toInt() // Default blue
+        }
+    }
+    
+    /**
+     * Create a local-only demo account with pre-populated sample data.
+     * Bypasses server authentication and creates account with demo calendars/contacts.
+     */
+    private fun createDemoAccount(state: AddAccountUiState) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null
+            )
+            
+            try {
+                Timber.d("=== Creating demo account ===")
+                
+                // Create demo account with fixed demo URL
+                val account = Account(
+                    id = 0,
+                    accountName = state.accountName,
+                    serverUrl = "https://demo.local",
+                    username = "demo",
+                    displayName = "Demo Account",
+                    email = "demo@davy.app",
+                    calendarEnabled = true,
+                    contactsEnabled = true,
+                    tasksEnabled = true,
+                    createdAt = System.currentTimeMillis(),
+                    lastAuthenticatedAt = System.currentTimeMillis(),
+                    authType = AuthType.BASIC,
+                    certificateFingerprint = null,
+                    notes = "Demo account - local only, no server connection"
+                )
+                
+                val accountId = accountRepository.insert(account)
+                Timber.d("Created demo account with ID: %d", accountId)
+                
+                // Store demo password
+                credentialStore.storePassword(accountId, "demo")
+                
+                // Create Android account (required for sync framework)
+                val androidAccountCreated = androidAccountManager.createOrUpdateAccount(
+                    account.accountName,
+                    "demo"
+                )
+                
+                if (!androidAccountCreated) {
+                    Timber.e("Failed to create Android account for demo")
+                } else {
+                    Timber.d("Created Android account for demo")
+                }
+                
+                // Create sample calendars
+                val sampleCalendars = listOf(
+                    com.davy.domain.model.Calendar(
+                        id = 0,
+                        accountId = accountId,
+                        calendarUrl = "https://demo.local/calendars/personal",
+                        displayName = "Personal Calendar",
+                        description = "My personal events",
+                        color = 0xFF2196F3.toInt(), // Blue
+                        supportsVTODO = true,
+                        supportsVJOURNAL = false,
+                        syncEnabled = true,
+                        visible = true
+                    ),
+                    com.davy.domain.model.Calendar(
+                        id = 0,
+                        accountId = accountId,
+                        calendarUrl = "https://demo.local/calendars/work",
+                        displayName = "Work Calendar",
+                        description = "Work meetings and tasks",
+                        color = 0xFFF44336.toInt(), // Red
+                        supportsVTODO = true,
+                        supportsVJOURNAL = false,
+                        syncEnabled = true,
+                        visible = true
+                    ),
+                    com.davy.domain.model.Calendar(
+                        id = 0,
+                        accountId = accountId,
+                        calendarUrl = "https://demo.local/calendars/family",
+                        displayName = "Family Events",
+                        description = "Family birthdays and gatherings",
+                        color = 0xFF4CAF50.toInt(), // Green
+                        supportsVTODO = false,
+                        supportsVJOURNAL = false,
+                        syncEnabled = false,
+                        visible = true
+                    )
+                )
+                
+                // Insert sample calendars
+                sampleCalendars.forEach { calendar ->
+                    val calendarId = calendarRepository.insert(calendar)
+                    Timber.d("Created demo calendar: %s (ID: %d)", calendar.displayName, calendarId)
+                }
+                
+                // Create sample address books
+                val sampleAddressBooks = listOf(
+                    com.davy.domain.model.AddressBook(
+                        id = 0,
+                        accountId = accountId,
+                        url = "https://demo.local/contacts/personal",
+                        displayName = "Personal Contacts",
+                        description = "My personal contacts",
+                        syncEnabled = true
+                    ),
+                    com.davy.domain.model.AddressBook(
+                        id = 0,
+                        accountId = accountId,
+                        url = "https://demo.local/contacts/business",
+                        displayName = "Business Contacts",
+                        description = "Work-related contacts",
+                        syncEnabled = true
+                    )
+                )
+                
+                // Insert sample address books
+                sampleAddressBooks.forEach { addressBook ->
+                    val addressBookId = addressBookRepository.insert(addressBook)
+                    Timber.d("Created demo address book: %s (ID: %d)", addressBook.displayName, addressBookId)
+                }
+                
+                Timber.d("=== Demo account setup complete ===")
+                
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    accountCreated = true
+                )
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to create demo account")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to create demo account: ${e.message}"
+                )
+            }
         }
     }
 }

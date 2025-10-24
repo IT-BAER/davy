@@ -813,7 +813,7 @@ fun CalDAVTabContent(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
-                    bottom = 160.dp
+                    bottom = 200.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -1783,7 +1783,7 @@ fun CardDAVTabContent(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
-                    bottom = 160.dp
+                    bottom = 200.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -2491,7 +2491,7 @@ fun WebCalTabContent(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
-                    bottom = 160.dp
+                    bottom = 200.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

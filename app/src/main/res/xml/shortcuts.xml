@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="sync_all"
+        android:enabled="true"
+        android:icon="@drawable/ic_sync"
+        android:shortcutShortLabel="@string/shortcut_sync_all_short"
+        android:shortcutLongLabel="@string/shortcut_sync_all_long">
+        <intent
+            android:action="com.davy.ACTION_SYNC_ALL"
+            android:targetPackage="com.davy"
+            android:targetClass="com.davy.ui.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.automirrored.filled.Help
@@ -85,6 +86,7 @@ fun AccountListScreen(
     // Use injected SyncManager from CompositionLocal (performance optimization)
     val syncManager = LocalSyncManager.current
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var accountToDelete by remember { mutableStateOf<Account?>(null) }
 
@@ -155,6 +157,7 @@ fun AccountListScreen(
                         }
                     },
                     actions = {
+                        // Sync All button
                         IconButton(
                             onClick = { 
                                 syncManager.syncAllNow()
@@ -173,63 +176,6 @@ fun AccountListScreen(
                         }
                     }
                 )
-            },
-            floatingActionButton = {
-                val isEmpty = uiState is AccountListUiState.Empty
-                val haptics = LocalHapticFeedback.current
-                
-                Box(
-                    modifier = Modifier.padding(bottom = 60.dp, end = 24.dp)  // Lowered position
-                ) {
-                    if (isEmpty) {
-                        // Extended FAB for empty state
-                        ExtendedFloatingActionButton(
-                            onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onAddAccount()
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Add account",
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            },
-                            text = { 
-                                Text(
-                                    "Add Account",
-                                    style = MaterialTheme.typography.labelLarge
-                                ) 
-                            },
-                            containerColor = Color(0xFF2E7D32),  // Material Green 800 - darker green
-                            contentColor = Color.White,
-                            elevation = FloatingActionButtonDefaults.elevation(
-                                defaultElevation = 8.dp,
-                                pressedElevation = 12.dp
-                            )
-                        )
-                    } else {
-                        // Standard FAB with slightly larger icon
-                        FloatingActionButton(
-                            onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onAddAccount()
-                            },
-                            containerColor = Color(0xFF2E7D32),  // Material Green 800 - darker green
-                            contentColor = Color.White,
-                            elevation = FloatingActionButtonDefaults.elevation(
-                                defaultElevation = 8.dp,
-                                pressedElevation = 12.dp
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add account",
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
-                }
             }
         ) { paddingValues ->
         Box(
@@ -336,6 +282,65 @@ fun AccountListScreen(
                         .alpha(0.35f),
                     contentScale = ContentScale.FillWidth
                 )
+            }
+            
+            // Floating Action Button
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 24.dp, bottom = 84.dp)
+            ) {
+                val isEmpty = uiState is AccountListUiState.Empty
+                val haptics = LocalHapticFeedback.current
+                
+                if (isEmpty) {
+                    // Extended FAB for empty state
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAddAccount()
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add account",
+                                modifier = Modifier.size(22.dp)
+                            )
+                        },
+                        text = { 
+                            Text(
+                                "Add Account",
+                                style = MaterialTheme.typography.labelLarge
+                            ) 
+                        },
+                        containerColor = Color(0xFF2E7D32),  // Material Green 800 - darker green
+                        contentColor = Color.White,
+                        elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 12.dp
+                        )
+                    )
+                } else {
+                    // Standard FAB with slightly larger icon
+                    FloatingActionButton(
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAddAccount()
+                        },
+                        containerColor = Color(0xFF2E7D32),  // Material Green 800 - darker green
+                        contentColor = Color.White,
+                        elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 12.dp
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add account",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
             }
         }
     }

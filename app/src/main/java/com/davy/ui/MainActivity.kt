@@ -55,12 +55,29 @@ class MainActivity : ComponentActivity() {
         
         Timber.d("MainActivity onCreate")
         
+        // Handle app shortcut actions
+        handleShortcutIntent(intent)
+        
         // PERFORMANCE: Set content FIRST to show UI immediately
         setContent {
             // Provide SyncManager through CompositionLocal to avoid
             // creating it in remember blocks (performance issue)
             CompositionLocalProvider(LocalSyncManager provides syncManager) {
                 DavyApp()
+            }
+        }
+    }
+    
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleShortcutIntent(intent)
+    }
+    
+    private fun handleShortcutIntent(intent: android.content.Intent?) {
+        when (intent?.action) {
+            "com.davy.ACTION_SYNC_ALL" -> {
+                Timber.d("App shortcut: Sync All triggered")
+                syncManager.syncAllNow()
             }
         }
     }
