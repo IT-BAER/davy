@@ -162,6 +162,22 @@ fun FaqScreen(
                 text = "Enable this in account settings to only sync when connected to WiFi, saving mobile data.",
                 style = MaterialTheme.typography.bodyMedium
             )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q9
+            Text(
+                text = "What happens if I rename an account?",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Renaming an account can cause it to become disabled in the Android Calendar. This is because Android uses the account name as an identifier. You can re-enable the Account inside your Calendar App.",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
