@@ -1,4 +1,4 @@
-<center>
+<div align="center">
 
 # 📆 DAVy - CalDAV/CardDAV/WebCal Sync for Android
 
@@ -10,7 +10,7 @@
 
 A privacy-focused Android application for synchronizing calendars and contacts using CalDAV and CardDAV protocols. Built with Jetpack Compose and Material 3 design.
 
-</center>
+</div>
 
 ## 🌟 Features
 
