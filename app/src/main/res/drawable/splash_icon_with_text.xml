@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- White background -->
+    <item android:drawable="@android:color/white" />
+    
+    <!-- Logo (if we have one) positioned at center-top -->
+    <!-- Uncomment when actual logo is available:
+    <item
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center_horizontal|top"
+        android:top="100dp">
+        <bitmap android:src="@drawable/davy_logo" android:gravity="center"/>
+    </item>
+    -->
+    
+    <!-- For now, we'll use a text-based approach -->
+    <!-- This is a placeholder - native splash doesn't support text directly -->
+    <!-- You'll need to provide an actual logo image with embedded text -->
+    
+</layer-list>

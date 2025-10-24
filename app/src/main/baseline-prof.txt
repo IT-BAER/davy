@@ -1,0 +1,42 @@
+# Baseline profile for DAVy - Optimizes critical user journeys
+# This file is generated to improve app startup and common interactions
+
+# Main Activity
+Lcom/davy/ui/MainActivity;
+HSPLcom/davy/ui/MainActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Account screens - critical user journey
+Lcom/davy/ui/screens/AccountListScreenKt;
+HSPLcom/davy/ui/screens/AccountListScreenKt;->AccountListScreen(Landroidx/navigation/NavHostController;Lcom/davy/ui/viewmodels/AccountListViewModel;Landroidx/compose/runtime/Composer;II)V
+
+Lcom/davy/ui/screens/AccountDetailScreenKt;
+HSPLcom/davy/ui/screens/AccountDetailScreenKt;->AccountDetailScreen(JLkotlin/jvm/functions/Function0;Lcom/davy/ui/viewmodels/AccountDetailViewModel;Landroidx/compose/runtime/Composer;II)V
+
+# ViewModels
+Lcom/davy/ui/viewmodels/AccountListViewModel;
+HSPLcom/davy/ui/viewmodels/AccountListViewModel;-><init>(Lcom/davy/data/repository/AccountRepository;)V
+HSPLcom/davy/ui/viewmodels/AccountListViewModel;->loadAccounts()V
+
+Lcom/davy/ui/viewmodels/AccountDetailViewModel;
+HSPLcom/davy/ui/viewmodels/AccountDetailViewModel;-><init>(Lcom/davy/data/repository/AccountRepository;Lcom/davy/data/repository/CalendarRepository;Lcom/davy/data/repository/AddressBookRepository;Lcom/davy/data/repository/WebCalSubscriptionRepository;Lcom/davy/data/repository/SyncStatusRepository;)V
+HSPLcom/davy/ui/viewmodels/AccountDetailViewModel;->loadAccount(J)V
+
+# Navigation
+Lcom/davy/ui/navigation/NavGraphKt;
+HSPLcom/davy/ui/navigation/NavGraphKt;->NavGraph(Landroidx/navigation/NavHostController;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# Repositories - critical data access
+Lcom/davy/data/repository/AccountRepository;
+HSPLcom/davy/data/repository/AccountRepository;->getAllAccountsFlow()Lkotlinx/coroutines/flow/Flow;
+HSPLcom/davy/data/repository/AccountRepository;->getAccount(J)Lcom/davy/domain/model/Account;
+
+Lcom/davy/data/repository/CalendarRepository;
+HSPLcom/davy/data/repository/CalendarRepository;->getCalendarsByAccountFlow(J)Lkotlinx/coroutines/flow/Flow;
+
+Lcom/davy/data/repository/AddressBookRepository;
+HSPLcom/davy/data/repository/AddressBookRepository;->getAddressBooksByAccountFlow(J)Lkotlinx/coroutines/flow/Flow;
+
+# Database DAOs
+Lcom/davy/data/local/dao/AccountDao;
+Lcom/davy/data/local/dao/CalendarDao;
+Lcom/davy/data/local/dao/AddressBookDao;

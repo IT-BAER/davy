@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude encrypted credentials from cloud backup -->
+        <exclude domain="sharedpref" path="davy_secure_credentials.xml" />
+        <!-- Exclude local Room database from cloud backup -->
+        <exclude domain="database" path="davy_database" />
+    </cloud-backup>
+    <device-transfer>
+        <!-- Exclude encrypted credentials from device transfer -->
+        <exclude domain="sharedpref" path="davy_secure_credentials.xml" />
+        <!-- Exclude local Room database from device transfer -->
+        <exclude domain="database" path="davy_database" />
+    </device-transfer>
+</data-extraction-rules>

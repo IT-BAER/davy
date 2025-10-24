@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="48dp"
+            android:height="48dp"
+            android:viewportWidth="48"
+            android:viewportHeight="48">
+            
+            <!-- Rotating group centered -->
+            <group
+                android:name="spinnerGroup"
+                android:pivotX="24"
+                android:pivotY="24">
+                
+                <!-- Orange arc (right side) -->
+                <path
+                    android:strokeColor="#d3753b"
+                    android:strokeWidth="4"
+                    android:strokeLineCap="round"
+                    android:pathData="M 34,24 A 10,10 0 1,1 24,14"
+                    android:fillColor="@android:color/transparent" />
+                
+                <!-- Blue arc (left side) -->
+                <path
+                    android:strokeColor="#39578a"
+                    android:strokeWidth="4"
+                    android:strokeLineCap="round"
+                    android:pathData="M 14,24 A 10,10 0 1,1 24,34"
+                    android:fillColor="@android:color/transparent" />
+            </group>
+        </vector>
+    </aapt:attr>
+    
+    <!-- Continuous rotation animation -->
+    <target android:name="spinnerGroup">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="rotation"
+                android:duration="1200"
+                android:valueFrom="0"
+                android:valueTo="360"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:repeatCount="infinite" />
+        </aapt:attr>
+    </target>
+</animated-vector>

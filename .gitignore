@@ -1,0 +1,118 @@
+# DAVy - Modern Android Sync for Nextcloud
+# Created October 15, 2025
+
+# Gradle files
+.gradle/
+build/
+*/build/
+**/build/
+
+# Local configuration
+local.properties
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# IntelliJ
+out/
+.idea_modules/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder
+.cxx/
+.externalNativeBuild/
+
+# Google Services
+google-services.json
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Version control
+.svn/
+
+# OS-specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Signing files
+release/
+
+# Lint
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+lint-report.html
+lint-report_files/
+lint-results.html
+lint-results.xml
+lint-results.sarif
+
+# Test results
+test-results/
+androidTest-results/
+
+# Coverage
+*.exec
+*.ec
+coverage/
+jacocoTestReport/
+
+# Backup files
+*.bak
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Secret files
+secrets/
+.env
+.env.local
+
+# Reference repositories
+d[a][v][x]5/
+
+
+test_screenshots
+tasksync
+
+.key
+.github/instructions/android-instructions.md
+gw.sh
+.github/instructions
+.github/prompts
+.specify
+ASSETS
+benchmark
+.editorconfig

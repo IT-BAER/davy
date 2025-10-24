@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme -->
+    <style name="Theme.Davy" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Status bar and navigation bar will use default Material colors -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <!-- Splash screen theme without logo -->
+    <style name="Theme.Davy.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.Davy</item>
+    </style>
+</resources>

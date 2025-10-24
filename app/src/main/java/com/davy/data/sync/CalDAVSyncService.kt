@@ -1,0 +1,838 @@
+package com.davy.data.sync
+
+import android.content.ContentUris
+import android.content.Context
+import android.provider.CalendarContract
+import com.davy.data.local.CredentialStore
+import com.davy.data.remote.caldav.CalDAVClient
+import com.davy.data.remote.caldav.CalDAVXMLParser
+import com.davy.data.remote.caldav.ICalendarParser
+import com.davy.data.repository.CalendarEventRepository
+import com.davy.data.repository.CalendarRepository
+import com.davy.domain.model.Account
+import com.davy.domain.model.Calendar
+import com.davy.domain.model.CalendarEvent
+import com.davy.domain.model.toICalendar
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import timber.log.Timber
+import java.util.LinkedHashSet
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * CalDAV synchronization service.
+ * Implements full bidirectional sync: download changes from server + upload local changes.
+ */
+@Singleton
+class CalDAVSyncService @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val calDAVClient: CalDAVClient,
+    private val calendarRepository: CalendarRepository,
+    private val eventRepository: CalendarEventRepository,
+    private val credentialStore: CredentialStore,
+    private val syncLock: com.davy.sync.SyncLock
+) {
+    
+    companion object {
+    /**
+     * Maximum number of events to fetch in a single calendar-multiget request.
+     * Batch requests to balance efficiency and memory usage.
+     */
+        const val MAX_MULTIGET_RESOURCES = 10
+    }
+    
+    /**
+     * Sync all calendars for given account.
+     * Returns SyncResult with statistics.
+     */
+    suspend fun syncAccount(account: Account): SyncResult {
+        return syncLock.withLock {
+            syncAccountInternal(account)
+        }
+    }
+    
+    /**
+     * Sync a specific calendar.
+     * Returns SyncResult with statistics for this calendar only.
+     */
+    suspend fun syncCalendar(account: Account, calendar: Calendar): SyncResult {
+        return syncLock.withLock {
+            Timber.d("Starting CalDAV sync for single calendar: ${calendar.displayName}")
+            
+            val password = credentialStore.getPassword(account.id)
+            if (password == null) {
+                Timber.e("No credentials found for account: ${account.id}")
+                return@withLock SyncResult.Error("No credentials found for account ${account.accountName}")
+            }
+            
+            if (!calendar.syncEnabled) {
+                Timber.d("Calendar sync is disabled: ${calendar.displayName}")
+                return@withLock SyncResult.Success(0, 0, 0)
+            }
+            
+            try {
+                Timber.d("Syncing calendar: ${calendar.displayName} (${calendar.calendarUrl})")
+                val result = syncCalendarEvents(calendar, account, password)
+                Timber.d("Calendar sync completed: ↓${result.eventsDownloaded} ↑${result.eventsUploaded} events")
+                return@withLock SyncResult.Success(0, result.eventsDownloaded, result.eventsUploaded)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to sync calendar: ${calendar.displayName}")
+                return@withLock SyncResult.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+    
+    private suspend fun syncAccountInternal(account: Account): SyncResult {
+        Timber.d("Starting CalDAV sync for account: ${account.accountName}")
+        
+        val password = credentialStore.getPassword(account.id)
+        if (password == null) {
+            Timber.e("No credentials found for account: ${account.id}")
+            return SyncResult.Error("No credentials found for account ${account.accountName}")
+        }
+        
+        var calendarsAdded = 0
+        var eventsDownloaded = 0
+        var eventsUploaded = 0
+        var errors = 0
+        
+        try {
+            // Get all calendars for this account from local database
+            val localCalendars = calendarRepository.getByAccountId(account.id)
+            Timber.d("Found ${localCalendars.size} calendars in local database for account: ${account.accountName}")
+            
+            if (localCalendars.isEmpty()) {
+                Timber.w("No calendars found for account ${account.accountName}. Calendar discovery should happen during account creation.")
+                return SyncResult.Success(0, 0, 0)
+            }
+            
+            // Sync events for each calendar IN PARALLEL
+            // Use coroutineScope to launch parallel async operations
+            coroutineScope {
+                val syncJobs = localCalendars.map { calendar ->
+                    async {
+                        if (!calendar.syncEnabled) {
+                            Timber.d("Skipping disabled calendar: ${calendar.displayName}")
+                            return@async EventSyncResult(0, 0)
+                        }
+                        
+                        try {
+                            Timber.d("Syncing calendar: ${calendar.displayName} (${calendar.calendarUrl})")
+                            syncCalendarEvents(calendar, account, password)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to sync calendar: ${calendar.displayName}")
+                            errors++
+                            EventSyncResult(0, 0)
+                        }
+                    }
+                }
+                
+                // Collect all results
+                val results = syncJobs.map { it.await() }
+                eventsDownloaded = results.sumOf { it.eventsDownloaded }
+                eventsUploaded = results.sumOf { it.eventsUploaded }
+            }
+            
+            Timber.d("CalDAV sync completed: +$calendarsAdded calendars, ↓$eventsDownloaded ↑$eventsUploaded events, $errors errors")
+            return SyncResult.Success(calendarsAdded, eventsDownloaded, eventsUploaded)
+            
+        } catch (e: Exception) {
+            Timber.e(e, "CalDAV sync failed for account: ${account.accountName}")
+            return SyncResult.Error(e.message ?: "Unknown error")
+        }
+    }
+    
+    /**
+     * Sync events for a single calendar using Collection Sync (REPORT sync-collection) if available,
+     * falling back to PROPFIND if this is the first sync or server doesn't support it.
+     */
+    private suspend fun syncCalendarEvents(
+        calendar: Calendar,
+        account: Account,
+        password: String
+    ): EventSyncResult {
+        // Skip sync for calendars without a URL (newly created, waiting for server URL)
+        if (calendar.calendarUrl.isBlank()) {
+            Timber.w("Skipping sync for calendar '${calendar.displayName}' - no calendar URL yet")
+            return EventSyncResult(0, 0)
+        }
+        
+        // Force full sync if last sync was more than 7 days ago (to catch missed deletions)
+        val daysSinceLastSync = if (calendar.lastSyncedAt != null) {
+            (System.currentTimeMillis() - calendar.lastSyncedAt) / (1000 * 60 * 60 * 24)
+        } else {
+            Long.MAX_VALUE
+        }
+        val forceFullSync = daysSinceLastSync > 7
+        
+        // Use Collection Sync if we have a sync-token (incremental sync)
+        if (calendar.syncToken != null && !forceFullSync) {
+            Timber.d("📊 Using Collection Sync (incremental) with token: ${calendar.syncToken}")
+            val result = syncWithCollectionSync(calendar, account, password)
+            if (result != null) {
+                return result
+            }
+            Timber.w("Collection Sync failed, falling back to PROPFIND")
+        } else {
+            if (forceFullSync) {
+                Timber.d("📊 Forcing full PROPFIND sync (last sync was $daysSinceLastSync days ago)")
+            } else {
+                Timber.d("📊 No sync-token, using PROPFIND (full sync)")
+            }
+        }
+        
+        // Fall back to traditional PROPFIND sync
+        return syncWithPropfind(calendar, account, password)
+    }
+    
+    /**
+     * Sync events using WebDAV REPORT sync-collection (efficient incremental sync).
+     * Returns null if sync-collection is not supported or fails.
+     */
+    private suspend fun syncWithCollectionSync(
+        calendar: Calendar,
+        account: Account,
+        password: String
+    ): EventSyncResult? {
+        try {
+            val syncCollectionXml = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <d:sync-collection xmlns:d="DAV:" xmlns:cs="http://calendarserver.org/ns/">
+                    <d:sync-token>${calendar.syncToken}</d:sync-token>
+                    <d:sync-level>1</d:sync-level>
+                    <d:prop>
+                        <d:getetag/>
+                        <cs:getctag/>
+                    </d:prop>
+                </d:sync-collection>
+            """.trimIndent()
+            
+            val response = calDAVClient.reportRequest(
+                url = calendar.calendarUrl,
+                username = account.username,
+                password = password,
+                requestBody = syncCollectionXml
+            )
+            
+            if (!response.isSuccessful) {
+                Timber.e("Collection Sync REPORT failed: ${response.statusCode}")
+                return null
+            }
+            
+            val syncResponse = CalDAVXMLParser.parseSyncCollection(response.body ?: "")
+            Timber.d("✓ Collection Sync found ${syncResponse.changes.size} changes, new token: ${syncResponse.newSyncToken}")
+            
+            var downloaded = 0
+            var uploaded: Int
+            var deleted = 0
+            
+            // Process changes (added/modified/deleted events)
+            syncResponse.changes.forEach { change ->
+                val absoluteUrl = if (change.href.startsWith("http")) {
+                    change.href
+                } else {
+                    calendar.calendarUrl.removeSuffix("/") + "/" + change.href.removePrefix("/")
+                }
+
+                when (change.status) {
+                    200, 201 -> {
+                        val localEvent = eventRepository.getByUrl(change.href)
+                        if (localEvent == null || localEvent.etag != change.etag) {
+                            val eventData = calDAVClient.getEvent(absoluteUrl, account.username, password)
+                            val statusCode = eventData.statusCode
+                            if (statusCode == 404 || statusCode == 410) {
+                                Timber.w("Remote returned HTTP $statusCode for ${change.href}, removing local event copy")
+                                handleMissingRemoteEvent(
+                                    account = account,
+                                    calendar = calendar,
+                                    href = change.href,
+                                    absoluteUrl = absoluteUrl,
+                                    statusCode = statusCode
+                                )
+                                return@forEach
+                            }
+
+                            val body = eventData.body
+                            if (eventData.isSuccessful && !body.isNullOrBlank()) {
+                                val events = ICalendarParser.parseEvents(body)
+                                events.forEach eventsInChange@{ event ->
+                                    val existingEventByUid = eventRepository.getByUid(event.uid)
+                                    
+                                    // Skip downloading if event is marked for deletion locally
+                                    if (existingEventByUid != null && existingEventByUid.isDeleted()) {
+                                        Timber.d("Skipping download - event marked for deletion: ${event.title} (UID: ${event.uid})")
+                                        return@eventsInChange
+                                    }
+                                    
+                                    val eventToSave = event.copy(
+                                        calendarId = calendar.id,
+                                        eventUrl = change.href,
+                                        etag = change.etag
+                                    )
+
+                                    if (existingEventByUid == null) {
+                                        eventRepository.insert(eventToSave)
+                                        Timber.d("📥 Inserted new event: ${event.title}")
+                                    } else {
+                                        eventRepository.update(eventToSave.copy(id = existingEventByUid.id))
+                                        Timber.d("📥 Updated event: ${event.title}")
+                                    }
+                                    downloaded++
+                                }
+                            } else {
+                                if (!eventData.isSuccessful) {
+                                    Timber.e("Failed to download event during Collection Sync: $statusCode")
+                                } else {
+                                    Timber.w("Downloaded event had empty calendar-data: ${change.href}")
+                                }
+                                return@forEach
+                            }
+                        }
+                    }
+
+                    404, 410 -> {
+                        Timber.d("Server reports event deleted: ${change.href} (status ${change.status})")
+                        deleted++
+                        handleMissingRemoteEvent(
+                            account = account,
+                            calendar = calendar,
+                            href = change.href,
+                            absoluteUrl = absoluteUrl,
+                            statusCode = change.status
+                        )
+                    }
+                    else -> {
+                        Timber.w("Unexpected status in sync-collection: ${change.status} for ${change.href}")
+                    }
+                }
+            }
+            
+            // Update sync token and last sync time
+            syncResponse.newSyncToken?.let { newToken ->
+                calendarRepository.update(calendar.copy(
+                    syncToken = newToken,
+                    lastSyncedAt = System.currentTimeMillis()
+                ))
+            } ?: run {
+                // Even if no new token, update last sync time
+                calendarRepository.update(calendar.copy(
+                    lastSyncedAt = System.currentTimeMillis()
+                ))
+            }
+            
+            // Upload dirty local events
+            uploaded = uploadDirtyEvents(calendar, account, password)
+            
+            Timber.d("✓ Collection Sync complete: ↓$downloaded events, ↑$uploaded events, 🗑️$deleted events")
+            return EventSyncResult(downloaded, uploaded)
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Collection Sync failed")
+            return null
+        }
+    }
+    
+    /**
+     * Sync events using traditional PROPFIND (full sync).
+     */
+    private suspend fun syncWithPropfind(
+        calendar: Calendar,
+        account: Account,
+        password: String
+    ): EventSyncResult {
+        var downloaded = 0
+        var uploaded = 0
+        
+        try {
+            // Get list of events on server
+            val eventsPropfind = calDAVClient.propfindEvents(
+                calendarUrl = calendar.calendarUrl,
+                username = account.username,
+                password = password
+            )
+            
+            if (!eventsPropfind.isSuccessful) {
+                Timber.e("Events PROPFIND failed for ${calendar.displayName}")
+                return EventSyncResult(0, 0)
+            }
+            
+            val serverEvents = CalDAVXMLParser.parseEventPropfind(eventsPropfind.body ?: "")
+            Timber.d("Found ${serverEvents.size} events on server for calendar: ${calendar.displayName}")
+            
+            // FIRST: Delete events that exist locally but not on server
+            // Do this BEFORE downloading to ensure deletions happen even if download fails
+            val localEvents = eventRepository.getByCalendarId(calendar.id)
+            val serverHrefs = serverEvents.map { it.href }.toSet()
+            localEvents.forEach { localEvent ->
+                if (localEvent.eventUrl.isNotBlank() && !serverHrefs.contains(localEvent.eventUrl)) {
+                    removeLocalEvent(
+                        calendar = calendar,
+                        event = localEvent,
+                        reason = "Event missing from server listing"
+                    )
+                }
+            }
+            
+            // SECOND: Download new/updated events using batched multiget
+            // Collect events needing download, then fetch in batches
+            val eventsToDownload = mutableListOf<String>()
+            val localEventMap = eventRepository.getByCalendarId(calendar.id).associateBy { it.eventUrl }
+            
+            serverEvents.forEach { eventResource ->
+                val localEvent = localEventMap[eventResource.href]
+                if (localEvent == null || localEvent.etag != eventResource.etag) {
+                    eventsToDownload.add(eventResource.href)
+                }
+            }
+            
+            Timber.d("Need to download ${eventsToDownload.size} events (out of ${serverEvents.size} total)")
+            
+            // Download in batches of MAX_MULTIGET_RESOURCES
+            eventsToDownload.chunked(MAX_MULTIGET_RESOURCES).forEach { batch ->
+                try {
+                    Timber.d("Downloading batch of ${batch.size} events")
+                    Timber.d("Event hrefs: ${batch.joinToString()}")
+                    
+                    val multigetResponse = calDAVClient.multigetEvents(
+                        calendarUrl = calendar.calendarUrl,
+                        eventHrefs = batch,
+                        username = account.username,
+                        password = password
+                    )
+                    
+                    if (!multigetResponse.isSuccessful) {
+                        Timber.e("Multiget failed for batch, status: ${multigetResponse.statusCode}")
+                        Timber.e("Response body: ${multigetResponse.body?.take(500)}")
+                        return@forEach
+                    }
+                    
+                    val fetchedEvents = CalDAVXMLParser.parseEventPropfind(multigetResponse.body ?: "")
+                    Timber.d("Multiget returned ${fetchedEvents.size} events with calendar-data")
+                    
+                    fetchedEvents.forEach fetchedEventsLoop@{ eventResource ->
+                        try {
+                            // Check for null calendar-data
+                            val calendarData = eventResource.calendarData
+                            if (calendarData == null || calendarData.isBlank()) {
+                                Timber.w("Event ${eventResource.href} has no calendar-data or it's empty, skipping")
+                                return@fetchedEventsLoop
+                            }
+                            
+                            Timber.d("Processing downloaded event: ${eventResource.href}")
+                            val events = ICalendarParser.parseEvents(calendarData)
+                            Timber.d("Parsed ${events.size} events from iCalendar")
+                            
+                            events.forEach eventsLoop@{ event ->
+                                // Check for duplicate by UID (unique identifier)
+                                val existingEventByUid = eventRepository.getByUid(event.uid)
+                                
+                                // Skip downloading if event is marked for deletion locally
+                                if (existingEventByUid != null && existingEventByUid.isDeleted()) {
+                                    Timber.d("Skipping download - event marked for deletion: ${event.title} (UID: ${event.uid})")
+                                    return@eventsLoop
+                                }
+                                
+                                val eventToSave = event.copy(
+                                    calendarId = calendar.id,
+                                    eventUrl = eventResource.href,
+                                    etag = eventResource.etag
+                                )
+                                
+                                if (existingEventByUid == null) {
+                                    eventRepository.insert(eventToSave)
+                                    Timber.d("Inserted new event: ${event.title} (UID: ${event.uid})")
+                                    downloaded++
+                                } else {
+                                    eventRepository.update(eventToSave.copy(id = existingEventByUid.id))
+                                    Timber.d("Updated existing event: ${event.title} (UID: ${event.uid})")
+                                    downloaded++
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to process event from multiget: ${eventResource.href}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to download batch of ${batch.size} events")
+                }
+            }
+            
+            // Upload local changes (pending events marked as dirty)
+            uploaded = uploadDirtyEvents(calendar, account, password)
+            
+            // Get sync-token from calendar for next Collection Sync
+            var lastSyncUpdated = false
+            try {
+                val calendarPropfind = calDAVClient.propfindCalendars(
+                    url = calendar.calendarUrl,
+                    username = account.username,
+                    password = password
+                )
+                if (calendarPropfind.isSuccessful) {
+                    val calendarResources = CalDAVXMLParser.parseCalendarPropfind(calendarPropfind.body ?: "")
+                    val token = calendarResources.firstOrNull()?.syncToken 
+                        ?: calendarResources.firstOrNull()?.ctag  // Fallback to ctag if no sync-token
+                    
+                    token?.let {
+                        Timber.d("📊 Storing sync-token for next Collection Sync: $it")
+                        calendarRepository.update(calendar.copy(
+                            syncToken = it,
+                            lastSyncedAt = System.currentTimeMillis()
+                        ))
+                        lastSyncUpdated = true
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch/store sync-token")
+            }
+            
+            // Always update last sync time even if token fetch failed
+            if (!lastSyncUpdated) {
+                calendarRepository.update(calendar.copy(
+                    lastSyncedAt = System.currentTimeMillis()
+                ))
+            }
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to sync events for calendar: ${calendar.displayName}")
+        }
+        
+        return EventSyncResult(downloaded, uploaded)
+    }
+    
+    /**
+     * Upload all dirty events for a calendar.
+     */
+    private suspend fun uploadDirtyEvents(
+        calendar: Calendar,
+        account: Account,
+        password: String
+    ): Int {
+        // Check if calendar is force read-only
+        if (calendar.forceReadOnly) {
+            val dirtyCount = eventRepository.getDirtyEventsByCalendarId(calendar.id).size
+            if (dirtyCount > 0) {
+                Timber.w("Calendar '${calendar.displayName}' is set to force read-only. Skipping upload of $dirtyCount dirty event(s).")
+            } else {
+                Timber.d("Calendar '${calendar.displayName}' is read-only. No dirty events to skip.")
+            }
+            return 0
+        }
+        
+        var uploaded = 0
+        
+        Timber.d("→ Checking for dirty events to upload...")
+        Timber.d("   Calendar ID (DAVy DB): ${calendar.id}, Name: ${calendar.displayName}")
+        val dirtyEvents = eventRepository.getDirtyEventsByCalendarId(calendar.id)
+        Timber.d("   Found ${dirtyEvents.size} dirty events for this calendar")
+        
+        if (dirtyEvents.isNotEmpty()) {
+            Timber.d("========================================")
+            Timber.d("✓ Found ${dirtyEvents.size} DIRTY events to upload for calendar: ${calendar.displayName}")
+            Timber.d("========================================")
+            
+            dirtyEvents.forEach { event ->
+                try {
+                    // Check if event is marked for deletion
+                    if (event.isDeleted()) {
+                        Timber.d("→ Deleting event from server: '${event.title}' (ID: ${event.id}, UID: ${event.uid})")
+                        val deleteResult = deleteEvent(event, account, password)
+                        if (deleteResult) {
+                            uploaded++
+                            // Actually delete the event from local DB after successful server deletion
+                            eventRepository.delete(event)
+                            Timber.d("✓ Successfully deleted from server and local DB: ${event.title}")
+                        } else {
+                            Timber.w("✗ Delete failed for event: ${event.title}")
+                        }
+                    } else {
+                        Timber.d("→ Uploading event: '${event.title}' (ID: ${event.id}, UID: ${event.uid})")
+                        val uploadResult = uploadEvent(event, calendar, account, password)
+                        if (uploadResult) {
+                            uploaded++
+                            eventRepository.markClean(event.id)
+                            Timber.d("✓ Successfully uploaded and marked clean: ${event.title}")
+                        } else {
+                            Timber.w("✗ Upload failed for event: ${event.title}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "✗ Exception processing event: ${event.title}")
+                }
+            }
+        } else {
+            Timber.d("✓ No dirty events to upload for calendar: ${calendar.displayName}")
+        }
+        
+        return uploaded
+    }
+    
+    /**
+     * Upload a dirty event to the CalDAV server.
+     */
+    private suspend fun uploadEvent(
+        event: CalendarEvent,
+        calendar: Calendar,
+        account: Account,
+        password: String
+    ): Boolean {
+        Timber.d("Uploading event to server: ${event.title}")
+        
+        try {
+            // Convert event to iCalendar format
+            val icalData = event.toICalendar()
+            
+            // Determine if this is a new event or an update
+            val isNewEvent = event.eventUrl.isBlank()
+            
+            val eventUrl = if (isNewEvent) {
+                // Generate URL for new event
+                "${calendar.calendarUrl}${event.uid}.ics"
+            } else {
+                // Use existing URL for update
+                if (event.eventUrl.startsWith("http")) {
+                    event.eventUrl
+                } else {
+                    "${account.serverUrl}${event.eventUrl}"
+                }
+            }
+            
+            Timber.d("Event URL: $eventUrl")
+            Timber.d("iCalendar data: $icalData")
+            
+            // PUT request to upload/update event
+            val response = calDAVClient.putEvent(
+                eventUrl = eventUrl,
+                username = account.username,
+                password = password,
+                icalendarData = icalData,
+                etag = if (isNewEvent) null else event.etag
+            )
+            
+            if (response.isSuccessful) {
+                // Update event with server response (new etag, URL)
+                val newEtag = response.headers["ETag"]?.firstOrNull() ?: response.headers["etag"]?.firstOrNull()
+                if (newEtag != null) {
+                    eventRepository.updateETag(event.id, newEtag.trim('"'))
+                }
+                
+                // Update event URL if it was a new event
+                if (isNewEvent) {
+                    val updatedEvent = event.copy(eventUrl = eventUrl)
+                    eventRepository.update(updatedEvent)
+                }
+                
+                Timber.d("Event uploaded successfully: ${response.statusCode}")
+                return true
+            } else {
+                Timber.e("Failed to upload event: ${response.statusCode} - ${response.error ?: "Unknown error"}")
+                return false
+            }
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Exception uploading event")
+            return false
+        }
+    }
+    
+    /**
+     * Delete an event from the CalDAV server.
+     */
+    private suspend fun deleteEvent(
+        event: CalendarEvent,
+        account: Account,
+        password: String
+    ): Boolean {
+        Timber.d("Deleting event from server: ${event.title}")
+        
+        try {
+            // Build event URL
+            val eventUrl = if (event.eventUrl.startsWith("http")) {
+                event.eventUrl
+            } else {
+                "${account.serverUrl}${event.eventUrl}"
+            }
+            
+            Timber.d("DELETE request to: $eventUrl")
+            
+            // DELETE request to remove event from server
+            val response = calDAVClient.deleteEvent(
+                eventUrl = eventUrl,
+                username = account.username,
+                password = password,
+                etag = event.etag
+            )
+            
+            if (response.isSuccessful) {
+                Timber.d("Event deleted successfully: ${response.statusCode}")
+                return true
+            } else {
+                Timber.e("Failed to delete event: ${response.statusCode} - ${response.error ?: "Unknown error"}")
+                return false
+            }
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Exception deleting event")
+            return false
+        }
+    }
+    
+    private suspend fun handleMissingRemoteEvent(
+        account: Account,
+        calendar: Calendar,
+        href: String,
+        absoluteUrl: String?,
+        statusCode: Int
+    ) {
+        Timber.d("handleMissingRemoteEvent: href=$href, absoluteUrl=$absoluteUrl, status=$statusCode")
+        val candidates = buildEventUrlCandidates(account, calendar, href, absoluteUrl)
+        Timber.d("Built ${candidates.size} URL candidates: $candidates")
+        val localEvent = findLocalEventByCandidates(candidates)
+        if (localEvent == null) {
+            Timber.w("Remote returned HTTP $statusCode for $href but no matching local event was found")
+            return
+        }
+        Timber.d("Found local event to delete: '${localEvent.title}' (id=${localEvent.id}, uid=${localEvent.uid})")
+        removeLocalEvent(
+            calendar = calendar,
+            event = localEvent,
+            reason = "Remote returned HTTP $statusCode"
+        )
+    }
+
+    private suspend fun findLocalEventByCandidates(candidates: List<String>): CalendarEvent? {
+        for (candidate in candidates) {
+            val event = eventRepository.getByUrl(candidate)
+            if (event != null) {
+                return event
+            }
+        }
+        return null
+    }
+
+    private fun buildEventUrlCandidates(
+        account: Account,
+        calendar: Calendar,
+        href: String?,
+        absoluteUrl: String?
+    ): List<String> {
+        val candidates = LinkedHashSet<String>()
+
+        fun addCandidate(raw: String?) {
+            val value = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return
+            if (candidates.add(value)) {
+                val isAbsolute = value.startsWith("http://") || value.startsWith("https://")
+                if (!isAbsolute) {
+                    if (value.startsWith("/")) {
+                        candidates.add(value.removePrefix("/"))
+                    } else {
+                        candidates.add("/$value")
+                    }
+                }
+            }
+        }
+
+        href?.let { addCandidate(it) }
+
+        absoluteUrl?.let { url ->
+            addCandidate(url)
+            val serverBase = account.serverUrl.trimEnd('/')
+            if (url.startsWith(serverBase)) {
+                addCandidate(url.removePrefix(serverBase))
+            }
+            val calendarBase = calendar.calendarUrl.trimEnd('/')
+            if (url.startsWith(calendarBase)) {
+                addCandidate(url.removePrefix(calendarBase))
+            }
+        }
+
+        return candidates.toList()
+    }
+
+    private suspend fun removeLocalEvent(
+        calendar: Calendar,
+        event: CalendarEvent,
+        reason: String
+    ) {
+        Timber.d("🗑️ Removing local event '${event.title}' (uid=${event.uid}) - $reason")
+        Timber.d("📱 Event details: androidEventId=${event.androidEventId}, calendarAndroidId=${calendar.androidCalendarId}")
+        try {
+            var removedFromProvider = false
+
+            event.androidEventId?.let { androidEventId ->
+                Timber.d("📱 Attempting deletion by androidEventId: $androidEventId")
+                val uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, androidEventId)
+                val deletedRows = context.contentResolver.delete(uri, null, null)
+                Timber.d("📱 Deleted from Calendar Provider by ID: $deletedRows row(s)")
+                removedFromProvider = deletedRows > 0
+            }
+
+            if (!removedFromProvider && calendar.androidCalendarId != null && event.uid.isNotBlank()) {
+                Timber.d("📱 Attempting deletion by UID: ${event.uid}, calendar: ${calendar.androidCalendarId}")
+                val deletedRows = context.contentResolver.delete(
+                    CalendarContract.Events.CONTENT_URI,
+                    "${CalendarContract.Events.CALENDAR_ID} = ? AND ${CalendarContract.Events.UID_2445} = ?",
+                    arrayOf(calendar.androidCalendarId.toString(), event.uid)
+                )
+                Timber.d("📱 Deleted from Calendar Provider by UID: $deletedRows row(s)")
+                removedFromProvider = deletedRows > 0
+            }
+
+            if (!removedFromProvider) {
+                Timber.w("📱 Unable to remove event from Calendar Provider (androidEventId=${event.androidEventId}, calendarAndroidId=${calendar.androidCalendarId})")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to delete event from Calendar Provider for UID ${event.uid}")
+        }
+
+        try {
+            eventRepository.delete(event)
+            Timber.d("✓ Local event removed from repository: ${event.title}")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to remove event ${event.uid} from repository")
+        }
+    }
+    
+    /**
+     * Parse calendar color from CalDAV format (#RRGGBBAA) to Android Int.
+     */
+    private fun parseCalendarColor(colorString: String?): Int {
+        if (colorString == null) return 0xFF2196F3.toInt() // Default blue
+        
+        return try {
+            android.graphics.Color.parseColor(colorString)
+        } catch (e: Exception) {
+            0xFF2196F3.toInt()
+        }
+    }
+}
+
+/**
+ * Result of calendar sync operation.
+ */
+sealed class SyncResult {
+    data class Success(
+        val calendarsAdded: Int,
+        val eventsDownloaded: Int,
+        val eventsUploaded: Int
+    ) : SyncResult()
+    
+    data class Error(val message: String) : SyncResult()
+    
+    companion object {
+        fun success(calendarsAdded: Int, eventsDownloaded: Int, eventsUploaded: Int) =
+            Success(calendarsAdded, eventsDownloaded, eventsUploaded)
+        
+        fun error(message: String) = Error(message)
+    }
+}
+
+/**
+ * Result of event sync for single calendar.
+ */
+data class EventSyncResult(
+    val eventsDownloaded: Int,
+    val eventsUploaded: Int
+)

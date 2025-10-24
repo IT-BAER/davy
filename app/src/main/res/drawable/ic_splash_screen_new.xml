@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Logo positioned at mid-top (30% from top) -->
+    <item
+        android:drawable="@drawable/ic_splash_logo"
+        android:gravity="center_horizontal|top"
+        android:top="30dp"
+        android:width="108dp"
+        android:height="108dp" />
+    
+    <!-- Loading arrows positioned below logo -->
+    <item
+        android:drawable="@drawable/ic_loading_arrows_animated"
+        android:gravity="center_horizontal|top"
+        android:top="150dp"
+        android:width="48dp"
+        android:height="48dp" />
+</layer-list>

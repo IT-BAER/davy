@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    
+    <!-- Orange arrow (clockwise rotation) - DAVy Orange #d3753b -->
+    <group
+        android:name="orangeArrowGroup"
+        android:pivotX="24"
+        android:pivotY="24">
+        <path
+            android:name="orangeArrow"
+            android:fillColor="#d3753b"
+            android:pathData="M24,6 L24,18 L28,14 L24,6 Z M24,18 A12,12 0 0,1 36,24" 
+            android:strokeColor="#d3753b"
+            android:strokeWidth="3"
+            android:strokeLineCap="round" />
+    </group>
+    
+    <!-- Dark blue arrow (counter-clockwise rotation) - DAVy Blue #39578a -->
+    <group
+        android:name="blueArrowGroup"
+        android:pivotX="24"
+        android:pivotY="24">
+        <path
+            android:name="blueArrow"
+            android:fillColor="#39578a"
+            android:pathData="M24,42 L24,30 L20,34 L24,42 Z M24,30 A12,12 0 0,1 12,24"
+            android:strokeColor="#39578a"
+            android:strokeWidth="3"
+            android:strokeLineCap="round" />
+    </group>
+</vector>

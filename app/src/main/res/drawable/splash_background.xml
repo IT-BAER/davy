@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- White background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
+    
+    <!-- DAVy logo at mid-top (positioned at top with margin) -->
+    <item
+            android:width="160dp"
+        android:height="160dp"
+        android:gravity="center_horizontal|top"
+        android:top="120dp">
+        <vector
+            android:width="160dp"
+            android:height="160dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <!-- Orange circle background -->
+            <path
+                android:fillColor="#d3753b"
+                android:pathData="M54,8C28.804,8 8,28.804 8,54s20.804,46 46,46 46,-20.804 46,-46S79.196,8 54,8z" />
+            <!-- White 'D' shape -->
+            <path
+                android:fillColor="#FFFFFF"
+                android:pathData="M44,28h18c15.464,0 26,11.536 26,26s-10.536,26 -26,26H44z" />
+            <!-- Blue inner shape -->
+            <path
+                android:fillColor="#39578a"
+                android:pathData="M50,36h10c8.837,0 14,6.06 14,18s-5.163,18 -14,18H50z" />
+            <!-- White accent overlay -->
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:fillAlpha="0.18"
+                android:pathData="M28,40c0,-8.837 7.163,-16 16,-16h12c2.209,0 4,1.791 4,4s-1.791,4 -4,4H44c-4.418,0 -8,3.582 -8,8v20c0,2.209 -1.791,4 -4,4s-4,-1.791 -4,-4z" />
+        </vector>
+    </item>
+</layer-list>
+

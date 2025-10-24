@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_loading_arrows">
+    
+    <!-- Orange arrow rotates clockwise -->
+    <target
+        android:name="orangeArrowGroup"
+        android:animation="@animator/arrow_rotation_clockwise" />
+    
+    <!-- Blue arrow rotates counter-clockwise -->
+    <target
+        android:name="blueArrowGroup"
+        android:animation="@animator/arrow_rotation_counter" />
+</animated-vector>
