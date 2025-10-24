@@ -13,9 +13,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -61,7 +66,7 @@ import kotlinx.coroutines.launch
  * Screen for managing accounts.
  * Shows list of accounts with delete actions.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 @Suppress("UNUSED_PARAMETER")
 fun AccountListScreen(
@@ -79,8 +84,27 @@ fun AccountListScreen(
     val isSyncing by viewModel.isSyncing.collectAsState()
     // Use injected SyncManager from CompositionLocal (performance optimization)
     val syncManager = LocalSyncManager.current
+    val scope = rememberCoroutineScope()
 
     var accountToDelete by remember { mutableStateOf<Account?>(null) }
+
+    // LazyColumn state for pull-to-refresh
+    val listState = rememberLazyListState()
+
+    // Pull-to-refresh state
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            scope.launch {
+                isRefreshing = true
+                // Sync all enabled items for all accounts
+                syncManager.syncAllNow()
+                viewModel.syncAll()
+                isRefreshing = false
+            }
+        }
+    )
 
     // Derived state to prevent unnecessary recompositions
     val shouldShowIllustration = remember(uiState) {
@@ -99,7 +123,6 @@ fun AccountListScreen(
     )
     
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -221,6 +244,7 @@ fun AccountListScreen(
                     )
                 )
                 .padding(paddingValues)
+                .pullRefresh(pullRefreshState)
         ) {
             when (val state = uiState) {
                 is AccountListUiState.Loading -> {
@@ -251,6 +275,8 @@ fun AccountListScreen(
                 }
                 is AccountListUiState.Success -> {
                     LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        state = listState,
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -291,6 +317,13 @@ fun AccountListScreen(
                     }
                 }
             }
+            
+            // Pull-to-refresh indicator
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
             
             // Background illustration at bottom (visible in all states except Loading)
             if (shouldShowIllustration) {

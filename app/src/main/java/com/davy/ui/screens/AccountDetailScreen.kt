@@ -815,8 +815,7 @@ fun CalDAVTabContent(
                     end = 16.dp,
                     bottom = 160.dp
                 ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                userScrollEnabled = canScroll
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(
                     items = calendars,
@@ -1786,8 +1785,7 @@ fun CardDAVTabContent(
                     end = 16.dp,
                     bottom = 160.dp
                 ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                userScrollEnabled = canScroll
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(
                     items = addressBooks,
@@ -2372,6 +2370,7 @@ private fun AddressBookSettingsDialog(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun WebCalTabContent(
     webCalSubscriptions: List<WebCalSubscription>,
@@ -2380,11 +2379,27 @@ fun WebCalTabContent(
     isBusy: Boolean = false
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val canScroll by remember(listState) {
         derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
     }
     var showAddWebCalDialog by remember { mutableStateOf(false) }
     var showNoWebCalAppDialog by remember { mutableStateOf(false) }
+    
+    // Pull-to-refresh functionality
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            scope.launch {
+                if (!isBusy) {
+                    isRefreshing = true
+                    viewModel.syncWebCalSubscriptions()
+                    isRefreshing = false
+                }
+            }
+        }
+    )
     
     // PERFORMANCE: Remember lambdas to prevent recreating them on every recomposition
     val onToggleSync = remember(viewModel) {
@@ -2404,6 +2419,12 @@ fun WebCalTabContent(
         }
     }
     
+    // Wrap the content in a Box with pullRefresh modifier
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
     if (webCalSubscriptions.isEmpty()) {
         // Show empty state with explanation
         // PERFORMANCE FIX: Don't use Box(fillMaxSize) - it blocks touch events for HorizontalPager
@@ -2463,10 +2484,6 @@ fun WebCalTabContent(
         }
     } else {
         // Show list of subscriptions
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
@@ -2476,8 +2493,7 @@ fun WebCalTabContent(
                     end = 16.dp,
                     bottom = 160.dp
                 ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                userScrollEnabled = canScroll
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
             items(
                 items = webCalSubscriptions,
@@ -2506,7 +2522,13 @@ fun WebCalTabContent(
             }
         }
     }
-
+        
+        // Pull-to-refresh indicator
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
     
     if (showAddWebCalDialog) {
