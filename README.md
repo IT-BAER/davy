@@ -41,7 +41,7 @@ A privacy-focused Android application for synchronizing calendars and contacts u
 
 - Calendar integration with Android Calendar Provider
 
-- Event and contact CRUD operations- CardDAV contact sync (RFC 6352)
+- Event and contact CRUD operations
 
 - Offline data caching with Room
 
@@ -53,11 +53,11 @@ A privacy-focused Android application for synchronizing calendars and contacts u
 
 - TLS/SSL certificate validation
 
-- No data collection or telemetry- Conflict detection and resolution
+- No data collection or telemetry
 
 - Local data storage only
 
-- No third-party analytics or tracking- Full and incremental sync support
+- No third-party analytics or tracking
 
 
 
@@ -116,7 +116,7 @@ DAVy follows Android best practices with clean architecture:
 
 - **Domain Layer**: Use cases, business logic, and models
 
-- **Data Layer**: Repositories, Room database, CalDAV/CardDAV clients- Android 14.0 (API level 35) or higher
+- **Data Layer**: Repositories, Room database, CalDAV/CardDAV clients
 
 - **Dependency Injection**: Hilt
 
