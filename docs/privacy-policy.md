@@ -1,6 +1,6 @@
 # Privacy Policy for DAVy
 
-**Effective Date:** [Date]
+**Effective Date:** Nov. 01, 2025
 
 ## Introduction
 
