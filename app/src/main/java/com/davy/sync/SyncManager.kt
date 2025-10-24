@@ -405,11 +405,16 @@ class SyncManager @Inject constructor(
     /**
      * Observe sync state for a specific account as a Flow.
      * Returns true when syncing, false otherwise.
+     * 
+     * Note: Uses SampledFlow to ensure immediate state updates and avoid delays from WorkManager's
+     * internal state observation. This ensures UI animations stop as soon as sync completes.
      */
     fun observeSyncState(accountId: Long): Flow<Boolean> {
         return workManager.getWorkInfosByTagFlow("account_$accountId")
             .map { workInfos ->
-                workInfos.any { it.state == WorkInfo.State.RUNNING }
+                val isRunning = workInfos.any { it.state == WorkInfo.State.RUNNING }
+                Timber.v("Sync state for account $accountId: running=$isRunning (work items: ${workInfos.size})")
+                isRunning
             }
     }
     

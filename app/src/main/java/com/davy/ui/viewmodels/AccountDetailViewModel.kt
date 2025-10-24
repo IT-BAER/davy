@@ -60,6 +60,7 @@ class AccountDetailViewModel @Inject constructor(
     private val createBackupUseCase: com.davy.domain.usecase.CreateBackupUseCase,
     private val restoreBackupUseCase: com.davy.domain.usecase.RestoreBackupUseCase,
     private val listBackupsUseCase: com.davy.domain.usecase.ListBackupsUseCase,
+    private val authenticationManager: com.davy.data.remote.AuthenticationManager,
     @Suppress("UNUSED_PARAMETER") savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -73,6 +74,8 @@ class AccountDetailViewModel @Inject constructor(
     private val _syncingAddressBookIds = MutableStateFlow<Set<Long>>(emptySet())
     private val _isRefreshingCollections = MutableStateFlow(false)
     private val _accountDeleted = MutableStateFlow(false)
+    private val _isTestingCredentials = MutableStateFlow(false)
+    private val _credentialTestResult = MutableStateFlow<String?>(null)
     
     // Batch selection state for multi-select sync operations
     private val _isBatchSelectionMode = MutableStateFlow(false)
@@ -100,7 +103,9 @@ class AccountDetailViewModel @Inject constructor(
         _syncingCalendarIds,
         _syncingAddressBookIds,
         _isRefreshingCollections,
-        _accountDeleted
+        _accountDeleted,
+        _isTestingCredentials,
+        _credentialTestResult
     ) { flows: Array<Any?> ->
         AccountDetailUiState(
             account = flows[0] as Account?,
@@ -111,7 +116,9 @@ class AccountDetailViewModel @Inject constructor(
             syncingCalendarIds = flows[5] as Set<Long>,
             syncingAddressBookIds = flows[6] as Set<Long>,
             isRefreshingCollections = flows[7] as Boolean,
-            accountDeleted = flows[8] as Boolean
+            accountDeleted = flows[8] as Boolean,
+            isTestingCredentials = flows[9] as Boolean,
+            credentialTestResult = flows[10] as String?
         )
     }.stateIn(
         scope = viewModelScope,
@@ -186,6 +193,25 @@ class AccountDetailViewModel @Inject constructor(
                     credentialStore.storePassword(account.id, newPassword)
                 }
             }
+        }
+    }
+    
+    fun onTestCredentialsClicked(serverUrl: String, username: String, password: String) {
+        viewModelScope.launch {
+            _isTestingCredentials.value = true
+            _credentialTestResult.value = null
+            
+            val success = withContext(Dispatchers.IO) {
+                authenticationManager.testCredentials(serverUrl, username, password)
+            }
+            
+            _credentialTestResult.value = if (success) {
+                "✓ Credentials valid"
+            } else {
+                "✗ Authentication failed"
+            }
+            
+            _isTestingCredentials.value = false
         }
     }
     
@@ -675,6 +701,38 @@ class AccountDetailViewModel @Inject constructor(
                 webCalSubscriptionRepository.insert(subscription)
             } catch (e: Exception) {
                 Timber.tag("AccountDetailViewModel").e(e, "Failed to add WebCal subscription: %s", e.message)
+            }
+        }
+    }
+    
+    fun deleteWebCalSubscription(subscriptionId: Long) {
+        viewModelScope.launch {
+            try {
+                val subscription = webCalSubscriptionRepository.getById(subscriptionId)
+                if (subscription != null) {
+                    webCalSubscriptionRepository.delete(subscription)
+                    Timber.tag("AccountDetailViewModel").d("Deleted WebCal subscription: %s", subscription.displayName)
+                }
+            } catch (e: Exception) {
+                Timber.tag("AccountDetailViewModel").e(e, "Failed to delete WebCal subscription")
+            }
+        }
+    }
+    
+    fun deleteWebCalSubscriptions(subscriptionIds: Collection<Long>) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                subscriptionIds.forEach { id ->
+                    try {
+                        val subscription = webCalSubscriptionRepository.getById(id)
+                        if (subscription != null) {
+                            webCalSubscriptionRepository.delete(subscription)
+                            Timber.tag("AccountDetailViewModel").d("Deleted WebCal subscription: %s", subscription.displayName)
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("AccountDetailViewModel").e(e, "Failed to delete WebCal subscription")
+                    }
+                }
             }
         }
     }

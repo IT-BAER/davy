@@ -1,5 +1,8 @@
 package com.davy.data.remote.caldav
 
+import android.content.Context
+import com.davy.ui.util.NotificationHelper
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -26,6 +29,7 @@ import timber.log.Timber
  * 3. Enumerate available calendars
  */
 class PrincipalDiscovery @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val httpClient: OkHttpClient
 ) {
 
@@ -420,6 +424,15 @@ class PrincipalDiscovery @Inject constructor(
                 }
             } else {
                 Timber.tag("PrincipalDiscovery").w("Failed to discover calendars: %s - %s", response.code, response.body?.string())
+                
+                // Show notification for auth errors
+                if (response.code == 401 || response.code == 403) {
+                    NotificationHelper.showHttpErrorNotification(
+                        context,
+                        response.code
+                    )
+                }
+                
                 throw PrincipalDiscoveryException("Failed to discover calendars: HTTP ${response.code}")
             }
         } catch (e: Exception) {

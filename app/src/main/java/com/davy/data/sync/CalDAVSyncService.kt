@@ -13,6 +13,8 @@ import com.davy.domain.model.Account
 import com.davy.domain.model.Calendar
 import com.davy.domain.model.CalendarEvent
 import com.davy.domain.model.toICalendar
+import com.davy.ui.util.AppError
+import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -218,6 +220,17 @@ class CalDAVSyncService @Inject constructor(
             
             if (!response.isSuccessful) {
                 Timber.e("Collection Sync REPORT failed: ${response.statusCode}")
+                
+                // Show notification for auth errors
+                if (response.statusCode == 401 || response.statusCode == 403) {
+                    NotificationHelper.showHttpErrorNotification(
+                        context,
+                        response.statusCode,
+                        account.accountName,
+                        account.id
+                    )
+                }
+                
                 return null
             }
             
@@ -355,6 +368,17 @@ class CalDAVSyncService @Inject constructor(
             
             if (!eventsPropfind.isSuccessful) {
                 Timber.e("Events PROPFIND failed for ${calendar.displayName}")
+                
+                // Show notification for auth errors
+                if (eventsPropfind.statusCode == 401 || eventsPropfind.statusCode == 403) {
+                    NotificationHelper.showHttpErrorNotification(
+                        context,
+                        eventsPropfind.statusCode,
+                        account.accountName,
+                        account.id
+                    )
+                }
+                
                 return EventSyncResult(0, 0)
             }
             
@@ -806,6 +830,34 @@ class CalDAVSyncService @Inject constructor(
         } catch (e: Exception) {
             0xFF2196F3.toInt()
         }
+    }
+    
+    /**
+     * Sync tasks for a specific task list.
+     * Returns a Pair of (tasksDownloaded, tasksUploaded).
+     * 
+     * Note: This is a placeholder implementation that follows the same pattern as calendar sync.
+     * Full VTODO sync implementation requires:
+     * - VTODO parsing from iCalendar format
+     * - Task-specific fields mapping (status, priority, percent-complete, due date, etc.)
+     * - Recurrence rule handling for recurring tasks
+     * - Subtask/parent-child relationship handling
+     */
+    suspend fun syncTaskList(account: Account, taskList: com.davy.domain.model.TaskList): Pair<Int, Int> {
+        Timber.d("Syncing task list: ${taskList.displayName}")
+        Timber.d("Task list URL: ${taskList.url}")
+        
+        // TODO: Implement full VTODO sync with CalDAV protocol
+        // This should follow the same pattern as syncCalendarEvents:
+        // 1. Check for local dirty/deleted tasks and upload them first
+        // 2. Query server for task list (calendar-query REPORT with VTODO filter)
+        // 3. Download new/modified VTODOs
+        // 4. Parse VTODO components using iCalendar parser
+        // 5. Store tasks in local database
+        // 6. Handle sync tokens for incremental sync
+        
+        Timber.w("VTODO sync not yet fully implemented - returning placeholder result")
+        return 0 to 0
     }
 }
 

@@ -17,6 +17,8 @@ import com.davy.domain.model.AddressBook
 import com.davy.domain.model.Contact
 import com.davy.sync.account.AndroidAccountManager
 import com.davy.sync.contacts.ContactsContentObserver
+import com.davy.ui.util.AppError
+import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -167,7 +169,7 @@ class CardDAVSyncService @Inject constructor(
         
         try {
             // Step 1: Fetch server ctag to check if anything changed
-            val serverCtag = fetchServerCtag(addressBook.url, account.username, password)
+            val serverCtag = fetchServerCtag(addressBook.url, account.username, password, account.accountName, account.id)
             if (serverCtag == null) {
                 Timber.e("Failed to fetch server ctag for ${addressBook.displayName}")
                 return SyncResult()
@@ -221,7 +223,13 @@ class CardDAVSyncService @Inject constructor(
         )
     }
     
-    private suspend fun fetchServerCtag(url: String, username: String, password: String): String? = withContext(Dispatchers.IO) {
+    private suspend fun fetchServerCtag(
+        url: String, 
+        username: String, 
+        password: String,
+        accountName: String,
+        accountId: Long
+    ): String? = withContext(Dispatchers.IO) {
         try {
             val requestBody = AddressBookPropFind.createCTagOnlyRequest()
             val request = Request.Builder()
@@ -234,6 +242,17 @@ class CardDAVSyncService @Inject constructor(
             val response = httpClient.newCall(request).execute()
             if (!response.isSuccessful) {
                 Timber.e("PROPFIND failed: ${response.code} ${response.message}")
+                
+                // Show notification for auth errors
+                if (response.code == 401 || response.code == 403) {
+                    NotificationHelper.showHttpErrorNotification(
+                        context,
+                        response.code,
+                        accountName,
+                        accountId
+                    )
+                }
+                
                 return@withContext null
             }
             
@@ -273,7 +292,18 @@ class CardDAVSyncService @Inject constructor(
             val response = httpClient.newCall(request).execute()
             if (!response.isSuccessful) {
                 Timber.e("addressbook-query REPORT failed: ${response.code} ${response.message}")
-                return@withContext 0
+                
+                // Show notification for auth errors
+                if (response.code == 401 || response.code == 403) {
+                    NotificationHelper.showHttpErrorNotification(
+                        context,
+                        response.code,
+                        account.accountName,
+                        account.id
+                    )
+                }
+                
+                return@withContext count
             }
             
             val responseXml = response.body?.string() ?: return@withContext 0

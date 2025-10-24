@@ -32,7 +32,9 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -109,46 +111,109 @@ private fun rememberGradientBorderBrush(baseColor: Color): Brush {
 }
 
 /**
- * Custom border modifier with individual side widths.
- * Left border maintains full width, while top/bottom/right are reduced.
+ * Custom border modifier with thicker left border and rounded corners.
+ * Uses a path-based approach to draw a rounded rectangle outline with varying border widths.
+ * Matches the card's corner radius for seamless integration using UX/UI best practices.
  */
 private fun Modifier.customCardBorder(
     brush: Brush,
+    shape: androidx.compose.ui.graphics.Shape,
     leftWidth: androidx.compose.ui.unit.Dp = 2.dp,
-    otherWidth: androidx.compose.ui.unit.Dp = 0.5.dp
+    otherWidth: androidx.compose.ui.unit.Dp = 1.dp
 ): Modifier = this.then(
     drawWithCache {
         val leftPx = leftWidth.toPx()
         val otherPx = otherWidth.toPx()
         
-        onDrawBehind {
-            // Draw left border (full width)
-            drawRect(
+        // Extract corner radius from the shape
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val radiusPx = if (outline is androidx.compose.ui.graphics.Outline.Rounded) {
+            outline.roundRect.topLeftCornerRadius.x
+        } else {
+            0f
+        }
+        
+        onDrawWithContent {
+            // Draw the card content first
+            drawContent()
+            
+            // For proper border alignment with card edges, inset by half the border width
+            // This ensures the border sits exactly on the card edge
+            val insetLeft = leftPx / 2f
+            val insetOther = otherPx / 2f
+            
+            // Adjust corner radius to account for the inset while maintaining visual consistency
+            val adjustedRadius = (radiusPx - insetOther).coerceAtLeast(0f)
+            
+            // Draw the full outline with left border width
+            val fullPath = androidx.compose.ui.graphics.Path().apply {
+                addRoundRect(
+                    androidx.compose.ui.geometry.RoundRect(
+                        rect = androidx.compose.ui.geometry.Rect(
+                            left = insetLeft,
+                            top = insetOther,
+                            right = size.width - insetOther,
+                            bottom = size.height - insetOther
+                        ),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(adjustedRadius, adjustedRadius)
+                    )
+                )
+            }
+            
+            // Draw the complete border outline
+            drawPath(
+                path = fullPath,
                 brush = brush,
-                topLeft = Offset(0f, 0f),
-                size = Size(leftPx, size.height)
+                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                    width = leftPx
+                )
             )
             
-            // Draw top border (reduced width)
-            drawRect(
-                brush = brush,
-                topLeft = Offset(0f, 0f),
-                size = Size(size.width, otherPx)
-            )
-            
-            // Draw right border (reduced width)
-            drawRect(
-                brush = brush,
-                topLeft = Offset(size.width - otherPx, 0f),
-                size = Size(otherPx, size.height)
-            )
-            
-            // Draw bottom border (reduced width)
-            drawRect(
-                brush = brush,
-                topLeft = Offset(0f, size.height - otherPx),
-                size = Size(size.width, otherPx)
-            )
+            // Cover the thicker parts on top, right, and bottom with the card background color
+            // to create the asymmetric border effect
+            if (leftPx > otherPx) {
+                val coverWidth = leftPx - otherPx
+                val coverInset = otherPx / 2f
+                
+                // Create paths to cover the excess border width on top, right, and bottom
+                val coverPath = androidx.compose.ui.graphics.Path().apply {
+                    // Top edge cover
+                    addRect(
+                        androidx.compose.ui.geometry.Rect(
+                            left = adjustedRadius + coverInset,
+                            top = coverInset,
+                            right = size.width - adjustedRadius - coverInset,
+                            bottom = coverInset + coverWidth
+                        )
+                    )
+                    
+                    // Right edge cover
+                    addRect(
+                        androidx.compose.ui.geometry.Rect(
+                            left = size.width - coverInset - coverWidth,
+                            top = adjustedRadius + coverInset,
+                            right = size.width - coverInset,
+                            bottom = size.height - adjustedRadius - coverInset
+                        )
+                    )
+                    
+                    // Bottom edge cover
+                    addRect(
+                        androidx.compose.ui.geometry.Rect(
+                            left = adjustedRadius + coverInset,
+                            top = size.height - coverInset - coverWidth,
+                            right = size.width - adjustedRadius - coverInset,
+                            bottom = size.height - coverInset
+                        )
+                    )
+                }
+                
+                // Draw the cover rectangles with the card's background color
+                drawPath(
+                    path = coverPath,
+                    color = androidx.compose.ui.graphics.Color.Transparent
+                )
+            }
         }
     }
 )
@@ -192,7 +257,10 @@ private fun rememberUnifiedBackgroundBrush(currentPage: Int, pageOffsetFraction:
 
 @Composable
 private fun rememberSyncRotation(isActive: Boolean): Float {
+    // When sync stops, immediately return to 0
     if (!isActive) return 0f
+    
+    // When syncing, use infinite rotation animation
     val rotation by rememberInfiniteTransition(label = "syncRotation")
         .animateFloat(
             initialValue = 0f,
@@ -235,13 +303,29 @@ fun AccountDetailScreen(
         // Toggle off batch mode (also clears selections in ViewModel)
         viewModel.toggleBatchSelectionMode()
     }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val calDavListState = rememberLazyListState()
     val cardDavListState = rememberLazyListState()
     val webCalListState = rememberLazyListState()
 
     val pagerState = rememberPagerState(pageCount = { accountDetailTabs.size })
+    
+    // Determine current tab item count for scroll behavior
+    val currentTabItemCount = when (pagerState.currentPage) {
+        0 -> uiState.calendars.size // CalDAV tab
+        1 -> uiState.addressBooks.size // CardDAV tab
+        2 -> uiState.webCalSubscriptions.size // WebCal tab
+        else -> 0
+    }
+    
+    // Use pinned scroll behavior (no collapse) when there are fewer than 5 items
+    // Use enterAlways scroll behavior (with collapse) when there are 5 or more items
+    val scrollBehavior = if (currentTabItemCount < 5) {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    } else {
+        TopAppBarDefaults.enterAlwaysScrollBehavior()
+    }
+    
     val scope = rememberCoroutineScope()
     val syncManager = LocalSyncManager.current
     val haptics = LocalHapticFeedback.current
@@ -253,8 +337,10 @@ fun AccountDetailScreen(
     var showMenuDropdown by remember { mutableStateOf(false) }
     var showCreateCalendarDialog by remember { mutableStateOf(false) }
     var showCreateAddressBookDialog by remember { mutableStateOf(false) }
+    var showAddWebCalDialog by remember { mutableStateOf(false) }
     var showDeleteSelectedCalendarsDialog by remember { mutableStateOf(false) }
     var showDeleteSelectedAddressBooksDialog by remember { mutableStateOf(false) }
+    var showDeleteSelectedWebCalDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(accountId) {
         viewModel.loadAccount(accountId)
@@ -289,6 +375,7 @@ fun AccountDetailScreen(
                     val isBatchMode by viewModel.isBatchSelectionMode.collectAsStateWithLifecycle()
                     val selectedCalendarIds by viewModel.selectedCalendarIds.collectAsStateWithLifecycle()
                     val selectedAddressBookIds by viewModel.selectedAddressBookIds.collectAsStateWithLifecycle()
+                    val selectedWebCalIds by viewModel.selectedWebCalIds.collectAsStateWithLifecycle()
                     IconButton(
                         onClick = { viewModel.toggleBatchSelectionMode() }
                     ) {
@@ -394,6 +481,29 @@ fun AccountDetailScreen(
                                             Icon(Icons.Default.Sync, contentDescription = null)
                                         }
                                     )
+                                    DropdownMenuItem(
+                                        text = { Text("Add WebCal Subscription") },
+                                        onClick = {
+                                            showMenuDropdown = false
+                                            showAddWebCalDialog = true
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Add, contentDescription = null)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Delete Selected") },
+                                        onClick = {
+                                            showMenuDropdown = false
+                                            if (isBatchMode && selectedWebCalIds.isNotEmpty() && !isBusy) {
+                                                showDeleteSelectedWebCalDialog = true
+                                            }
+                                        },
+                                        enabled = isBatchMode && selectedWebCalIds.isNotEmpty() && !isBusy,
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Delete, contentDescription = null)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -452,6 +562,7 @@ fun AccountDetailScreen(
                     val isGlobalSyncing = isGlobalOperationRunning && !isRefreshing
                     val globalSyncRotation = rememberSyncRotation(isGlobalSyncing)
                     ExtendedFloatingActionButton(
+                        modifier = Modifier.widthIn(min = 140.dp),
                         text = { Text("Sync All") },
                         icon = {
                             Icon(
@@ -478,6 +589,7 @@ fun AccountDetailScreen(
 
                 // Get Lists button (second/bottom position) - always visible
                 ExtendedFloatingActionButton(
+                    modifier = Modifier.widthIn(min = 140.dp),
                     text = { Text("Get Lists") },
                     icon = { 
                         if (uiState.isRefreshingCollections) {
@@ -627,7 +739,9 @@ fun AccountDetailScreen(
                         webCalSubscriptions = uiState.webCalSubscriptions,
                         viewModel = viewModel,
                         listState = webCalListState,
-                        isBusy = isBusy
+                        isBusy = isBusy,
+                        showAddWebCalDialog = showAddWebCalDialog,
+                        onShowAddWebCalDialog = { showAddWebCalDialog = it }
                     )
                 }
             }
@@ -737,6 +851,38 @@ fun AccountDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteSelectedAddressBooksDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // Delete selected WebCal subscriptions confirmation
+    if (showDeleteSelectedWebCalDialog) {
+        val selectedWebCalIds by viewModel.selectedWebCalIds.collectAsStateWithLifecycle()
+        AlertDialog(
+            onDismissRequest = { showDeleteSelectedWebCalDialog = false },
+            title = { Text("Delete selected WebCal subscriptions?") },
+            text = {
+                Column {
+                    Text("This will delete the selected WebCal subscriptions from your device. This action cannot be undone.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Selected: ${selectedWebCalIds.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteWebCalSubscriptions(selectedWebCalIds)
+                        viewModel.clearBatchSelections()
+                        showDeleteSelectedWebCalDialog = false
+                    }
+                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteSelectedWebCalDialog = false }) { Text("Cancel") }
             }
         )
     }
@@ -905,7 +1051,7 @@ private fun CalendarCard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(2.dp, gradientBorder), cardShape),
+            .customCardBorder(brush = gradientBorder, shape = cardShape, leftWidth = 2.dp, otherWidth = 1.dp),
         shape = cardShape,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -1603,7 +1749,7 @@ fun WebCalSubscriptionCard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(2.dp, gradientBorder), cardShape),
+            .customCardBorder(brush = gradientBorder, shape = cardShape, leftWidth = 2.dp, otherWidth = 1.dp),
         shape = cardShape,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -1848,7 +1994,7 @@ private fun AddressBookCard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .border(BorderStroke(2.dp, gradientBorder), cardShape),
+            .customCardBorder(brush = gradientBorder, shape = cardShape, leftWidth = 2.dp, otherWidth = 1.dp),
         shape = cardShape,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -2376,15 +2522,15 @@ fun WebCalTabContent(
     webCalSubscriptions: List<WebCalSubscription>,
     viewModel: AccountDetailViewModel,
     listState: LazyListState,
-    isBusy: Boolean = false
+    isBusy: Boolean = false,
+    showAddWebCalDialog: Boolean,
+    onShowAddWebCalDialog: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val canScroll by remember(listState) {
         derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
     }
-    var showAddWebCalDialog by remember { mutableStateOf(false) }
-    var showNoWebCalAppDialog by remember { mutableStateOf(false) }
     
     // Pull-to-refresh functionality
     var isRefreshing by remember { mutableStateOf(false) }
@@ -2473,7 +2619,7 @@ fun WebCalTabContent(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     FilledTonalButton(
-                        onClick = { showAddWebCalDialog = true }
+                        onClick = { onShowAddWebCalDialog(true) }
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -2533,37 +2679,12 @@ fun WebCalTabContent(
     
     if (showAddWebCalDialog) {
         WebCalUrlInputDialog(
-            onDismiss = { showAddWebCalDialog = false },
-            onSubmit = { url ->
-                // Try to open with external calendar app via Intent
-                try {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                        data = android.net.Uri.parse(url)
-                        flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    
-                    // Check if there's an app that can handle webcal:// URIs
-                    val packageManager = context.packageManager
-                    if (intent.resolveActivity(packageManager) != null) {
-                        context.startActivity(intent)
-                        showAddWebCalDialog = false
-                    } else {
-                        // No app available to handle webcal:// URIs
-                        showNoWebCalAppDialog = true
-                        showAddWebCalDialog = false
-                    }
-                } catch (e: Exception) {
-                    // Handle any errors
-                    showNoWebCalAppDialog = true
-                    showAddWebCalDialog = false
-                }
+            onDismiss = { onShowAddWebCalDialog(false) },
+            onSubmit = { url, displayName ->
+                // Add WebCal subscription locally
+                viewModel.addWebCalSubscription(url, displayName)
+                onShowAddWebCalDialog(false)
             }
-        )
-    }
-    
-    if (showNoWebCalAppDialog) {
-        NoWebCalAppDialog(
-            onDismiss = { showNoWebCalAppDialog = false }
         )
     }
 }
@@ -2657,24 +2778,42 @@ private fun WebCalCard(subscription: WebCalSubscription) {
 @Composable
 fun WebCalUrlInputDialog(
     onDismiss: () -> Unit,
-    onSubmit: (url: String) -> Unit
+    onSubmit: (url: String, displayName: String) -> Unit
 ) {
     var url by remember { mutableStateOf("") }
+    var displayName by remember { mutableStateOf("") }
     var urlError by remember { mutableStateOf<String?>(null) }
+    var nameError by remember { mutableStateOf<String?>(null) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Public, contentDescription = null) },
-        title = { Text("Subscribe to WebCal") },
+        title = { Text("Add WebCal Subscription") },
         text = {
             Column {
                 Text(
-                    text = "Enter a webcal:// URL to subscribe to a read-only calendar feed. This will open your calendar app to complete the subscription.",
+                    text = "Subscribe to a read-only calendar feed. The subscription will be stored locally and synced periodically.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
+                
+                OutlinedTextField(
+                    value = displayName,
+                    onValueChange = {
+                        displayName = it
+                        nameError = null
+                    },
+                    label = { Text("Display Name") },
+                    placeholder = { Text("My Calendar") },
+                    singleLine = true,
+                    isError = nameError != null,
+                    supportingText = nameError?.let { { Text(it) } },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 OutlinedTextField(
                     value = url,
@@ -2694,6 +2833,12 @@ fun WebCalUrlInputDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    // Validate display name
+                    if (displayName.isBlank()) {
+                        nameError = "Display name is required"
+                        return@TextButton
+                    }
+                    
                     // Validate URL
                     if (url.isBlank()) {
                         urlError = "URL is required"
@@ -2708,60 +2853,15 @@ fun WebCalUrlInputDialog(
                         return@TextButton
                     }
                     
-                    onSubmit(url)
+                    onSubmit(url, displayName)
                 }
             ) {
-                Text("Open Calendar App")
+                Text("Add Subscription")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun NoWebCalAppDialog(
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = { 
-            Icon(
-                Icons.Default.Warning, 
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
-            ) 
-        },
-        title = { Text("No Compatible App Found") },
-        text = {
-            Column {
-                Text(
-                    text = "No calendar app on your device can handle WebCal subscriptions.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Text(
-                    text = "To subscribe to WebCal feeds, you need to install a compatible calendar app that supports the webcal:// protocol, such as:",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "• Google Calendar\n• DAVx⁵ + Calendar\n• Other CalDAV-compatible calendar apps",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("OK")
             }
         }
     )

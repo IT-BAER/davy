@@ -58,12 +58,15 @@ class MainActivity : ComponentActivity() {
         // Handle app shortcut actions
         handleShortcutIntent(intent)
         
+        // Extract navigation target from intent (e.g., from notifications)
+        val navigateTo = intent.getStringExtra("navigate_to")
+        
         // PERFORMANCE: Set content FIRST to show UI immediately
         setContent {
             // Provide SyncManager through CompositionLocal to avoid
             // creating it in remember blocks (performance issue)
             CompositionLocalProvider(LocalSyncManager provides syncManager) {
-                DavyApp()
+                DavyApp(startDestination = navigateTo)
             }
         }
     }
@@ -88,9 +91,11 @@ class MainActivity : ComponentActivity() {
  * 
  * Sets up theme, navigation, and main UI structure.
  * Handles permission requests before showing main app.
+ * 
+ * @param startDestination Optional deep link destination (e.g., from notifications)
  */
 @Composable
-fun DavyApp() {
+fun DavyApp(startDestination: String? = null) {
     val context = LocalContext.current
     var hasPermissions by remember { mutableStateOf(hasAllPermissions(context)) }
     
@@ -126,6 +131,13 @@ fun DavyApp() {
             if (hasPermissions) {
                 // Permissions granted - show main app
                 val navController = rememberNavController()
+                
+                // Navigate to deep link destination if provided
+                LaunchedEffect(startDestination) {
+                    if (startDestination != null) {
+                        navController.navigate(startDestination)
+                    }
+                }
                 
                 // Use Scaffold with contentWindowInsets set to WindowInsets(0)
                 // This prevents automatic padding and lets content extend to edges

@@ -2,6 +2,8 @@ package com.davy.ui.screens
 
 import android.app.Activity
 import android.security.KeyChain
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.davy.ui.viewmodels.AccountDetailViewModel
 import com.davy.ui.util.rememberDebounced
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -70,6 +73,7 @@ fun AccountSettingsScreen(
         } else {
             AccountSettingsContent(
                 account = account,
+                uiState = uiState,
                 modifier = Modifier.padding(paddingValues),
                 onUpdateAccount = { updatedAccount, newPassword ->
                     viewModel.updateAccount(updatedAccount, newPassword)
@@ -91,6 +95,9 @@ fun AccountSettingsScreen(
                 },
                 onRestoreBackup = { backupJson ->
                     viewModel.restoreBackup(backupJson, overwriteExisting = false)
+                },
+                onTestCredentials = { serverUrl, username, password ->
+                    viewModel.onTestCredentialsClicked(serverUrl, username, password)
                 }
             )
         }
@@ -100,6 +107,7 @@ fun AccountSettingsScreen(
 @Composable
 private fun AccountSettingsContent(
     account: com.davy.domain.model.Account,
+    uiState: com.davy.ui.viewmodels.AccountDetailUiState,
     modifier: Modifier = Modifier,
     onUpdateAccount: (com.davy.domain.model.Account, String?) -> Unit,
     onRenameAccount: (String) -> Unit,
@@ -107,7 +115,8 @@ private fun AccountSettingsContent(
     onDeleteAccount: () -> Unit,
     onDeleteOldEvents: (Int) -> Unit,
     onCreateBackup: suspend (Long) -> com.davy.domain.manager.BackupRestoreManager.BackupResult,
-    onRestoreBackup: suspend (String) -> com.davy.domain.manager.BackupRestoreManager.RestoreResult
+    onRestoreBackup: suspend (String) -> com.davy.domain.manager.BackupRestoreManager.RestoreResult,
+    onTestCredentials: (String, String, String) -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val prefs = remember { context.getSharedPreferences("sync_config_${account.id}", android.content.Context.MODE_PRIVATE) }
@@ -294,42 +303,12 @@ private fun AccountSettingsContent(
         
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         
-        // Authentication Section with Apply button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Authentication",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-            )
-            
-            // Show Apply button only when fields have changed
-            if (authFieldsChanged) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                val updatedAccount = account.copy(username = username)
-                                val newPassword = password.ifBlank { null }
-                                onUpdateAccount(updatedAccount, newPassword)
-                            }
-                            // Clear password field after applying
-                            password = ""
-                            snackbarHostState.showSnackbar("Authentication updated")
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Apply changes",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
+        // Authentication Section
+        Text(
+            text = "Authentication",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
         
         com.davy.ui.screens.UsernameTextFieldWithAutofill(
             value = username,
@@ -355,6 +334,156 @@ private fun AccountSettingsContent(
             onDone = { /* Apply changes if modified */ },
             modifier = Modifier.fillMaxWidth()
         )
+        
+        // Animated buttons row - shown only when credentials changed
+        AnimatedVisibility(
+            visible = authFieldsChanged,
+            enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Test Credentials button
+                var testButtonState by remember { mutableStateOf<ButtonState>(ButtonState.Normal) }
+                
+                // Reset test button state when credentials change
+                LaunchedEffect(username, password) {
+                    if (testButtonState != ButtonState.Normal) {
+                        testButtonState = ButtonState.Normal
+                    }
+                }
+                
+                OutlinedButton(
+                    onClick = {
+                        testButtonState = ButtonState.Loading
+                        onTestCredentials(
+                            account.serverUrl,
+                            username.ifBlank { account.username },
+                            password
+                        )
+                    },
+                    enabled = !uiState.isTestingCredentials && account.serverUrl.isNotBlank() && password.isNotBlank(),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    when {
+                        uiState.isTestingCredentials -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Testing...")
+                        }
+                        uiState.credentialTestResult?.startsWith("✓") == true -> {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Valid")
+                        }
+                        uiState.credentialTestResult?.startsWith("✗") == true -> {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Failed")
+                        }
+                        else -> {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Test")
+                        }
+                    }
+                }
+                
+                // Apply button with success animation
+                var applyButtonState by remember { mutableStateOf<ButtonState>(ButtonState.Normal) }
+                var showApplySuccess by remember { mutableStateOf(false) }
+                
+                FilledTonalButton(
+                    onClick = {
+                        scope.launch {
+                            applyButtonState = ButtonState.Loading
+                            withContext(Dispatchers.IO) {
+                                val updatedAccount = account.copy(username = username)
+                                val newPassword = password.ifBlank { null }
+                                onUpdateAccount(updatedAccount, newPassword)
+                            }
+                            applyButtonState = ButtonState.Success
+                            showApplySuccess = true
+                            
+                            // Clear password field after applying
+                            password = ""
+                            
+                            // Reset success state after delay
+                            delay(2000)
+                            showApplySuccess = false
+                            applyButtonState = ButtonState.Normal
+                        }
+                    },
+                    enabled = applyButtonState != ButtonState.Loading,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    when (applyButtonState) {
+                        ButtonState.Loading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = LocalContentColor.current
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Applying...")
+                        }
+                        ButtonState.Success -> {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .then(
+                                        if (showApplySuccess) {
+                                            Modifier.scale(
+                                                animateFloatAsState(
+                                                    targetValue = 1.2f,
+                                                    animationSpec = spring(
+                                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                        stiffness = Spring.StiffnessLow
+                                                    ), label = "success_scale"
+                                                ).value
+                                            )
+                                        } else Modifier
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Applied!")
+                        }
+                        else -> {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Apply changes",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Apply")
+                        }
+                    }
+                }
+            }
+        }
         
         // Client certificate selection
         OutlinedCard(
@@ -1376,4 +1505,14 @@ private fun AccountSettingsContent(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+}
+
+/**
+ * Button state for animated transitions
+ */
+private enum class ButtonState {
+    Normal,
+    Loading,
+    Success,
+    Failure
 }

@@ -12,11 +12,14 @@ import com.davy.data.sync.CalDAVSyncService
 import com.davy.data.sync.CardDAVSyncService
 import com.davy.sync.webcal.WebCalSyncService
 import com.davy.sync.calendar.CalendarContractSync
+import com.davy.ui.util.AppError
+import com.davy.ui.util.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 /**
@@ -97,6 +100,11 @@ class SyncWorker @AssistedInject constructor(
             Result.success()
         } catch (e: Exception) {
             Timber.e(e, "✗ SyncWorker failed")
+            
+            // Show user-friendly error notification
+            val error = AppError.fromThrowable(e)
+            NotificationHelper.showErrorNotification(applicationContext, error)
+            
             if (runAttemptCount < 3) {
                 Timber.d("→ Retry attempt $runAttemptCount")
                 Result.retry()
@@ -310,6 +318,12 @@ class SyncWorker @AssistedInject constructor(
                     }
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to sync WebCal subscriptions for account ${account.accountName}")
+                    NotificationHelper.showErrorNotification(
+                        applicationContext,
+                        AppError.SyncFailed("Failed to sync calendar subscriptions"),
+                        account.accountName,
+                        account.id
+                    )
                 }
             }
         } catch (e: CancellationException) {
@@ -319,6 +333,15 @@ class SyncWorker @AssistedInject constructor(
             Timber.e(e, "========================================")
             Timber.e("✗ EXCEPTION DURING CALENDAR SYNC")
             Timber.e("========================================")
+            
+            // Show error notification with account context
+            val error = AppError.fromThrowable(e)
+            NotificationHelper.showErrorNotification(
+                applicationContext,
+                error,
+                account.accountName,
+                account.id
+            )
         }
     }
     
@@ -375,9 +398,70 @@ class SyncWorker @AssistedInject constructor(
     }
     
     private suspend fun syncTasks(account: com.davy.domain.model.Account) {
-        Timber.d("Syncing tasks for account ${account.accountName}")
+        Timber.d("========================================")
+        Timber.d("SYNCING TASKS")
+        Timber.d("Account: ${account.accountName} (ID: ${account.id})")
+        Timber.d("========================================")
         
-        // TODO: Implement CalDAV VTODO sync
-        Timber.w("CalDAV VTODO sync not yet implemented")
+        try {
+            // Get all task lists for this account
+            val taskLists = taskListRepository.getByAccountId(account.id).first()
+            Timber.d("Found ${taskLists.size} task lists for account: ${account.accountName}")
+            
+            if (taskLists.isEmpty()) {
+                Timber.w("No task lists found for account ${account.accountName}. Task list discovery should happen during account creation.")
+                return
+            }
+            
+            var tasksDownloaded = 0
+            var tasksUploaded = 0
+            
+            // Sync tasks for each task list
+            coroutineScope {
+                val syncJobs = taskLists.map { taskList ->
+                    async {
+                        if (!taskList.syncEnabled) {
+                            Timber.d("Skipping disabled task list: ${taskList.displayName}")
+                            return@async 0 to 0
+                        }
+                        
+                        try {
+                            Timber.d("Syncing task list: ${taskList.displayName} (${taskList.url})")
+                            calDAVSyncService.syncTaskList(account, taskList)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to sync task list: ${taskList.displayName}")
+                            0 to 0
+                        }
+                    }
+                }
+                
+                // Collect all results
+                val results = syncJobs.map { it.await() }
+                tasksDownloaded = results.sumOf { it.first }
+                tasksUploaded = results.sumOf { it.second }
+            }
+            
+            Timber.d("========================================")
+            Timber.d("✓ TASK SYNC SUCCESSFUL")
+            Timber.d("  Tasks Downloaded: $tasksDownloaded")
+            Timber.d("  Tasks Uploaded: $tasksUploaded")
+            Timber.d("========================================")
+        } catch (e: CancellationException) {
+            Timber.i("Tasks sync cancelled")
+            return
+        } catch (e: Exception) {
+            Timber.e(e, "========================================")
+            Timber.e("✗ EXCEPTION DURING TASK SYNC")
+            Timber.e("========================================")
+            
+            // Show error notification with account context
+            val error = AppError.fromThrowable(e)
+            NotificationHelper.showErrorNotification(
+                applicationContext,
+                error,
+                account.accountName,
+                account.id
+            )
+        }
     }
 }

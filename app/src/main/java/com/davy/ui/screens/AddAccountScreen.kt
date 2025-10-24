@@ -1,5 +1,6 @@
 package com.davy.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -7,9 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,8 +16,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.AutofillNode
 import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalAutofill
@@ -239,22 +240,96 @@ fun AddAccountScreen(
                 }
             }
             
-            // Add account button
-            Button(
-                onClick = viewModel::onAddAccountClicked,
-                enabled = !uiState.isLoading,
+            // Buttons row - Test and Add side by side with increased height
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                // Test Credentials button
+                OutlinedButton(
+                    onClick = viewModel::onTestCredentialsClicked,
+                    enabled = !uiState.isLoading && !uiState.isTestingCredentials,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                ) {
+                    when {
+                        uiState.isTestingCredentials -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Testing...")
+                        }
+                        uiState.credentialTestResult?.startsWith("✓") == true -> {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .scale(
+                                        animateFloatAsState(
+                                            targetValue = 1.2f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessLow
+                                            ), label = "test_success_scale_row"
+                                        ).value
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Valid")
+                        }
+                        uiState.credentialTestResult?.startsWith("✗") == true -> {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Failed")
+                        }
+                        else -> {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Test")
+                        }
+                    }
                 }
-                Text(if (uiState.isLoading) "Connecting..." else "Add Account")
+                
+                // Add account button with + icon
+                Button(
+                    onClick = viewModel::onAddAccountClicked,
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Connecting...")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Account")
+                    }
+                }
             }
             
             // Help text
@@ -471,7 +546,9 @@ data class AddAccountUiState(
     val passwordError: String? = null,
     val errorMessage: String? = null,
     val isLoading: Boolean = false,
-    val accountCreated: Boolean = false
+    val accountCreated: Boolean = false,
+    val isTestingCredentials: Boolean = false,
+    val credentialTestResult: String? = null
 )
 
 @HiltViewModel
@@ -529,6 +606,46 @@ class AddAccountViewModel @Inject constructor(
             password = password,
             passwordError = null
         )
+    }
+    
+    fun onTestCredentialsClicked() {
+        val state = _uiState.value
+        
+        // Validate required fields
+        if (state.serverUrl.isBlank() || state.username.isBlank() || state.password.isBlank()) {
+            _uiState.value = _uiState.value.copy(
+                errorMessage = "Please fill in server URL, username, and password to test credentials"
+            )
+            return
+        }
+        
+        val fullUrl = state.protocol + state.serverUrl
+        
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isTestingCredentials = true,
+                credentialTestResult = null,
+                errorMessage = null
+            )
+            
+            try {
+                val isValid = authenticationManager.testCredentials(
+                    fullUrl,
+                    state.username,
+                    state.password
+                )
+                
+                _uiState.value = _uiState.value.copy(
+                    isTestingCredentials = false,
+                    credentialTestResult = if (isValid) "✓ Credentials valid" else "✗ Authentication failed"
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isTestingCredentials = false,
+                    credentialTestResult = "✗ ${e.message ?: "Connection failed"}"
+                )
+            }
+        }
     }
     
     fun onAddAccountClicked() {

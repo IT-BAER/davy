@@ -24,7 +24,9 @@ data class AccountDetailUiState(
     val syncingCalendarIds: Set<Long> = emptySet(),
     val syncingAddressBookIds: Set<Long> = emptySet(),
     val isRefreshingCollections: Boolean = false,
-    val accountDeleted: Boolean = false
+    val accountDeleted: Boolean = false,
+    val isTestingCredentials: Boolean = false,
+    val credentialTestResult: String? = null
 ) {
     /**
      * Derived property using inline computation - no additional state tracking needed.

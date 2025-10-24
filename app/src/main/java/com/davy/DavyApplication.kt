@@ -5,6 +5,7 @@ import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.davy.sync.contacts.ContactsContentObserver
+import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
 import dagger.Lazy
 import timber.log.Timber
@@ -57,6 +58,9 @@ class DavyApplication : Application(), Configuration.Provider {
         Timber.d("🚀 APPLICATION ONCREATE START")
         Timber.d("=========================================")
         Timber.d("DAVy Application initialized")
+        
+        // Create notification channels for error notifications
+        NotificationHelper.createNotificationChannels(this)
         
         // Start contacts observer (deferred via lazy injection)
         startContactsObserver()
