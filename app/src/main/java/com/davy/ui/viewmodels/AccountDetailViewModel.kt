@@ -57,6 +57,9 @@ class AccountDetailViewModel @Inject constructor(
     private val renameCalendarUseCase: com.davy.domain.usecase.RenameCalendarUseCase,
     private val renameAddressBookUseCase: com.davy.domain.usecase.RenameAddressBookUseCase,
     private val exportSettingsUseCase: com.davy.domain.usecase.ExportSettingsUseCase,
+    private val createBackupUseCase: com.davy.domain.usecase.CreateBackupUseCase,
+    private val restoreBackupUseCase: com.davy.domain.usecase.RestoreBackupUseCase,
+    private val listBackupsUseCase: com.davy.domain.usecase.ListBackupsUseCase,
     @Suppress("UNUSED_PARAMETER") savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -1357,5 +1360,27 @@ class AccountDetailViewModel @Inject constructor(
      */
     suspend fun exportSettings(accountId: Long): com.davy.domain.usecase.ExportSettingsUseCase.Result {
         return exportSettingsUseCase(accountId)
+    }
+    
+    /**
+     * Create a backup of account settings and configurations.
+     * Returns the backup JSON string to be saved by the caller.
+     * @param accountId If provided, backup only this account. If null, backup all accounts and app settings.
+     */
+    suspend fun createBackup(accountId: Long? = null): com.davy.domain.manager.BackupRestoreManager.BackupResult {
+        return withContext(Dispatchers.IO) {
+            createBackupUseCase(accountId)
+        }
+    }
+    
+    /**
+     * Restore settings from a backup JSON string.
+     * @param backupJson The backup JSON string content
+     * @param overwriteExisting If true, existing settings will be overwritten
+     */
+    suspend fun restoreBackup(backupJson: String, overwriteExisting: Boolean = false): com.davy.domain.manager.BackupRestoreManager.RestoreResult {
+        return withContext(Dispatchers.IO) {
+            restoreBackupUseCase(backupJson, overwriteExisting)
+        }
     }
 }

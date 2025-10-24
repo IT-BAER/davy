@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,12 @@ fun AccountSettingsScreen(
                 },
                 onDeleteOldEvents = { daysThreshold ->
                     viewModel.deleteOldEvents(accountId, daysThreshold)
+                },
+                onCreateBackup = { accId ->
+                    viewModel.createBackup(accId)
+                },
+                onRestoreBackup = { backupJson ->
+                    viewModel.restoreBackup(backupJson, overwriteExisting = false)
                 }
             )
         }
@@ -98,7 +105,9 @@ private fun AccountSettingsContent(
     onRenameAccount: (String) -> Unit,
     onUpdateSyncConfiguration: () -> Unit,
     onDeleteAccount: () -> Unit,
-    onDeleteOldEvents: (Int) -> Unit
+    onDeleteOldEvents: (Int) -> Unit,
+    onCreateBackup: suspend (Long) -> com.davy.domain.manager.BackupRestoreManager.BackupResult,
+    onRestoreBackup: suspend (String) -> com.davy.domain.manager.BackupRestoreManager.RestoreResult
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val prefs = remember { context.getSharedPreferences("sync_config_${account.id}", android.content.Context.MODE_PRIVATE) }
@@ -112,20 +121,18 @@ private fun AccountSettingsContent(
     var certificatePath by remember { mutableStateOf(account.certificateFingerprint ?: "") }
     var showCertificateDialog by remember { mutableStateOf(false) }
     
-    // Debounce user input to prevent UI thread blocking on every keystroke
-    val debouncedUsername = rememberDebounced(username, delayMillis = 500L)
-    val debouncedCertificatePath = rememberDebounced(certificatePath, delayMillis = 500L)
-    val debouncedPassword = rememberDebounced(password, delayMillis = 500L)
-    
-    // Save username changes with debouncing
-    LaunchedEffect(debouncedUsername) {
-        if (debouncedUsername != account.username) {
-            withContext(Dispatchers.IO) {
-                val updatedAccount = account.copy(username = debouncedUsername)
-                onUpdateAccount(updatedAccount, null)
-            }
+    // Track if auth fields have changed
+    val authFieldsChanged by remember(username, password, certificatePath) {
+        derivedStateOf {
+            username != account.username || 
+            password.isNotBlank() || 
+            certificatePath != (account.certificateFingerprint ?: "")
         }
     }
+    
+    // Debounce user input to prevent UI thread blocking on every keystroke
+    val debouncedCertificatePath = rememberDebounced(certificatePath, delayMillis = 500L)
+    
     
     // Save certificate changes with debouncing
     LaunchedEffect(debouncedCertificatePath) {
@@ -139,14 +146,7 @@ private fun AccountSettingsContent(
         }
     }
     
-    // Save password changes with debouncing (only when not empty)
-    LaunchedEffect(debouncedPassword) {
-        if (debouncedPassword.isNotBlank()) {
-            withContext(Dispatchers.IO) {
-                onUpdateAccount(account, debouncedPassword)
-            }
-        }
-    }
+    // NOTE: Removed auto-save for username and password - now requires Apply button
     
     // Sync interval options (in minutes, -1 = manual)
     val syncIntervalOptions = listOf(
@@ -247,7 +247,8 @@ private fun AccountSettingsContent(
     // Account actions
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showExportDialog by remember { mutableStateOf(false) }
+    var showBackupDialog by remember { mutableStateOf(false) }
+    var showRestoreDialog by remember { mutableStateOf(false) }
     
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -293,38 +294,66 @@ private fun AccountSettingsContent(
         
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         
-        // Authentication Section
-        Text(
-            text = "Authentication",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-        )
-        
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") },
+        // Authentication Section with Apply button
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
-        )
-        
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password (leave empty to keep current)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-            trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Authentication",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            
+            // Show Apply button only when fields have changed
+            if (authFieldsChanged) {
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                val updatedAccount = account.copy(username = username)
+                                val newPassword = password.ifBlank { null }
+                                onUpdateAccount(updatedAccount, newPassword)
+                            }
+                            // Clear password field after applying
+                            password = ""
+                            snackbarHostState.showSnackbar("Authentication updated")
+                        }
+                    }
+                ) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Apply changes",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
+        }
+        
+        com.davy.ui.screens.UsernameTextFieldWithAutofill(
+            value = username,
+            onValueChange = { username = it },
+            isError = false,
+            supportingText = null,
+            onNext = { /* Focus password field */ },
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        com.davy.ui.screens.PasswordTextFieldWithAutofill(
+            value = password,
+            onValueChange = { password = it },
+            passwordVisible = passwordVisible,
+            onPasswordVisibilityChanged = { passwordVisible = it },
+            isError = false,
+            supportingText = {
+                Text(
+                    text = "Leave empty to keep current password",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            onDone = { /* Apply changes if modified */ },
+            modifier = Modifier.fillMaxWidth()
         )
         
         // Client certificate selection
@@ -610,10 +639,10 @@ private fun AccountSettingsContent(
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
         
-        // Export Settings
+        // Backup Settings
         OutlinedCard(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { showExportDialog = true }
+            onClick = { showBackupDialog = true }
         ) {
             Row(
                 modifier = Modifier
@@ -624,16 +653,43 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Export Settings",
+                        text = "Backup Settings",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Export account configuration",
+                        text = "Create backup of account configuration",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Icon(Icons.Default.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Default.Save, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            }
+        }
+        
+        // Restore Settings
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { showRestoreDialog = true }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Restore Settings",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Restore account from backup file",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(Icons.Default.Upload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
         }
         
@@ -935,52 +991,292 @@ private fun AccountSettingsContent(
         )
     }
     
-    // Export Settings Dialog
-    if (showExportDialog) {
-        var exportResult by remember { mutableStateOf<String?>(null) }
-        var exportError by remember { mutableStateOf<String?>(null) }
-        var isExporting by remember { mutableStateOf(false) }
+    // Backup Dialog with file picker
+    if (showBackupDialog) {
+        var backupResult by remember { mutableStateOf<String?>(null) }
+        var backupError by remember { mutableStateOf<String?>(null) }
+        var isBackingUp by remember { mutableStateOf(false) }
+        
+        // File saver launcher
+        val backupFileSaver = com.davy.ui.util.rememberBackupFileSaver { uri ->
+            if (uri != null) {
+                isBackingUp = true
+                scope.launch {
+                    val result = onCreateBackup(account.id)
+                    when (result) {
+                        is com.davy.domain.manager.BackupRestoreManager.BackupResult.Success -> {
+                            // Write backup to selected location
+                            val writeSuccess = com.davy.ui.util.writeBackupToUri(
+                                context,
+                                uri,
+                                result.backupJson
+                            )
+                            if (writeSuccess) {
+                                val filename = com.davy.ui.util.getFileNameFromUri(context, uri)
+                                backupResult = filename
+                                backupError = null
+                            } else {
+                                backupError = "Failed to write backup file"
+                                backupResult = null
+                            }
+                        }
+                        is com.davy.domain.manager.BackupRestoreManager.BackupResult.Error -> {
+                            backupError = result.message
+                            backupResult = null
+                        }
+                    }
+                    isBackingUp = false
+                }
+            } else {
+                // User cancelled
+                showBackupDialog = false
+            }
+        }
         
         AlertDialog(
-            onDismissRequest = { showExportDialog = false },
-            title = { Text("Export Settings") },
+            onDismissRequest = { showBackupDialog = false },
+            title = { Text("Backup Settings") },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     when {
-                        isExporting -> {
+                        isBackingUp -> {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                Text("Exporting settings...")
+                                Text("Creating backup...")
                             }
                         }
-                        exportError != null -> {
+                        backupError != null -> {
                             Text(
-                                text = "Error: $exportError",
+                                text = "Error: $backupError",
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
-                        exportResult != null -> {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text("Settings exported successfully!")
-                                Text(
-                                    text = "File: $exportResult",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                        backupResult != null -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Animated success checkmark
+                                com.davy.ui.components.AnimatedSuccessCheck(
+                                    size = 64.dp,
+                                    strokeWidth = 5.dp
                                 )
+                                
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Backup Created Successfully!",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = Color(0xFF4CAF50)  // Green
+                                    )
+                                    Text(
+                                        text = "Saved as: $backupResult",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "Note: Passwords are NOT included in backups for security reasons.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
                             }
                         }
                         else -> {
-                            Text("Export feature not yet implemented")
+                            Text("Create a backup of your account settings, sync configuration, and collection metadata.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "You will choose where to save the backup file.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "⚠ Passwords will NOT be backed up for security reasons.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showExportDialog = false }) {
-                    Text(if (isExporting) "Cancel" else "Close")
+                if (backupResult == null && !isBackingUp) {
+                    TextButton(
+                        onClick = {
+                            // Launch file picker with default filename
+                            val timestamp = java.text.SimpleDateFormat(
+                                "yyyyMMdd_HHmmss",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date())
+                            backupFileSaver.launch("davy_account_${account.id}_backup_$timestamp.json")
+                        }
+                    ) {
+                        Text("Choose Location")
+                    }
+                } else {
+                    TextButton(onClick = { showBackupDialog = false }) {
+                        Text("Close")
+                    }
+                }
+            },
+            dismissButton = {
+                if (backupResult == null && !isBackingUp) {
+                    TextButton(onClick = { showBackupDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            }
+        )
+    }
+    
+    // Restore Dialog with file picker
+    if (showRestoreDialog) {
+        var restoreResult by remember { mutableStateOf<String?>(null) }
+        var restoreError by remember { mutableStateOf<String?>(null) }
+        var isRestoring by remember { mutableStateOf(false) }
+        
+        // File opener launcher
+        val backupFileOpener = com.davy.ui.util.rememberBackupFileOpener { uri ->
+            if (uri != null) {
+                isRestoring = true
+                scope.launch {
+                    // Read backup from selected file
+                    val backupJson = com.davy.ui.util.readBackupFromUri(context, uri)
+                    if (backupJson != null) {
+                        val result = onRestoreBackup(backupJson)
+                        when (result) {
+                            is com.davy.domain.manager.BackupRestoreManager.RestoreResult.Success -> {
+                                val filename = com.davy.ui.util.getFileNameFromUri(context, uri)
+                                val parts = mutableListOf<String>()
+                                
+                                if (result.accountsRestored > 0) {
+                                    parts.add("${result.accountsRestored} account${if (result.accountsRestored != 1) "s" else ""}")
+                                }
+                                if (result.settingsRestored) {
+                                    parts.add("app settings")
+                                }
+                                
+                                restoreResult = if (parts.isNotEmpty()) {
+                                    "Restored from $filename:\n${parts.joinToString(" and ")}"
+                                } else {
+                                    "Restored from $filename (no changes needed)"
+                                }
+                                restoreError = null
+                            }
+                            is com.davy.domain.manager.BackupRestoreManager.RestoreResult.Error -> {
+                                restoreError = result.message
+                                restoreResult = null
+                            }
+                        }
+                    } else {
+                        restoreError = "Failed to read backup file"
+                        restoreResult = null
+                    }
+                    isRestoring = false
+                }
+            } else {
+                // User cancelled
+                showRestoreDialog = false
+            }
+        }
+        
+        AlertDialog(
+            onDismissRequest = { showRestoreDialog = false },
+            title = { Text("Restore Settings") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    when {
+                        isRestoring -> {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                Text("Restoring settings...")
+                            }
+                        }
+                        restoreError != null -> {
+                            Text(
+                                text = "Error: $restoreError",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        restoreResult != null -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Animated success checkmark
+                                com.davy.ui.components.AnimatedSuccessCheck(
+                                    size = 64.dp,
+                                    strokeWidth = 5.dp
+                                )
+                                
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Settings Restored Successfully!",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = Color(0xFF4CAF50)  // Green
+                                    )
+                                    Text(
+                                        text = restoreResult!!,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "⚠ Remember to re-enter passwords for your accounts.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            Text("Select a backup file to restore account settings and configurations.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "You will choose a backup file from your device.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "⚠ Passwords are not stored in backups and must be re-entered.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (restoreResult == null && !isRestoring) {
+                    TextButton(
+                        onClick = {
+                            // Launch file picker for JSON files
+                            backupFileOpener.launch(arrayOf("application/json", "text/plain", "*/*"))
+                        }
+                    ) {
+                        Text("Choose File")
+                    }
+                } else {
+                    TextButton(onClick = { showRestoreDialog = false }) {
+                        Text("Close")
+                    }
+                }
+            },
+            dismissButton = {
+                if (restoreResult == null && !isRestoring) {
+                    TextButton(onClick = { showRestoreDialog = false }) {
+                        Text("Cancel")
+                    }
                 }
             }
         )

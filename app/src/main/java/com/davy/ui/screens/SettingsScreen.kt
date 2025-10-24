@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.scale
 import com.davy.ui.components.clickableWithFeedback
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -49,7 +50,8 @@ object IgnoreBatteryOptimizationsContract : ActivityResultContract<String, Unit?
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    backupRestoreViewModel: com.davy.ui.viewmodel.BackupRestoreViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val autoSyncEnabled by viewModel.autoSyncEnabled.collectAsState()
@@ -60,6 +62,8 @@ fun SettingsScreen(
     val permissions by viewModel.permissions.collectAsState()
     
     var showPermissionsDialog by remember { mutableStateOf(false) }
+    var showBackupDialog by remember { mutableStateOf(false) }
+    var showRestoreDialog by remember { mutableStateOf(false) }
     
     // Battery optimization launcher
     val batteryOptimizationLauncher = rememberLauncherForActivityResult(
@@ -156,6 +160,25 @@ fun SettingsScreen(
                 subtitle = "Use dark theme",
                 checked = isDarkMode,
                 onCheckedChange = viewModel::toggleDarkMode
+            )
+            
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            
+            // Backup & Restore
+            SettingsHeader(text = "Backup & Restore")
+            
+            ClickableSettingItem(
+                icon = Icons.Default.Save,
+                title = "Backup all settings",
+                subtitle = "Create a backup of all accounts and app settings",
+                onClick = { showBackupDialog = true }
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.Upload,
+                title = "Restore from backup",
+                subtitle = "Restore accounts and settings from a backup file",
+                onClick = { showRestoreDialog = true }
             )
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
@@ -268,6 +291,301 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showPermissionsDialog = false }) {
                     Text("Close")
+                }
+            }
+        )
+    }
+    
+    // Backup Dialog with file picker
+    if (showBackupDialog) {
+        var backupResult by remember { mutableStateOf<String?>(null) }
+        var backupError by remember { mutableStateOf<String?>(null) }
+        var isBackingUp by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
+        
+        // File saver launcher
+        val backupFileSaver = com.davy.ui.util.rememberBackupFileSaver { uri ->
+            if (uri != null) {
+                isBackingUp = true
+                scope.launch {
+                    val result = backupRestoreViewModel.createFullBackup()
+                    when (result) {
+                        is com.davy.domain.manager.BackupRestoreManager.BackupResult.Success -> {
+                            // Write backup to selected location
+                            val writeSuccess = com.davy.ui.util.writeBackupToUri(
+                                context,
+                                uri,
+                                result.backupJson
+                            )
+                            if (writeSuccess) {
+                                val filename = com.davy.ui.util.getFileNameFromUri(context, uri)
+                                backupResult = filename
+                                backupError = null
+                            } else {
+                                backupError = "Failed to write backup file"
+                                backupResult = null
+                            }
+                        }
+                        is com.davy.domain.manager.BackupRestoreManager.BackupResult.Error -> {
+                            backupError = result.message
+                            backupResult = null
+                        }
+                    }
+                    isBackingUp = false
+                }
+            } else {
+                // User cancelled
+                showBackupDialog = false
+            }
+        }
+        
+        AlertDialog(
+            onDismissRequest = { showBackupDialog = false },
+            title = { Text("Backup All Settings") },
+            text = {
+                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    when {
+                        isBackingUp -> {
+                            Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                Text("Creating backup...")
+                            }
+                        }
+                        backupError != null -> {
+                            Text(
+                                text = "Error: $backupError",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        backupResult != null -> {
+                            Column(
+                                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+                                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                            ) {
+                                // Animated success checkmark
+                                com.davy.ui.components.AnimatedSuccessCheck(
+                                    size = 64.dp,
+                                    strokeWidth = 5.dp
+                                )
+                                
+                                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Full Backup Created Successfully!",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = Color(0xFF4CAF50)  // Green
+                                    )
+                                    Text(
+                                        text = "Saved as: $backupResult",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "⚠ Passwords are NOT included in backups for security reasons.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            Text("Create a full backup of all accounts, app settings, and configurations.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "You will choose where to save the backup file.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "⚠ Passwords will NOT be backed up for security reasons.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (backupResult == null && !isBackingUp) {
+                    TextButton(
+                        onClick = {
+                            // Launch file picker with default filename
+                            val timestamp = java.text.SimpleDateFormat(
+                                "yyyyMMdd_HHmmss",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date())
+                            backupFileSaver.launch("davy_full_backup_$timestamp.json")
+                        }
+                    ) {
+                        Text("Choose Location")
+                    }
+                } else {
+                    TextButton(onClick = { showBackupDialog = false }) {
+                        Text("Close")
+                    }
+                }
+            },
+            dismissButton = {
+                if (backupResult == null && !isBackingUp) {
+                    TextButton(onClick = { showBackupDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            }
+        )
+    }
+    
+    // Restore Dialog with file picker
+    if (showRestoreDialog) {
+        var restoreResult by remember { mutableStateOf<String?>(null) }
+        var restoreError by remember { mutableStateOf<String?>(null) }
+        var isRestoring by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
+        
+        // File opener launcher
+        val backupFileOpener = com.davy.ui.util.rememberBackupFileOpener { uri ->
+            if (uri != null) {
+                isRestoring = true
+                scope.launch {
+                    // Read backup from selected file
+                    val backupJson = com.davy.ui.util.readBackupFromUri(context, uri)
+                    if (backupJson != null) {
+                        val result = backupRestoreViewModel.restoreBackup(backupJson, overwriteExisting = true)
+                        when (result) {
+                            is com.davy.domain.manager.BackupRestoreManager.RestoreResult.Success -> {
+                                val filename = com.davy.ui.util.getFileNameFromUri(context, uri)
+                                val parts = mutableListOf<String>()
+                                
+                                if (result.accountsRestored > 0) {
+                                    parts.add("${result.accountsRestored} account${if (result.accountsRestored != 1) "s" else ""}")
+                                }
+                                if (result.settingsRestored) {
+                                    parts.add("app settings")
+                                }
+                                
+                                restoreResult = if (parts.isNotEmpty()) {
+                                    "Restored from $filename:\n${parts.joinToString(" and ")}"
+                                } else {
+                                    "Restored from $filename (no changes needed)"
+                                }
+                                restoreError = null
+                            }
+                            is com.davy.domain.manager.BackupRestoreManager.RestoreResult.Error -> {
+                                restoreError = result.message
+                                restoreResult = null
+                            }
+                        }
+                    } else {
+                        restoreError = "Failed to read backup file"
+                        restoreResult = null
+                    }
+                    isRestoring = false
+                }
+            } else {
+                // User cancelled
+                showRestoreDialog = false
+            }
+        }
+        
+        AlertDialog(
+            onDismissRequest = { showRestoreDialog = false },
+            title = { Text("Restore Settings") },
+            text = {
+                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    when {
+                        isRestoring -> {
+                            Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                Text("Restoring settings...")
+                            }
+                        }
+                        restoreError != null -> {
+                            Text(
+                                text = "Error: $restoreError",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        restoreResult != null -> {
+                            Column(
+                                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+                                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                            ) {
+                                // Animated success checkmark
+                                com.davy.ui.components.AnimatedSuccessCheck(
+                                    size = 64.dp,
+                                    strokeWidth = 5.dp
+                                )
+                                
+                                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "Settings Restored Successfully!",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = Color(0xFF4CAF50)  // Green
+                                    )
+                                    Text(
+                                        text = restoreResult!!,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "⚠ Remember to re-enter passwords for your accounts.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            Text("Select a backup file to restore all accounts, app settings, and configurations.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "You will choose a backup file from your device.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "⚠ Passwords are not stored in backups and must be re-entered.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (restoreResult == null && !isRestoring) {
+                    TextButton(
+                        onClick = {
+                            // Launch file picker for JSON files
+                            backupFileOpener.launch(arrayOf("application/json", "text/plain", "*/*"))
+                        }
+                    ) {
+                        Text("Choose File")
+                    }
+                } else {
+                    TextButton(onClick = { showRestoreDialog = false }) {
+                        Text("Close")
+                    }
+                }
+            },
+            dismissButton = {
+                if (restoreResult == null && !isRestoring) {
+                    TextButton(onClick = { showRestoreDialog = false }) {
+                        Text("Cancel")
+                    }
                 }
             }
         )
