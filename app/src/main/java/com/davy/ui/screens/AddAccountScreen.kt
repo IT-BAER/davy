@@ -1,5 +1,7 @@
 package com.davy.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -81,7 +83,7 @@ import java.util.concurrent.TimeUnit
 
 private const val HTTPS_PREFIX = "https://"
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AddAccountScreen(
     onNavigateBack: () -> Unit,
@@ -315,13 +317,13 @@ fun AddAccountScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Google button
+            // iCloud Card
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { 
                     viewModel.onLoginMethodSelected(
-                        if (uiState.loginMethod == LoginMethod.GOOGLE) null 
-                        else LoginMethod.GOOGLE
+                        if (uiState.loginMethod == LoginMethod.ICLOUD) null 
+                        else LoginMethod.ICLOUD
                     )
                 }
             ) {
@@ -333,33 +335,477 @@ fun AddAccountScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(R.drawable.google_g_logo),
-                            contentDescription = "Google",
-                            modifier = Modifier.size(32.dp)
+                        Icon(
+                            imageVector = Icons.Default.Cloud,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = Color(0xFF007AFF) // Apple blue
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text(
-                                text = stringResource(R.string.google),
+                                text = stringResource(R.string.icloud),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                             )
                             Text(
-                                text = stringResource(R.string.google_login_description),
+                                text = stringResource(R.string.icloud_login_description),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                     Icon(
-                        imageVector = if (uiState.loginMethod == LoginMethod.GOOGLE) 
+                        imageVector = if (uiState.loginMethod == LoginMethod.ICLOUD) 
                             Icons.Default.ExpandLess 
                         else 
                             Icons.Default.ExpandMore,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+            
+            // Animated iCloud form expansion
+            AnimatedVisibility(
+                visible = uiState.loginMethod == LoginMethod.ICLOUD,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Email field with autofill
+                        val autofillNodeEmail = AutofillNode(
+                            autofillTypes = listOf(AutofillType.Username),
+                            onFill = { viewModel.onUsernameChanged(it) }
+                        )
+                        val autofillEmail = LocalAutofill.current
+                        LocalAutofillTree.current += autofillNodeEmail
+                        
+                        OutlinedTextField(
+                            value = uiState.username,
+                            onValueChange = viewModel::onUsernameChanged,
+                            label = { Text(stringResource(R.string.icloud_email_label)) },
+                            placeholder = { Text(stringResource(R.string.icloud_email_placeholder)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = null)
+                            },
+                            singleLine = true,
+                            isError = uiState.usernameError != null,
+                            supportingText = uiState.usernameError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { coordinates ->
+                                    autofillNodeEmail.boundingBox = coordinates.boundsInWindow()
+                                }
+                                .onFocusChanged { focusState ->
+                                    autofillEmail?.run {
+                                        if (focusState.isFocused) {
+                                            requestAutofillForNode(autofillNodeEmail)
+                                        } else {
+                                            cancelAutofillForNode(autofillNodeEmail)
+                                        }
+                                    }
+                                }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // App-specific password field with autofill
+                        val autofillNodePassword = AutofillNode(
+                            autofillTypes = listOf(AutofillType.Password),
+                            onFill = { viewModel.onPasswordChanged(it) }
+                        )
+                        val autofillPassword = LocalAutofill.current
+                        LocalAutofillTree.current += autofillNodePassword
+                        
+                        OutlinedTextField(
+                            value = uiState.password,
+                            onValueChange = viewModel::onPasswordChanged,
+                            label = { Text(stringResource(R.string.icloud_app_password_label)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Lock, contentDescription = null)
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = viewModel::togglePasswordVisibility) {
+                                    Icon(
+                                        imageVector = if (uiState.passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                        contentDescription = stringResource(
+                                            if (uiState.passwordVisible) R.string.hide_password else R.string.show_password
+                                        )
+                                    )
+                                }
+                            },
+                            visualTransformation = if (uiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            singleLine = true,
+                            isError = uiState.passwordError != null,
+                            supportingText = uiState.passwordError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { viewModel.onICloudLoginClicked() }
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { coordinates ->
+                                    autofillNodePassword.boundingBox = coordinates.boundsInWindow()
+                                }
+                                .onFocusChanged { focusState ->
+                                    autofillPassword?.run {
+                                        if (focusState.isFocused) {
+                                            requestAutofillForNode(autofillNodePassword)
+                                        } else {
+                                            cancelAutofillForNode(autofillNodePassword)
+                                        }
+                                    }
+                                }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Instructions card
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(R.string.icloud_password_instructions),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = stringResource(R.string.icloud_password_step_1),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.icloud_password_step_2),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.icloud_password_step_3),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.icloud_password_step_4),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.icloud_password_step_5),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Open Apple ID button
+                        OutlinedButton(
+                            onClick = {
+                                val intent = CustomTabsIntent.Builder().build()
+                                intent.launchUrl(context, Uri.parse("https://appleid.apple.com/account/manage"))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(R.string.generate_app_password))
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Continue button
+                        Button(
+                            onClick = viewModel::onICloudLoginClicked,
+                            enabled = !uiState.isLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.connecting))
+                            } else {
+                                Text(stringResource(R.string.continue_button))
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Fastmail Card
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { 
+                    viewModel.onLoginMethodSelected(
+                        if (uiState.loginMethod == LoginMethod.FASTMAIL) null 
+                        else LoginMethod.FASTMAIL
+                    )
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = Color(0xFF2F3E48) // Fastmail dark gray
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.fastmail),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.fastmail_login_description),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = if (uiState.loginMethod == LoginMethod.FASTMAIL) 
+                            Icons.Default.ExpandLess 
+                        else 
+                            Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Animated Fastmail form expansion
+            AnimatedVisibility(
+                visible = uiState.loginMethod == LoginMethod.FASTMAIL,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Email field with autofill
+                        val autofillNodeEmail = AutofillNode(
+                            autofillTypes = listOf(AutofillType.Username),
+                            onFill = { viewModel.onUsernameChanged(it) }
+                        )
+                        val autofillEmail = LocalAutofill.current
+                        LocalAutofillTree.current += autofillNodeEmail
+                        
+                        OutlinedTextField(
+                            value = uiState.username,
+                            onValueChange = viewModel::onUsernameChanged,
+                            label = { Text(stringResource(R.string.fastmail_email_label)) },
+                            placeholder = { Text(stringResource(R.string.fastmail_email_placeholder)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = null)
+                            },
+                            singleLine = true,
+                            isError = uiState.usernameError != null,
+                            supportingText = uiState.usernameError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { coordinates ->
+                                    autofillNodeEmail.boundingBox = coordinates.boundsInWindow()
+                                }
+                                .onFocusChanged { focusState ->
+                                    autofillEmail?.run {
+                                        if (focusState.isFocused) {
+                                            requestAutofillForNode(autofillNodeEmail)
+                                        } else {
+                                            cancelAutofillForNode(autofillNodeEmail)
+                                        }
+                                    }
+                                }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Password field with autofill
+                        val autofillNodePassword = AutofillNode(
+                            autofillTypes = listOf(AutofillType.Password),
+                            onFill = { viewModel.onPasswordChanged(it) }
+                        )
+                        val autofillPassword = LocalAutofill.current
+                        LocalAutofillTree.current += autofillNodePassword
+                        
+                        OutlinedTextField(
+                            value = uiState.password,
+                            onValueChange = viewModel::onPasswordChanged,
+                            label = { Text(stringResource(R.string.fastmail_password_label)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Lock, contentDescription = null)
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = viewModel::togglePasswordVisibility) {
+                                    Icon(
+                                        imageVector = if (uiState.passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                        contentDescription = stringResource(
+                                            if (uiState.passwordVisible) R.string.hide_password else R.string.show_password
+                                        )
+                                    )
+                                }
+                            },
+                            visualTransformation = if (uiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            singleLine = true,
+                            isError = uiState.passwordError != null,
+                            supportingText = uiState.passwordError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { viewModel.onFastmailLoginClicked() }
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { coordinates ->
+                                    autofillNodePassword.boundingBox = coordinates.boundsInWindow()
+                                }
+                                .onFocusChanged { focusState ->
+                                    autofillPassword?.run {
+                                        if (focusState.isFocused) {
+                                            requestAutofillForNode(autofillNodePassword)
+                                        } else {
+                                            cancelAutofillForNode(autofillNodePassword)
+                                        }
+                                    }
+                                }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Instructions card
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_instructions),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_step_1),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_step_2),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_step_3),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_step_4),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = stringResource(R.string.fastmail_password_step_5),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Open Fastmail settings button
+                        OutlinedButton(
+                            onClick = {
+                                val intent = CustomTabsIntent.Builder().build()
+                                intent.launchUrl(context, Uri.parse("https://www.fastmail.com/settings/security/devicekeys"))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(R.string.generate_fastmail_app_password))
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Continue button
+                        Button(
+                            onClick = viewModel::onFastmailLoginClicked,
+                            enabled = !uiState.isLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.connecting))
+                            } else {
+                                Text(stringResource(R.string.continue_button))
+                            }
+                        }
+                    }
                 }
             }
             
@@ -410,34 +856,6 @@ fun AddAccountScreen(
                             Icons.Default.ExpandMore,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            
-            // Animated Google form expansion (coming soon)
-            AnimatedVisibility(
-                visible = uiState.loginMethod == LoginMethod.GOOGLE,
-                enter = expandVertically(
-                    animationSpec = tween(durationMillis = 300),
-                    expandFrom = Alignment.Top
-                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-                exit = shrinkVertically(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Top
-                ) + fadeOut(animationSpec = tween(durationMillis = 300))
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.google_coming_soon),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
                     )
                 }
             }
@@ -1100,12 +1518,14 @@ data class AddAccountUiState(
     val credentialTestResult: String? = null,
     val isNextcloudLogin: Boolean = false,
     val nextcloudLoginUrl: String? = null,
-    val autodiscoveryFailed: Boolean = false
+    val autodiscoveryFailed: Boolean = false,
+    val passwordVisible: Boolean = false
 )
 
 enum class LoginMethod {
     NEXTCLOUD,
-    GOOGLE,
+    ICLOUD,
+    FASTMAIL,
     OTHER_SERVER
 }
 
@@ -1157,13 +1577,6 @@ class AddAccountViewModel @Inject constructor(
             loginMethod = method,
             errorMessage = null
         )
-        
-        // If Google selected, start OAuth flow immediately (placeholder for future implementation)
-        if (method == LoginMethod.GOOGLE) {
-            _uiState.value = _uiState.value.copy(
-                errorMessage = "Google login not yet implemented"
-            )
-        }
     }
     
     fun onBackToMethodSelection() {
@@ -1196,6 +1609,12 @@ class AddAccountViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             password = password,
             passwordError = null
+        )
+    }
+    
+    fun togglePasswordVisibility() {
+        _uiState.value = _uiState.value.copy(
+            passwordVisible = !_uiState.value.passwordVisible
         )
     }
     
@@ -1869,6 +2288,422 @@ class AddAccountViewModel @Inject constructor(
             nextcloudLoginUrl = null,
             isLoading = false
         )
+    }
+    
+    /**
+     * Handle iCloud login - pre-configure with iCloud servers.
+     */
+    fun onICloudLoginClicked() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null,
+                usernameError = null,
+                passwordError = null
+            )
+            
+            try {
+                val state = _uiState.value
+                val email = state.username.trim()
+                val password = state.password
+                
+                // Validate inputs
+                if (email.isBlank()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        usernameError = appContext.getString(R.string.username_required)
+                    )
+                    return@launch
+                }
+                
+                if (password.isBlank()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        passwordError = appContext.getString(R.string.icloud_app_password_required)
+                    )
+                    return@launch
+                }
+                
+                // iCloud uses standard CalDAV/CardDAV endpoints
+                val caldavUrl = "https://caldav.icloud.com/"
+                val carddavUrl = "https://carddav.icloud.com/"
+                
+                // Create account with iCloud configuration
+                createProviderAccount(
+                    providerName = "iCloud",
+                    email = email,
+                    password = password,
+                    caldavUrl = caldavUrl,
+                    carddavUrl = carddavUrl
+                )
+                
+            } catch (e: Exception) {
+                Timber.e(e, "iCloud login failed")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to connect to iCloud: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Handle Fastmail login - pre-configure with Fastmail servers.
+     */
+    fun onFastmailLoginClicked() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null,
+                usernameError = null,
+                passwordError = null
+            )
+            
+            try {
+                val state = _uiState.value
+                val email = state.username.trim()
+                val password = state.password
+                
+                // Validate inputs
+                if (email.isBlank()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        usernameError = appContext.getString(R.string.username_required)
+                    )
+                    return@launch
+                }
+                
+                if (password.isBlank()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        passwordError = appContext.getString(R.string.password_required)
+                    )
+                    return@launch
+                }
+                
+                // Fastmail uses direct CalDAV/CardDAV URLs (auto-discovery supported)
+                val caldavUrl = "https://caldav.fastmail.com/"
+                val carddavUrl = "https://carddav.fastmail.com/"
+                
+                // Create account with Fastmail configuration
+                createProviderAccount(
+                    providerName = "Fastmail",
+                    email = email,
+                    password = password,
+                    caldavUrl = caldavUrl,
+                    carddavUrl = carddavUrl
+                )
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Fastmail login failed")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to connect to Fastmail: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Create account for a specific provider with pre-configured URLs.
+     */
+    private suspend fun createProviderAccount(
+        providerName: String,
+        email: String,
+        password: String,
+        caldavUrl: String,
+        carddavUrl: String
+    ) {
+        try {
+            val state = _uiState.value
+            val accountName = state.accountName.ifBlank { "$providerName - $email" }
+            
+            // Check for duplicate account
+            val existingAccount = accountRepository.findByServerAndUsername(caldavUrl, email)
+            if (existingAccount != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = appContext.getString(R.string.account_exists_message, existingAccount.accountName)
+                )
+                return
+            }
+            
+            // Discover principals directly using provided URLs
+            val calDavPrincipal = try {
+                caldavPrincipalDiscovery.discoverPrincipal(caldavUrl, email, password)
+            } catch (e: Exception) {
+                Timber.w(e, "Failed to discover CalDAV principal for $providerName")
+                null
+            }
+            
+            val cardDavPrincipal = try {
+                carddavPrincipalDiscovery.discoverPrincipal(carddavUrl, email, password)
+            } catch (e: Exception) {
+                Timber.w(e, "Failed to discover CardDAV principal for $providerName")
+                null
+            }
+            
+            // Ensure at least one service is available
+            if (calDavPrincipal == null && cardDavPrincipal == null) {
+                throw Exception("Could not connect to $providerName. Please check your credentials.")
+            }
+            
+            // Create account
+            val account = Account(
+                id = 0,
+                accountName = accountName,
+                serverUrl = caldavUrl,
+                username = email,
+                displayName = accountName,
+                email = email,
+                calendarEnabled = calDavPrincipal != null,
+                contactsEnabled = cardDavPrincipal != null,
+                tasksEnabled = calDavPrincipal != null,
+                createdAt = System.currentTimeMillis(),
+                lastAuthenticatedAt = System.currentTimeMillis(),
+                authType = com.davy.domain.model.AuthType.BASIC,
+                certificateFingerprint = null
+            )
+            
+            val accountId = accountRepository.insert(account)
+            credentialStore.storePassword(accountId, password)
+            
+            // Create Android account
+            androidAccountManager.createOrUpdateAccount(account.accountName, password)
+            
+            // Discover and create calendars
+            if (calDavPrincipal != null) {
+                try {
+                    val calendars = caldavPrincipalDiscovery.discoverCalendars(
+                        calendarHomeSetUrl = calDavPrincipal.calendarHomeSet,
+                        username = email,
+                        password = password
+                    )
+                    
+                    calendars.forEach { calendarInfo ->
+                        val calendar = com.davy.domain.model.Calendar(
+                            id = 0,
+                            accountId = accountId,
+                            calendarUrl = calendarInfo.url,
+                            displayName = calendarInfo.displayName,
+                            description = calendarInfo.description,
+                            color = parseColor(calendarInfo.color),
+                            supportsVTODO = calendarInfo.supportsVTODO,
+                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                            syncEnabled = true,
+                            visible = true,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis(),
+                            lastSyncedAt = null
+                        )
+                        calendarRepository.insert(calendar)
+                    }
+                    
+                    calendarContractSync.syncToCalendarProvider(accountId)
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover/sync calendars for $providerName")
+                }
+            }
+            
+            // Discover and create address books
+            if (cardDavPrincipal != null) {
+                try {
+                    val addressBooks = carddavPrincipalDiscovery.discoverAddressbooks(
+                        addressbookHomeSetUrl = cardDavPrincipal.addressbookHomeSet,
+                        username = email,
+                        password = password
+                    )
+                    
+                    addressBooks.forEach { addressBookInfo ->
+                        val addressBook = com.davy.domain.model.AddressBook(
+                            id = 0,
+                            accountId = accountId,
+                            url = addressBookInfo.url,
+                            displayName = addressBookInfo.displayName,
+                            description = addressBookInfo.description,
+                            owner = addressBookInfo.owner,
+                            privWriteContent = addressBookInfo.privWriteContent,
+                            syncEnabled = true,
+                            visible = true,
+                            androidAccountName = null,
+                            ctag = null,
+                            color = 0xFF2196F3.toInt(),
+                            forceReadOnly = false,
+                            wifiOnlySync = false,
+                            syncIntervalMinutes = null,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        val addressBookId = addressBookRepository.insert(addressBook)
+                        
+                        // Create separate Android account for address book
+                        androidAccountManager.createAddressBookAccount(
+                            mainAccountName = account.accountName,
+                            addressBookName = addressBookInfo.displayName,
+                            addressBookId = addressBookId,
+                            addressBookUrl = addressBookInfo.url
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover address books for $providerName")
+                }
+            }
+            
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                accountCreated = true
+            )
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to create $providerName account")
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Failed to create $providerName account: ${e.message}"
+            )
+        }
+    }
+    
+    /**
+     * Create account using authentication result from service discovery.
+     */
+    private suspend fun createProviderAccountFromAuth(
+        providerName: String,
+        email: String,
+        password: String,
+        authResult: com.davy.data.remote.AuthenticationResult
+    ) {
+        try {
+            val state = _uiState.value
+            val accountName = state.accountName.ifBlank { "$providerName - $email" }
+            
+            // Check for duplicate account
+            val existingAccount = accountRepository.findByServerAndUsername(authResult.serverUrl, email)
+            if (existingAccount != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = appContext.getString(R.string.account_exists_message, existingAccount.accountName)
+                )
+                return
+            }
+            
+            // Ensure at least one service is available
+            if (!authResult.hasCalDAV() && !authResult.hasCardDAV()) {
+                throw Exception("Could not connect to $providerName. No CalDAV or CardDAV services found.")
+            }
+            
+            // Create account
+            val account = Account(
+                id = 0,
+                accountName = accountName,
+                serverUrl = authResult.serverUrl,
+                username = email,
+                displayName = accountName,
+                email = email,
+                calendarEnabled = authResult.hasCalDAV(),
+                contactsEnabled = authResult.hasCardDAV(),
+                tasksEnabled = authResult.hasCalDAV(),
+                createdAt = System.currentTimeMillis(),
+                lastAuthenticatedAt = System.currentTimeMillis(),
+                authType = com.davy.domain.model.AuthType.BASIC,
+                certificateFingerprint = null
+            )
+            
+            val accountId = accountRepository.insert(account)
+            credentialStore.storePassword(accountId, password)
+            
+            // Create Android account
+            androidAccountManager.createOrUpdateAccount(account.accountName, password)
+            
+            // Discover and create calendars
+            if (authResult.hasCalDAV() && authResult.calDavPrincipal != null) {
+                try {
+                    val calendars = caldavPrincipalDiscovery.discoverCalendars(
+                        calendarHomeSetUrl = authResult.calDavPrincipal.calendarHomeSet,
+                        username = email,
+                        password = password
+                    )
+                    
+                    calendars.forEach { calendarInfo ->
+                        val calendar = com.davy.domain.model.Calendar(
+                            id = 0,
+                            accountId = accountId,
+                            calendarUrl = calendarInfo.url,
+                            displayName = calendarInfo.displayName,
+                            description = calendarInfo.description,
+                            color = parseColor(calendarInfo.color),
+                            supportsVTODO = calendarInfo.supportsVTODO,
+                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                            syncEnabled = true,
+                            visible = true,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis(),
+                            lastSyncedAt = null
+                        )
+                        calendarRepository.insert(calendar)
+                    }
+                    
+                    calendarContractSync.syncToCalendarProvider(accountId)
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover/sync calendars for $providerName")
+                }
+            }
+            
+            // Discover and create address books
+            if (authResult.hasCardDAV() && authResult.cardDavPrincipal != null) {
+                try {
+                    val addressBooks = carddavPrincipalDiscovery.discoverAddressbooks(
+                        addressbookHomeSetUrl = authResult.cardDavPrincipal.addressbookHomeSet,
+                        username = email,
+                        password = password
+                    )
+                    
+                    addressBooks.forEach { addressBookInfo ->
+                        val addressBook = com.davy.domain.model.AddressBook(
+                            id = 0,
+                            accountId = accountId,
+                            url = addressBookInfo.url,
+                            displayName = addressBookInfo.displayName,
+                            description = addressBookInfo.description,
+                            owner = addressBookInfo.owner,
+                            privWriteContent = addressBookInfo.privWriteContent,
+                            syncEnabled = true,
+                            visible = true,
+                            androidAccountName = null,
+                            ctag = null,
+                            color = 0xFF2196F3.toInt(),
+                            forceReadOnly = false,
+                            wifiOnlySync = false,
+                            syncIntervalMinutes = null,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        val addressBookId = addressBookRepository.insert(addressBook)
+                        
+                        // Create separate Android account for address book
+                        androidAccountManager.createAddressBookAccount(
+                            mainAccountName = account.accountName,
+                            addressBookName = addressBookInfo.displayName,
+                            addressBookId = addressBookId,
+                            addressBookUrl = addressBookInfo.url
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover address books for $providerName")
+                }
+            }
+            
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                accountCreated = true
+            )
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to create $providerName account")
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Failed to create $providerName account: ${e.message}"
+            )
+        }
     }
     
     /**
