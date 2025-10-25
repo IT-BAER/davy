@@ -43,12 +43,16 @@ fun AccountSettingsScreen(
     // Navigate back when account deletion completes
     LaunchedEffect(uiState.accountDeleted) {
         if (uiState.accountDeleted) {
+            viewModel.onAccountDeletionHandled()
             onNavigateBack()
         }
     }
     
-    LaunchedEffect(accountId) {
-        viewModel.loadAccount(accountId)
+    // Only load account if not deleted
+    LaunchedEffect(accountId, uiState.accountDeleted) {
+        if (!uiState.accountDeleted) {
+            viewModel.loadAccount(accountId)
+        }
     }
     
     Scaffold(

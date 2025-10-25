@@ -207,9 +207,15 @@ object CalDAVXMLParser {
                             TAG_RESPONSE -> {
                                 if (currentEvent != null) {
                                     Timber.d("Parsed event response: href=${currentEvent.href}, etag=${currentEvent.etag}")
-                                    // Don't filter by .ics extension - some servers (like Google Calendar imports)
-                                    // use different naming patterns (hex strings without extension)
-                                    events.add(currentEvent)
+                                    // Filter out calendar collection URLs (they end with '/' and have no event data)
+                                    // Only add actual event resources, not calendar collections
+                                    val isCollection = currentEvent.href.endsWith("/")
+                                    if (!isCollection) {
+                                        // This is an actual event resource
+                                        events.add(currentEvent)
+                                    } else {
+                                        Timber.d("Skipping calendar collection URL: ${currentEvent.href}")
+                                    }
                                 }
                                 currentEvent = null
                             }

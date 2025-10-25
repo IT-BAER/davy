@@ -349,7 +349,7 @@ private fun CalendarDetailsContent(
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     ),
-                    modifier = Modifier.height(40.dp)
+                    modifier = Modifier.height(44.dp)
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = stringResource(id = com.davy.R.string.delete_calendar))
                 }
@@ -358,8 +358,8 @@ private fun CalendarDetailsContent(
                 OutlinedButton(
                     onClick = { viewModel.syncNow(calendar) },
                     modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
+                        .weight(0.85f)
+                        .height(44.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,

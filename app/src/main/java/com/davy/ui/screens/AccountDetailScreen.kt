@@ -534,110 +534,7 @@ fun AccountDetailScreen(
                 scrollBehavior = scrollBehavior
             )
         },
-        floatingActionButton = {
-            val isBatchMode by viewModel.isBatchSelectionMode.collectAsStateWithLifecycle()
-            val selectedCalendarIds by viewModel.selectedCalendarIds.collectAsStateWithLifecycle()
-            val selectedAddressBookIds by viewModel.selectedAddressBookIds.collectAsStateWithLifecycle()
-            val selectedWebCalIds by viewModel.selectedWebCalIds.collectAsStateWithLifecycle()
-            val totalSelected = selectedCalendarIds.size + selectedAddressBookIds.size + selectedWebCalIds.size
-            
-            Column(
-                modifier = Modifier.padding(bottom = 60.dp, end = 24.dp),  // Lowered position
-                horizontalAlignment = Alignment.End
-            ) {
-                // Batch sync button (shows in batch selection mode)
-                if (isBatchMode && totalSelected > 0) {
-                    ExtendedFloatingActionButton(
-                        text = { Text(stringResource(id = R.string.sync_selected_with_count, totalSelected)) },
-                        icon = {
-                            Icon(
-                                Icons.Default.DoneAll,
-                                contentDescription = stringResource(id = R.string.content_description_sync_selected)
-                            )
-                        },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        onClick = {
-                            if (!isBusy) {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                viewModel.syncSelectedCollections()
-                            }
-                        }
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-                
-                // Sync Now button (first/top position) - hidden in batch mode
-                if (!isBatchMode) {
-                    val syncContainer = if (isBusy) {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    } else {
-                        DavyBlue
-                    }
-                    val syncContent = if (isBusy) {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    } else {
-                        Color.White
-                    }
-                    val isRefreshing = uiState.isRefreshingCollections
-                    val isGlobalSyncing = isGlobalOperationRunning && !isRefreshing
-                    val globalSyncRotation = rememberSyncRotation(isGlobalSyncing)
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier.widthIn(min = 140.dp),
-                        text = { Text(stringResource(id = R.string.sync_now)) },
-                        icon = {
-                            Icon(
-                                Icons.Default.Sync,
-                                contentDescription = stringResource(id = R.string.content_description_sync),
-                                modifier = Modifier.rotate(if (isGlobalSyncing) globalSyncRotation else 0f)
-                            )
-                        },
-                        containerColor = syncContainer,
-                        contentColor = syncContent,
-                        onClick = {
-                            if (!isBusy) {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                scope.launch {
-                                    // Sync ALL resource types (calendars, contacts, tasks) in parallel
-                                    syncManager.syncNow(accountId, com.davy.sync.SyncManager.SYNC_TYPE_ALL)
-                                }
-                            }
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                // Get Lists button (second/bottom position) - always visible
-                ExtendedFloatingActionButton(
-                    modifier = Modifier.widthIn(min = 140.dp),
-                    text = { Text(stringResource(id = R.string.sync_with_server)) },
-                    icon = { 
-                        if (uiState.isRefreshingCollections) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = if (isBusy) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Color.White
-                            )
-                        } else {
-                            Icon(
-                                Icons.Outlined.RuleFolder, 
-                                contentDescription = null
-                            )
-                        }
-                    },
-                    containerColor = if (isBusy) MaterialTheme.colorScheme.surfaceVariant else DavyOrange,
-                    contentColor = if (isBusy) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Color.White,
-                    onClick = {
-                        if (!isBusy) {
-                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.refreshCollections()
-                        }
-                    }
-                )
-            }
-        }
+        floatingActionButton = {}
     ) { padding ->
         // Unified gradient background that smoothly transitions across tabs
         val unifiedBackgroundBrush = rememberUnifiedBackgroundBrush(
@@ -772,6 +669,115 @@ fun AccountDetailScreen(
                     )
                 }
             }
+            }
+            
+            // Floating Action Buttons - positioned manually to match AccountListScreen
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 24.dp, bottom = 84.dp)
+            ) {
+                val isBatchMode by viewModel.isBatchSelectionMode.collectAsStateWithLifecycle()
+                val selectedCalendarIds by viewModel.selectedCalendarIds.collectAsStateWithLifecycle()
+                val selectedAddressBookIds by viewModel.selectedAddressBookIds.collectAsStateWithLifecycle()
+                val selectedWebCalIds by viewModel.selectedWebCalIds.collectAsStateWithLifecycle()
+                val totalSelected = selectedCalendarIds.size + selectedAddressBookIds.size + selectedWebCalIds.size
+                
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    // Batch sync button (shows in batch selection mode)
+                    if (isBatchMode && totalSelected > 0) {
+                        ExtendedFloatingActionButton(
+                            text = { Text(stringResource(id = R.string.sync_selected_with_count, totalSelected)) },
+                            icon = {
+                                Icon(
+                                    Icons.Default.DoneAll,
+                                    contentDescription = stringResource(id = R.string.content_description_sync_selected)
+                                )
+                            },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            onClick = {
+                                if (!isBusy) {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.syncSelectedCollections()
+                                }
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    
+                    // Sync Now button (first/top position) - hidden in batch mode
+                    if (!isBatchMode) {
+                        val syncContainer = if (isBusy) {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        } else {
+                            DavyBlue
+                        }
+                        val syncContent = if (isBusy) {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        } else {
+                            Color.White
+                        }
+                        val isRefreshing = uiState.isRefreshingCollections
+                        val isGlobalSyncing = isGlobalOperationRunning && !isRefreshing
+                        val globalSyncRotation = rememberSyncRotation(isGlobalSyncing)
+                        ExtendedFloatingActionButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
+                            text = { Text(stringResource(id = R.string.sync_now)) },
+                            icon = {
+                                Icon(
+                                    Icons.Default.Sync,
+                                    contentDescription = stringResource(id = R.string.content_description_sync),
+                                    modifier = Modifier.rotate(if (isGlobalSyncing) globalSyncRotation else 0f)
+                                )
+                            },
+                            containerColor = syncContainer,
+                            contentColor = syncContent,
+                            onClick = {
+                                if (!isBusy) {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    scope.launch {
+                                        // Sync ALL resource types (calendars, contacts, tasks) in parallel
+                                        syncManager.syncNow(accountId, com.davy.sync.SyncManager.SYNC_TYPE_ALL)
+                                    }
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    // Get Lists button (second/bottom position) - always visible
+                    ExtendedFloatingActionButton(
+                        modifier = Modifier.widthIn(min = 140.dp),
+                        text = { Text(stringResource(id = R.string.sync_with_server)) },
+                        icon = { 
+                            if (uiState.isRefreshingCollections) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                    color = if (isBusy) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Color.White
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Outlined.RuleFolder, 
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        containerColor = if (isBusy) MaterialTheme.colorScheme.surfaceVariant else DavyOrange,
+                        contentColor = if (isBusy) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Color.White,
+                        onClick = {
+                            if (!isBusy) {
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.refreshCollections()
+                            }
+                        }
+                    )
+                }
             }
         }
     }

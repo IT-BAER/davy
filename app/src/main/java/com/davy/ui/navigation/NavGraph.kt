@@ -308,7 +308,7 @@ fun NavGraph(
                 accountId = accountId,
                 onNavigateBack = { 
                     // When navigating back (e.g., after account deletion), pop all the way to account list
-                    navController.popBackStack("account_list", inclusive = false)
+                    navController.popBackStack("accounts", inclusive = false)
                 }
             )
         }

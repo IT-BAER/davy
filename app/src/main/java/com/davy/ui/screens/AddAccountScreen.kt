@@ -1535,13 +1535,15 @@ class AddAccountViewModel @Inject constructor(
             
             // Parse color - handle both RGB and ARGB formats
             when (hex.length) {
-                6 -> ("FF" + hex).toLong(16).toInt() // RGB -> ARGB (always opaque)
+                6 -> {
+                    // #RRGGBB -> add full opacity
+                    0xFF000000.toInt() or hex.toInt(16)
+                }
                 8 -> {
-                    // ARGB format - but force alpha to FF (opaque) to prevent transparent colors
-                    val parsed = hex.toLong(16).toInt()
-                    val rgb = parsed and 0x00FFFFFF  // Extract RGB components
-                    val opaque = 0xFF000000.toInt() or rgb  // Force alpha = FF
-                    opaque
+                    // #RRGGBBAA -> convert to Android's #AARRGGBB format
+                    val rgb = hex.substring(0, 6).toInt(16)
+                    val alpha = hex.substring(6, 8).toInt(16)
+                    (alpha shl 24) or rgb
                 }
                 else -> 0xFF2196F3.toInt() // Invalid format, use default
             }

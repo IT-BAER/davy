@@ -79,5 +79,13 @@ data class Calendar(
      * Check if calendar allows event deletion.
      * Respects forceReadOnly flag - even if server allows deletion, user can force read-only.
      */
-    fun canDelete(): Boolean = !forceReadOnly && privUnbind
+    fun canDeleteEvents(): Boolean = !forceReadOnly && privUnbind
+    
+    /**
+     * Check if calendar collection itself can be deleted.
+     * Following DAVx5 pattern: calendar collections can be deleted unless user forced read-only.
+     * The privUnbind permission applies to events, not the collection itself.
+     * Matches AddressBook.canDelete() logic.
+     */
+    fun canDelete(): Boolean = !forceReadOnly
 }
