@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">Utilizza l\'app DAVy per aggiungere account</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">Sincr. tutto</string>
+    <string name="shortcut_sync_all_long">Sincronizza tutto</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">Indietro</string>
+    <string name="settings">Impostazioni</string>
+    <string name="about">Informazioni</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annulla</string>
+    <string name="delete">Elimina</string>
+    <string name="edit">Modifica</string>
+    <string name="save">Salva</string>
+    <string name="sync">Sincronizza</string>
+    <string name="error">Errore</string>
+    <string name="loading">Caricamento…</string>
+    <string name="retry">Riprova</string>
+    <string name="close">Chiudi</string>
+    <string name="add">Aggiungi</string>
+    <string name="remove">Rimuovi</string>
+    <string name="refresh">Aggiorna</string>
+    <string name="enabled">Attivato</string>
+    <string name="disabled">Disattivato</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - Account</string>
+    <string name="add_account">Aggiungi account</string>
+    <string name="account_details">Dettagli account</string>
+    <string name="account_settings">Impostazioni account</string>
+    <string name="delete_account">Elimina account</string>
+    <string name="delete_account_confirmation">Sei sicuro di voler eliminare questo account? Verranno rimossi tutti i dati sincronizzati.</string>
+    <string name="no_accounts">Nessun account ancora</string>
+    <string name="no_accounts_description">Aggiungi il tuo primo account CalDAV/CardDAV per iniziare</string>
+    <string name="account_name">Nome account</string>
+    <string name="server_url">URL server</string>
+    <string name="username">Nome utente</string>
+    <string name="password">Password</string>
+    <string name="account_color">Colore account</string>
+    
+    <!-- Sync -->
+    <string name="syncing">Sincronizzazione…</string>
+    <string name="sync_all">Sincronizza tutto</string>
+    <string name="sync_successful">Sincronizzazione riuscita</string>
+    <string name="sync_failed">Sincronizzazione fallita</string>
+    <string name="last_sync">Ultima sincronizzazione: %1$s</string>
+    <string name="never_synced">Mai sincronizzato</string>
+    <string name="auto_sync">Sincronizzazione automatica</string>
+    <string name="sync_on_wifi_only">Sincronizza solo con WiFi</string>
+    
+    <!-- Collections -->
+    <string name="collections">Raccolte</string>
+    <string name="collections_title">DAVy - Raccolte</string>
+    <string name="calendars">Calendari</string>
+    <string name="contacts">Contatti</string>
+    <string name="tasks">Attività</string>
+    <string name="address_books">Rubriche</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">Dettagli calendario</string>
+    <string name="calendar_list">Elenco calendari</string>
+    <string name="event_details">Dettagli evento</string>
+    <string name="all_day_event">Evento giornata intera</string>
+    <string name="date_time">Data e ora</string>
+    <string name="description">Descrizione</string>
+    <string name="location">Posizione</string>
+    <string name="attendees">Partecipanti (%1$d)</string>
+    <string name="reminders">Promemoria</string>
+    <string name="reminder_before">%1$d minuti prima (%2$s)</string>
+    <string name="recurrence">Ricorrenza</string>
+    <string name="availability">Disponibilità</string>
+    <string name="delete_event">Elimina evento</string>
+    <string name="delete_event_confirmation">Sei sicuro di voler eliminare questo evento?</string>
+    <string name="edit_event">Modifica evento</string>
+    <string name="edit_event_future_update">La modifica degli eventi sarà implementata in un aggiornamento futuro.</string>
+    <string name="event_not_found">Evento non trovato</string>
+    <string name="failed_to_load_event">Caricamento evento non riuscito: %1$s</string>
+    <string name="failed_to_delete_event">Eliminazione evento non riuscita: %1$s</string>
+    <string name="event_type">Tipo</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">Dettagli rubrica</string>
+    <string name="address_book_list">Elenco rubriche</string>
+    <string name="contact_details">Dettagli contatto</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">Impostazioni sincronizzazione</string>
+    <string name="settings_appearance_title">Aspetto</string>
+    <string name="settings_advanced_title">Avanzate</string>
+    <string name="settings_backup_title">Backup e ripristino</string>
+    <string name="settings_permissions_title">Autorizzazioni</string>
+    <string name="dark_mode">Modalità scura</string>
+    <string name="debug_logging">Registrazione debug</string>
+    <string name="battery_optimization">Ottimizzazione batteria</string>
+    <string name="battery_optimization_disabled">Disattivata</string>
+    <string name="battery_optimization_enabled">Attivata (Consigliato)</string>
+    <string name="battery_optimization_description">Disattiva l\'ottimizzazione della batteria per garantire una sincronizzazione affidabile in background</string>
+    <string name="permissions_status">Stato autorizzazioni</string>
+    <string name="all_permissions_granted">Tutte le autorizzazioni concesse</string>
+    <string name="some_permissions_missing">Mancano alcune autorizzazioni</string>
+    <string name="backup_database">Backup database</string>
+    <string name="restore_database">Ripristina database</string>
+    
+    <!-- About Screen -->
+    <string name="version">Versione %1$s</string>
+    <string name="app_description">DAVy è un\'app moderna di sincronizzazione CalDAV, CardDAV e WebCal per Android. Mantieni calendari, contatti e attività sincronizzati su tutti i tuoi dispositivi.</string>
+    <string name="technology_stack">Stack tecnologico</string>
+    <string name="key_dependencies">Dipendenze principali</string>
+    <string name="license">Licenza: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin &amp; Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Database Room</string>
+    <string name="tech_coroutines">• Coroutines &amp; Flow</string>
+    <string name="tech_okhttp">• OkHttp &amp; Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">Domande frequenti</string>
+    <string name="faq_what_is_davy">Cos\'è DAVy?</string>
+    <string name="faq_what_is_davy_answer">DAVy è un client di sincronizzazione CalDAV/CardDAV per Android che sincronizza calendari, contatti e attività con il server.</string>
+    <string name="faq_which_servers">Quali server sono supportati?</string>
+    <string name="faq_which_servers_answer">DAVy funziona con qualsiasi server conforme a CalDAV/CardDAV, inclusi Nextcloud, ownCloud, Radicale, Baïkal e altri.</string>
+    <string name="faq_sync_not_working">Perché la sincronizzazione non funziona?</string>
+    <string name="faq_sync_not_working_answer">• L\'URL del server è corretto (incluso https://)\n• Nome utente e password sono validi\n• La sincronizzazione solo WiFi è disattivata o il WiFi è connesso\n• La sincronizzazione automatica è attivata nelle Impostazioni Android</string>
+    <string name="faq_enable_auto_sync">Come attivo la sincronizzazione automatica?</string>
+    <string name="faq_enable_auto_sync_answer">Vai in Impostazioni Android → Account → DAVy → Attiva \'Sincronizza dati automaticamente\'</string>
+    <string name="faq_multiple_accounts">Posso sincronizzare più account?</string>
+    <string name="faq_multiple_accounts_answer">Sì, puoi aggiungere e sincronizzare più account CalDAV/CardDAV contemporaneamente.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">Guide</string>
+    <string name="getting_started">Iniziare</string>
+    <string name="setup_guides">Guide alla configurazione</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">Si è verificato un errore</string>
+    <string name="error_network">Errore di rete. Controlla la connessione.</string>
+    <string name="error_authentication">Autenticazione fallita. Controlla le credenziali.</string>
+    <string name="error_server">Errore del server. Riprova più tardi.</string>
+    <string name="success">Successo</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_sync">Sincronizza</string>
+    <string name="content_description_add">Aggiungi</string>
+    <string name="content_description_delete">Elimina</string>
+    <string name="content_description_edit">Modifica</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_help">Aiuto</string>
+    <string name="content_description_back">Indietro</string>
+    <string name="content_description_settings">Impostazioni</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">Account</string>
+    <string name="nav_collections">Raccolte</string>
+    <string name="nav_settings">Impostazioni</string>
+    <string name="nav_guides">Guide</string>
+    <string name="nav_faq">Domande frequenti</string>
+    <string name="nav_about">Informazioni</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">Nessun evento</item>
+        <item quantity="one">1 evento</item>
+        <item quantity="other">%d eventi</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">Nessun contatto</item>
+        <item quantity="one">1 contatto</item>
+        <item quantity="other">%d contatti</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">Nessuna attività</item>
+        <item quantity="one">1 attività</item>
+        <item quantity="other">%d attività</item>
+    </plurals>
+</resources>

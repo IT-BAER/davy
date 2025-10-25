@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">खाते जोड़ने के लिए DAVy ऐप का उपयोग करें</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">सभी सिंक</string>
+    <string name="shortcut_sync_all_long">सभी को सिंक करें</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">वापस</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="about">परिचय</string>
+    <string name="ok">ठीक है</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="delete">हटाएं</string>
+    <string name="edit">संपादित करें</string>
+    <string name="save">सहेजें</string>
+    <string name="sync">सिंक करें</string>
+    <string name="error">त्रुटि</string>
+    <string name="loading">लोड हो रहा है…</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="close">बंद करें</string>
+    <string name="add">जोड़ें</string>
+    <string name="remove">हटाएं</string>
+    <string name="refresh">रीफ्रेश करें</string>
+    <string name="enabled">सक्षम</string>
+    <string name="disabled">अक्षम</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - खाते</string>
+    <string name="add_account">खाता जोड़ें</string>
+    <string name="account_details">खाता विवरण</string>
+    <string name="account_settings">खाता सेटिंग्स</string>
+    <string name="delete_account">खाता हटाएं</string>
+    <string name="delete_account_confirmation">क्या आप वाकई इस खाते को हटाना चाहते हैं? यह सभी सिंक किए गए डेटा को हटा देगा।</string>
+    <string name="no_accounts">कोई खाता नहीं</string>
+    <string name="no_accounts_description">शुरू करने के लिए अपना पहला CalDAV/CardDAV खाता जोड़ें</string>
+    <string name="account_name">खाता नाम</string>
+    <string name="server_url">सर्वर URL</string>
+    <string name="username">उपयोगकर्ता नाम</string>
+    <string name="password">पासवर्ड</string>
+    <string name="account_color">खाता रंग</string>
+    
+    <!-- Sync -->
+    <string name="syncing">सिंक हो रहा है…</string>
+    <string name="sync_all">सभी को सिंक करें</string>
+    <string name="sync_successful">सिंक सफल रहा</string>
+    <string name="sync_failed">सिंक विफल रहा</string>
+    <string name="last_sync">अंतिम सिंक: %1$s</string>
+    <string name="never_synced">कभी सिंक नहीं किया गया</string>
+    <string name="auto_sync">ऑटो सिंक</string>
+    <string name="sync_on_wifi_only">केवल WiFi पर सिंक करें</string>
+    
+    <!-- Collections -->
+    <string name="collections">संग्रह</string>
+    <string name="collections_title">DAVy - संग्रह</string>
+    <string name="calendars">कैलेंडर</string>
+    <string name="contacts">संपर्क</string>
+    <string name="tasks">कार्य</string>
+    <string name="address_books">पता पुस्तिकाएं</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">कैलेंडर विवरण</string>
+    <string name="calendar_list">कैलेंडर सूची</string>
+    <string name="event_details">इवेंट विवरण</string>
+    <string name="all_day_event">पूरे दिन का इवेंट</string>
+    <string name="date_time">दिनांक और समय</string>
+    <string name="description">विवरण</string>
+    <string name="location">स्थान</string>
+    <string name="attendees">उपस्थित (%1$d)</string>
+    <string name="reminders">अनुस्मारक</string>
+    <string name="reminder_before">%1$d मिनट पहले (%2$s)</string>
+    <string name="recurrence">पुनरावृत्ति</string>
+    <string name="availability">उपलब्धता</string>
+    <string name="delete_event">इवेंट हटाएं</string>
+    <string name="delete_event_confirmation">क्या आप वाकई इस इवेंट को हटाना चाहते हैं?</string>
+    <string name="edit_event">इवेंट संपादित करें</string>
+    <string name="edit_event_future_update">इवेंट संपादन भविष्य के अपडेट में लागू किया जाएगा।</string>
+    <string name="event_not_found">इवेंट नहीं मिला</string>
+    <string name="failed_to_load_event">इवेंट लोड करने में विफल: %1$s</string>
+    <string name="failed_to_delete_event">इवेंट हटाने में विफल: %1$s</string>
+    <string name="event_type">प्रकार</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">पता पुस्तिका विवरण</string>
+    <string name="address_book_list">पता पुस्तिका सूची</string>
+    <string name="contact_details">संपर्क विवरण</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">सिंक सेटिंग्स</string>
+    <string name="settings_appearance_title">दिखावट</string>
+    <string name="settings_advanced_title">उन्नत</string>
+    <string name="settings_backup_title">बैकअप और पुनर्स्थापना</string>
+    <string name="settings_permissions_title">अनुमतियां</string>
+    <string name="dark_mode">डार्क मोड</string>
+    <string name="debug_logging">डीबग लॉगिंग</string>
+    <string name="battery_optimization">बैटरी अनुकूलन</string>
+    <string name="battery_optimization_disabled">अक्षम</string>
+    <string name="battery_optimization_enabled">सक्षम (अनुशंसित)</string>
+    <string name="battery_optimization_description">विश्वसनीय पृष्ठभूमि सिंक के लिए बैटरी अनुकूलन अक्षम करें</string>
+    <string name="permissions_status">अनुमति स्थिति</string>
+    <string name="all_permissions_granted">सभी अनुमतियां दी गई हैं</string>
+    <string name="some_permissions_missing">कुछ अनुमतियां गायब हैं</string>
+    <string name="backup_database">डेटाबेस बैकअप करें</string>
+    <string name="restore_database">डेटाबेस पुनर्स्थापित करें</string>
+    
+    <!-- About Screen -->
+    <string name="version">संस्करण %1$s</string>
+    <string name="app_description">DAVy Android के लिए एक आधुनिक CalDAV, CardDAV और WebCal सिंक ऐप है। अपने सभी उपकरणों में अपने कैलेंडर, संपर्क और कार्यों को सिंक में रखें।</string>
+    <string name="technology_stack">प्रौद्योगिकी स्टैक</string>
+    <string name="key_dependencies">मुख्य निर्भरताएं</string>
+    <string name="license">लाइसेंस: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin और Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room Database</string>
+    <string name="tech_coroutines">• Coroutines और Flow</string>
+    <string name="tech_okhttp">• OkHttp और Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">अक्सर पूछे जाने वाले प्रश्न</string>
+    <string name="faq_what_is_davy">DAVy क्या है?</string>
+    <string name="faq_what_is_davy_answer">DAVy Android के लिए एक CalDAV/CardDAV सिंक क्लाइंट है जो आपके सर्वर के साथ कैलेंडर, संपर्क और कार्यों को सिंक करता है।</string>
+    <string name="faq_which_servers">कौन से सर्वर समर्थित हैं?</string>
+    <string name="faq_which_servers_answer">DAVy किसी भी CalDAV/CardDAV-अनुरूप सर्वर के साथ काम करता है, जिसमें Nextcloud, ownCloud, Radicale, Baïkal और अन्य शामिल हैं।</string>
+    <string name="faq_sync_not_working">मेरा सिंक क्यों काम नहीं कर रहा है?</string>
+    <string name="faq_sync_not_working_answer">• सर्वर URL सही है (https:// सहित)\n• उपयोगकर्ता नाम और पासवर्ड मान्य हैं\n• केवल WiFi पर सिंक अक्षम है या WiFi कनेक्ट है\n• Android सेटिंग्स में ऑटो सिंक सक्षम है</string>
+    <string name="faq_enable_auto_sync">मैं ऑटो सिंक कैसे सक्षम करूं?</string>
+    <string name="faq_enable_auto_sync_answer">Android सेटिंग्स → खाते → DAVy → \'डेटा स्वचालित रूप से सिंक करें\' सक्षम करें</string>
+    <string name="faq_multiple_accounts">क्या मैं एकाधिक खाते सिंक कर सकता हूं?</string>
+    <string name="faq_multiple_accounts_answer">हां, आप एक ही समय में कई CalDAV/CardDAV खाते जोड़ और सिंक कर सकते हैं।</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">गाइड</string>
+    <string name="getting_started">शुरुआत करना</string>
+    <string name="setup_guides">सेटअप गाइड</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">एक त्रुटि हुई</string>
+    <string name="error_network">नेटवर्क त्रुटि। अपना कनेक्शन जांचें।</string>
+    <string name="error_authentication">प्रमाणीकरण विफल रहा। अपनी साख जांचें।</string>
+    <string name="error_server">सर्वर त्रुटि। बाद में पुनः प्रयास करें।</string>
+    <string name="success">सफल</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">मेनू</string>
+    <string name="content_description_sync">सिंक करें</string>
+    <string name="content_description_add">जोड़ें</string>
+    <string name="content_description_delete">हटाएं</string>
+    <string name="content_description_edit">संपादित करें</string>
+    <string name="content_description_info">जानकारी</string>
+    <string name="content_description_help">सहायता</string>
+    <string name="content_description_back">वापस</string>
+    <string name="content_description_settings">सेटिंग्स</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">खाते</string>
+    <string name="nav_collections">संग्रह</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_guides">गाइड</string>
+    <string name="nav_faq">अक्सर पूछे जाने वाले प्रश्न</string>
+    <string name="nav_about">परिचय</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">कोई इवेंट नहीं</item>
+        <item quantity="one">1 इवेंट</item>
+        <item quantity="other">%d इवेंट</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">कोई संपर्क नहीं</item>
+        <item quantity="one">1 संपर्क</item>
+        <item quantity="other">%d संपर्क</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">कोई कार्य नहीं</item>
+        <item quantity="one">1 कार्य</item>
+        <item quantity="other">%d कार्य</item>
+    </plurals>
+</resources>

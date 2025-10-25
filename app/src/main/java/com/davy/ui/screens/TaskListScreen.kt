@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import timber.log.Timber
+import com.davy.R
 
 private const val TAG = "TaskListScreen"
 
@@ -48,10 +50,10 @@ fun TaskListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task Lists") },
+                title = { Text(stringResource(id = R.string.task_lists)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.back))
                     }
                 }
             )
@@ -202,7 +204,7 @@ private fun TaskListItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sync with server",
+                        text = stringResource(id = R.string.sync_with_server),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -259,11 +261,11 @@ private fun TaskListItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(id = R.string.content_description_sync),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(id = R.string.sync_now))
                 }
             }
             

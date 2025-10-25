@@ -1,0 +1,206 @@
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">Пожалуйста, используйте приложение DAVy для добавления учетных записей</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">Синхр. все</string>
+    <string name="shortcut_sync_all_long">Синхронизировать все</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">Назад</string>
+    <string name="settings">Настройки</string>
+    <string name="about">О программе</string>
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
+    <string name="save">Сохранить</string>
+    <string name="sync">Синхронизация</string>
+    <string name="error">Ошибка</string>
+    <string name="loading">Загрузка…</string>
+    <string name="retry">Повторить</string>
+    <string name="close">Закрыть</string>
+    <string name="add">Добавить</string>
+    <string name="remove">Удалить</string>
+    <string name="refresh">Обновить</string>
+    <string name="enabled">Включено</string>
+    <string name="disabled">Отключено</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - Учетные записи</string>
+    <string name="add_account">Добавить учетную запись</string>
+    <string name="account_details">Сведения об учетной записи</string>
+    <string name="account_settings">Настройки учетной записи</string>
+    <string name="delete_account">Удалить учетную запись</string>
+    <string name="delete_account_confirmation">Вы уверены, что хотите удалить эту учетную запись? Это удалит все синхронизированные данные.</string>
+    <string name="no_accounts">Учетных записей пока нет</string>
+    <string name="no_accounts_description">Добавьте свою первую учетную запись CalDAV/CardDAV, чтобы начать</string>
+    <string name="account_name">Имя учетной записи</string>
+    <string name="server_url">URL сервера</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="account_color">Цвет учетной записи</string>
+    
+    <!-- Sync -->
+    <string name="syncing">Синхронизация…</string>
+    <string name="sync_all">Синхронизировать все</string>
+    <string name="sync_successful">Синхронизация успешна</string>
+    <string name="sync_failed">Ошибка синхронизации</string>
+    <string name="last_sync">Последняя синхронизация: %1$s</string>
+    <string name="never_synced">Никогда не синхронизировалось</string>
+    <string name="auto_sync">Автосинхронизация</string>
+    <string name="sync_on_wifi_only">Синхронизировать только по WiFi</string>
+    
+    <!-- Collections -->
+    <string name="collections">Коллекции</string>
+    <string name="collections_title">DAVy - Коллекции</string>
+    <string name="calendars">Календари</string>
+    <string name="contacts">Контакты</string>
+    <string name="tasks">Задачи</string>
+    <string name="address_books">Адресные книги</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">Сведения о календаре</string>
+    <string name="calendar_list">Список календарей</string>
+    <string name="event_details">Сведения о событии</string>
+    <string name="all_day_event">Событие на весь день</string>
+    <string name="date_time">Дата и время</string>
+    <string name="description">Описание</string>
+    <string name="location">Местоположение</string>
+    <string name="attendees">Участники (%1$d)</string>
+    <string name="reminders">Напоминания</string>
+    <string name="reminder_before">За %1$d минут (%2$s)</string>
+    <string name="recurrence">Повторение</string>
+    <string name="availability">Доступность</string>
+    <string name="delete_event">Удалить событие</string>
+    <string name="delete_event_confirmation">Вы уверены, что хотите удалить это событие?</string>
+    <string name="edit_event">Изменить событие</string>
+    <string name="edit_event_future_update">Редактирование событий будет реализовано в будущем обновлении.</string>
+    <string name="event_not_found">Событие не найдено</string>
+    <string name="failed_to_load_event">Не удалось загрузить событие: %1$s</string>
+    <string name="failed_to_delete_event">Не удалось удалить событие: %1$s</string>
+    <string name="event_type">Тип</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">Сведения об адресной книге</string>
+    <string name="address_book_list">Список адресных книг</string>
+    <string name="contact_details">Сведения о контакте</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">Настройки синхронизации</string>
+    <string name="settings_appearance_title">Внешний вид</string>
+    <string name="settings_advanced_title">Дополнительно</string>
+    <string name="settings_backup_title">Резервное копирование и восстановление</string>
+    <string name="settings_permissions_title">Разрешения</string>
+    <string name="dark_mode">Темный режим</string>
+    <string name="debug_logging">Журнал отладки</string>
+    <string name="battery_optimization">Оптимизация батареи</string>
+    <string name="battery_optimization_disabled">Отключено</string>
+    <string name="battery_optimization_enabled">Включено (Рекомендуется)</string>
+    <string name="battery_optimization_description">Отключите оптимизацию батареи для надежной фоновой синхронизации</string>
+    <string name="permissions_status">Статус разрешений</string>
+    <string name="all_permissions_granted">Все разрешения предоставлены</string>
+    <string name="some_permissions_missing">Некоторые разрешения отсутствуют</string>
+    <string name="backup_database">Резервное копирование базы данных</string>
+    <string name="restore_database">Восстановить базу данных</string>
+    
+    <!-- About Screen -->
+    <string name="version">Версия %1$s</string>
+    <string name="app_description">DAVy - это современное приложение для синхронизации CalDAV, CardDAV и WebCal для Android. Синхронизируйте календари, контакты и задачи на всех ваших устройствах.</string>
+    <string name="technology_stack">Технологический стек</string>
+    <string name="key_dependencies">Основные зависимости</string>
+    <string name="license">Лицензия: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin и Jetpack Compose</string>
+    <string name="tech_material3">• Material Design 3</string>
+    <string name="tech_hilt">• Внедрение зависимостей Hilt</string>
+    <string name="tech_room">• База данных Room</string>
+    <string name="tech_coroutines">• Coroutines и Flow</string>
+    <string name="tech_okhttp">• OkHttp и Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">Часто задаваемые вопросы</string>
+    <string name="faq_what_is_davy">Что такое DAVy?</string>
+    <string name="faq_what_is_davy_answer">DAVy - это клиент синхронизации CalDAV/CardDAV для Android, который синхронизирует календари, контакты и задачи с вашим сервером.</string>
+    <string name="faq_which_servers">Какие серверы поддерживаются?</string>
+    <string name="faq_which_servers_answer">DAVy работает с любым сервером, совместимым с CalDAV/CardDAV, включая Nextcloud, ownCloud, Radicale, Baïkal и многие другие.</string>
+    <string name="faq_sync_not_working">Почему моя синхронизация не работает?</string>
+    <string name="faq_sync_not_working_answer">• URL сервера правильный (включая https://)\n• Имя пользователя и пароль действительны\n• Синхронизация только через WiFi отключена или WiFi подключен\n• Автоматическая синхронизация включена в настройках Android</string>
+    <string name="faq_enable_auto_sync">Как включить автоматическую синхронизацию?</string>
+    <string name="faq_enable_auto_sync_answer">Перейдите в Настройки Android → Учетные записи → DAVy → Включите \'Автоматическая синхронизация данных\'</string>
+    <string name="faq_multiple_accounts">Могу ли я синхронизировать несколько учетных записей?</string>
+    <string name="faq_multiple_accounts_answer">Да, вы можете добавлять и синхронизировать несколько учетных записей CalDAV/CardDAV одновременно.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">Руководства</string>
+    <string name="getting_started">Начало работы</string>
+    <string name="setup_guides">Руководства по настройке</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">Произошла ошибка</string>
+    <string name="error_network">Ошибка сети. Проверьте ваше соединение.</string>
+    <string name="error_authentication">Ошибка аутентификации. Проверьте свои учетные данные.</string>
+    <string name="error_server">Ошибка сервера. Повторите попытку позже.</string>
+    <string name="success">Успешно</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">Меню</string>
+    <string name="content_description_sync">Синхронизация</string>
+    <string name="content_description_add">Добавить</string>
+    <string name="content_description_delete">Удалить</string>
+    <string name="content_description_edit">Изменить</string>
+    <string name="content_description_info">Информация</string>
+    <string name="content_description_help">Помощь</string>
+    <string name="content_description_back">Назад</string>
+    <string name="content_description_settings">Настройки</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">Учетные записи</string>
+    <string name="nav_collections">Коллекции</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_guides">Руководства</string>
+    <string name="nav_faq">Часто задаваемые вопросы</string>
+    <string name="nav_about">О программе</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy hh:mm a</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">Нет событий</item>
+        <item quantity="one">%d событие</item>
+        <item quantity="few">%d события</item>
+        <item quantity="many">%d событий</item>
+        <item quantity="other">%d событий</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">Нет контактов</item>
+        <item quantity="one">%d контакт</item>
+        <item quantity="few">%d контакта</item>
+        <item quantity="many">%d контактов</item>
+        <item quantity="other">%d контактов</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">Нет задач</item>
+        <item quantity="one">%d задача</item>
+        <item quantity="few">%d задачи</item>
+        <item quantity="many">%d задач</item>
+        <item quantity="other">%d задач</item>
+    </plurals>
+</resources>

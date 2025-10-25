@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">استخدم تطبيق DAVy لإضافة الحسابات</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">مزامنة الكل</string>
+    <string name="shortcut_sync_all_long">مزامنة الكل</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">رجوع</string>
+    <string name="settings">الإعدادات</string>
+    <string name="about">حول</string>
+    <string name="ok">موافق</string>
+    <string name="cancel">إلغاء</string>
+    <string name="delete">حذف</string>
+    <string name="edit">تحرير</string>
+    <string name="save">حفظ</string>
+    <string name="sync">مزامنة</string>
+    <string name="error">خطأ</string>
+    <string name="loading">جارٍ التحميل…</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="close">إغلاق</string>
+    <string name="add">إضافة</string>
+    <string name="remove">إزالة</string>
+    <string name="refresh">تحديث</string>
+    <string name="enabled">ممكّن</string>
+    <string name="disabled">معطّل</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - الحسابات</string>
+    <string name="add_account">إضافة حساب</string>
+    <string name="account_details">تفاصيل الحساب</string>
+    <string name="account_settings">إعدادات الحساب</string>
+    <string name="delete_account">حذف الحساب</string>
+    <string name="delete_account_confirmation">هل أنت متأكد من رغبتك في حذف هذا الحساب؟ سيؤدي ذلك إلى إزالة جميع البيانات المتزامنة.</string>
+    <string name="no_accounts">لا توجد حسابات</string>
+    <string name="no_accounts_description">أضف أول حساب CalDAV/CardDAV للبدء</string>
+    <string name="account_name">اسم الحساب</string>
+    <string name="server_url">عنوان URL للخادم</string>
+    <string name="username">اسم المستخدم</string>
+    <string name="password">كلمة المرور</string>
+    <string name="account_color">لون الحساب</string>
+    
+    <!-- Sync -->
+    <string name="syncing">جارٍ المزامنة…</string>
+    <string name="sync_all">مزامنة الكل</string>
+    <string name="sync_successful">تمت المزامنة بنجاح</string>
+    <string name="sync_failed">فشلت المزامنة</string>
+    <string name="last_sync">آخر مزامنة: %1$s</string>
+    <string name="never_synced">لم تتم المزامنة مطلقاً</string>
+    <string name="auto_sync">المزامنة التلقائية</string>
+    <string name="sync_on_wifi_only">المزامنة عبر WiFi فقط</string>
+    
+    <!-- Collections -->
+    <string name="collections">المجموعات</string>
+    <string name="collections_title">DAVy - المجموعات</string>
+    <string name="calendars">التقويمات</string>
+    <string name="contacts">جهات الاتصال</string>
+    <string name="tasks">المهام</string>
+    <string name="address_books">دفاتر العناوين</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">تفاصيل التقويم</string>
+    <string name="calendar_list">قائمة التقويمات</string>
+    <string name="event_details">تفاصيل الحدث</string>
+    <string name="all_day_event">حدث طوال اليوم</string>
+    <string name="date_time">التاريخ والوقت</string>
+    <string name="description">الوصف</string>
+    <string name="location">الموقع</string>
+    <string name="attendees">الحضور (%1$d)</string>
+    <string name="reminders">التذكيرات</string>
+    <string name="reminder_before">%1$d دقيقة قبل (%2$s)</string>
+    <string name="recurrence">التكرار</string>
+    <string name="availability">التوفر</string>
+    <string name="delete_event">حذف الحدث</string>
+    <string name="delete_event_confirmation">هل أنت متأكد من رغبتك في حذف هذا الحدث؟</string>
+    <string name="edit_event">تحرير الحدث</string>
+    <string name="edit_event_future_update">سيتم تنفيذ تحرير الأحداث في تحديث مستقبلي.</string>
+    <string name="event_not_found">الحدث غير موجود</string>
+    <string name="failed_to_load_event">فشل تحميل الحدث: %1$s</string>
+    <string name="failed_to_delete_event">فشل حذف الحدث: %1$s</string>
+    <string name="event_type">النوع</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">تفاصيل دفتر العناوين</string>
+    <string name="address_book_list">قائمة دفاتر العناوين</string>
+    <string name="contact_details">تفاصيل جهة الاتصال</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">إعدادات المزامنة</string>
+    <string name="settings_appearance_title">المظهر</string>
+    <string name="settings_advanced_title">متقدم</string>
+    <string name="settings_backup_title">النسخ الاحتياطي والاستعادة</string>
+    <string name="settings_permissions_title">الأذونات</string>
+    <string name="dark_mode">الوضع الداكن</string>
+    <string name="debug_logging">تسجيل التصحيح</string>
+    <string name="battery_optimization">تحسين البطارية</string>
+    <string name="battery_optimization_disabled">معطّل</string>
+    <string name="battery_optimization_enabled">ممكّن (موصى به)</string>
+    <string name="battery_optimization_description">عطّل تحسين البطارية لمزامنة موثوقة في الخلفية</string>
+    <string name="permissions_status">حالة الأذونات</string>
+    <string name="all_permissions_granted">جميع الأذونات ممنوحة</string>
+    <string name="some_permissions_missing">بعض الأذونات مفقودة</string>
+    <string name="backup_database">نسخ قاعدة البيانات احتياطياً</string>
+    <string name="restore_database">استعادة قاعدة البيانات</string>
+    
+    <!-- About Screen -->
+    <string name="version">الإصدار %1$s</string>
+    <string name="app_description">DAVy هو تطبيق حديث لمزامنة CalDAV و CardDAV و WebCal لنظام Android. حافظ على تزامن التقويمات وجهات الاتصال والمهام عبر جميع أجهزتك.</string>
+    <string name="technology_stack">مجموعة التقنيات</string>
+    <string name="key_dependencies">الاعتماديات الرئيسية</string>
+    <string name="license">الترخيص: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin و Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room Database</string>
+    <string name="tech_coroutines">• Coroutines و Flow</string>
+    <string name="tech_okhttp">• OkHttp و Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">الأسئلة الشائعة</string>
+    <string name="faq_what_is_davy">ما هو DAVy؟</string>
+    <string name="faq_what_is_davy_answer">DAVy هو عميل مزامنة CalDAV/CardDAV لنظام Android يقوم بمزامنة التقويمات وجهات الاتصال والمهام مع خادمك.</string>
+    <string name="faq_which_servers">ما الخوادم المدعومة؟</string>
+    <string name="faq_which_servers_answer">يعمل DAVy مع أي خادم متوافق مع CalDAV/CardDAV، بما في ذلك Nextcloud و ownCloud و Radicale و Baïkal والمزيد.</string>
+    <string name="faq_sync_not_working">لماذا لا تعمل المزامنة؟</string>
+    <string name="faq_sync_not_working_answer">• عنوان URL للخادم صحيح (بما في ذلك https://)\n• اسم المستخدم وكلمة المرور صالحان\n• المزامنة عبر WiFi فقط معطلة أو WiFi متصل\n• المزامنة التلقائية ممكّنة في إعدادات Android</string>
+    <string name="faq_enable_auto_sync">كيف أُمكّن المزامنة التلقائية؟</string>
+    <string name="faq_enable_auto_sync_answer">انتقل إلى إعدادات Android ← الحسابات ← DAVy ← مكّن \'مزامنة البيانات تلقائياً\'</string>
+    <string name="faq_multiple_accounts">هل يمكنني مزامنة حسابات متعددة؟</string>
+    <string name="faq_multiple_accounts_answer">نعم، يمكنك إضافة ومزامنة حسابات CalDAV/CardDAV متعددة في وقت واحد.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">الأدلة</string>
+    <string name="getting_started">البدء</string>
+    <string name="setup_guides">أدلة الإعداد</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">حدث خطأ</string>
+    <string name="error_network">خطأ في الشبكة. تحقق من اتصالك.</string>
+    <string name="error_authentication">فشلت المصادقة. تحقق من بيانات الاعتماد الخاصة بك.</string>
+    <string name="error_server">خطأ في الخادم. حاول مرة أخرى لاحقاً.</string>
+    <string name="success">نجح</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">القائمة</string>
+    <string name="content_description_sync">مزامنة</string>
+    <string name="content_description_add">إضافة</string>
+    <string name="content_description_delete">حذف</string>
+    <string name="content_description_edit">تحرير</string>
+    <string name="content_description_info">معلومات</string>
+    <string name="content_description_help">مساعدة</string>
+    <string name="content_description_back">رجوع</string>
+    <string name="content_description_settings">الإعدادات</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">الحسابات</string>
+    <string name="nav_collections">المجموعات</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="nav_guides">الأدلة</string>
+    <string name="nav_faq">الأسئلة الشائعة</string>
+    <string name="nav_about">حول</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">لا توجد أحداث</item>
+        <item quantity="one">حدث واحد</item>
+        <item quantity="two">حدثان</item>
+        <item quantity="few">%d أحداث</item>
+        <item quantity="many">%d حدثاً</item>
+        <item quantity="other">%d حدث</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">لا توجد جهات اتصال</item>
+        <item quantity="one">جهة اتصال واحدة</item>
+        <item quantity="two">جهتا اتصال</item>
+        <item quantity="few">%d جهات اتصال</item>
+        <item quantity="many">%d جهة اتصال</item>
+        <item quantity="other">%d جهة اتصال</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">لا توجد مهام</item>
+        <item quantity="one">مهمة واحدة</item>
+        <item quantity="two">مهمتان</item>
+        <item quantity="few">%d مهام</item>
+        <item quantity="many">%d مهمة</item>
+        <item quantity="other">%d مهمة</item>
+    </plurals>
+</resources>

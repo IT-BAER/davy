@@ -17,9 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.davy.R
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -75,12 +77,12 @@ fun CardDAVTabContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "No address books",
+                            text = stringResource(R.string.no_address_books),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Sync with your server to fetch address books",
+                            text = stringResource(R.string.sync_with_server_to_fetch_address_books),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -188,7 +190,7 @@ private fun CardDAVCollectionCard(
                                 modifier = Modifier.padding(0.dp)
                             ) {
                                 Text(
-                                    "Read-only",
+                                    stringResource(R.string.read_only),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
@@ -210,7 +212,7 @@ private fun CardDAVCollectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Sync",
+                    text = stringResource(R.string.sync),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Switch(
@@ -228,11 +230,11 @@ private fun CardDAVCollectionCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(R.string.sync_now),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(R.string.sync_now))
                 }
             }
         }

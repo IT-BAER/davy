@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalAutofill
 import androidx.compose.ui.platform.LocalAutofillTree
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -33,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davy.R
+import android.content.Context
 import com.davy.data.remote.AuthenticationManager
 import com.davy.data.remote.AuthenticationResult
 import com.davy.data.remote.caldav.PrincipalDiscovery as CalDAVPrincipalDiscovery
@@ -52,12 +55,16 @@ import com.davy.domain.validator.ValidationResult
 import com.davy.sync.account.AndroidAccountManager
 import com.davy.sync.calendar.CalendarContractSync
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+
+private const val HTTPS_PREFIX = "https://"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,10 +80,13 @@ fun AddAccountScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text("Add Account") },
+                title = { Text(stringResource(id = R.string.add_account)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back)
+                        )
                     }
                 }
             )
@@ -101,12 +111,12 @@ fun AddAccountScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "CalDAV/CardDAV Account",
+                        text = stringResource(id = R.string.caldav_carddav_account_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "Compatible with Nextcloud, ownCloud, and other CalDAV/CardDAV servers",
+                        text = stringResource(id = R.string.caldav_carddav_account_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         modifier = Modifier.padding(top = 4.dp)
@@ -118,8 +128,8 @@ fun AddAccountScreen(
             OutlinedTextField(
                 value = uiState.accountName,
                 onValueChange = viewModel::onAccountNameChanged,
-                label = { Text("Account Name") },
-                placeholder = { Text("My Calendar") },
+                label = { Text(stringResource(id = R.string.account_name)) },
+                placeholder = { Text(stringResource(id = R.string.account_name_placeholder)) },
                 singleLine = true,
                 isError = uiState.accountNameError != null,
                 supportingText = uiState.accountNameError?.let { { Text(it) } },
@@ -138,51 +148,23 @@ fun AddAccountScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.Top
             ) {
-                // Protocol dropdown
-                var protocolExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = protocolExpanded,
-                    onExpandedChange = { protocolExpanded = it },
-                    modifier = Modifier.width(130.dp)
-                ) {
-                    OutlinedTextField(
-                        value = uiState.protocol,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Protocol") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = protocolExpanded) },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = protocolExpanded,
-                        onDismissRequest = { protocolExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("https://") },
-                            onClick = {
-                                viewModel.onProtocolChanged("https://")
-                                protocolExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("http://") },
-                            onClick = {
-                                viewModel.onProtocolChanged("http://")
-                                protocolExpanded = false
-                            }
-                        )
-                    }
-                }
+                // Protocol field (HTTPS only)
+                OutlinedTextField(
+                    value = uiState.protocol,
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text(stringResource(id = R.string.protocol_label)) },
+                    modifier = Modifier
+                        .width(130.dp)
+                )
                 
                 // Server URL field (without protocol)
                 OutlinedTextField(
                     value = uiState.serverUrl,
                     onValueChange = viewModel::onServerUrlChanged,
-                    label = { Text("Server URL") },
-                    placeholder = { Text("nextcloud.example.com") },
+                    label = { Text(stringResource(id = R.string.server_url)) },
+                    placeholder = { Text(stringResource(id = R.string.server_url_placeholder)) },
                     singleLine = true,
                     isError = uiState.serverUrlError != null,
                     supportingText = uiState.serverUrlError?.let { { Text(it) } },
@@ -262,7 +244,7 @@ fun AddAccountScreen(
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Testing...")
+                            Text(stringResource(id = R.string.testing))
                         }
                         uiState.credentialTestResult?.startsWith("✓") == true -> {
                             Icon(
@@ -282,7 +264,7 @@ fun AddAccountScreen(
                                     )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Valid")
+                            Text(stringResource(id = R.string.valid))
                         }
                         uiState.credentialTestResult?.startsWith("✗") == true -> {
                             Icon(
@@ -291,7 +273,7 @@ fun AddAccountScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Failed")
+                            Text(stringResource(id = R.string.failed))
                         }
                         else -> {
                             Icon(
@@ -300,7 +282,7 @@ fun AddAccountScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Test")
+                            Text(stringResource(id = R.string.test))
                         }
                     }
                 }
@@ -319,7 +301,7 @@ fun AddAccountScreen(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Connecting...")
+                        Text(stringResource(id = R.string.connecting))
                     } else {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -327,14 +309,14 @@ fun AddAccountScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Add Account")
+                        Text(stringResource(id = R.string.add_account))
                     }
                 }
             }
             
             // Help text
             Text(
-                text = "The app will automatically discover CalDAV and CardDAV services on your server",
+                text = stringResource(id = R.string.auto_discover_services_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
@@ -363,7 +345,7 @@ fun AddAccountScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Want to explore the app first?",
+                            text = stringResource(id = R.string.demo_explore_title),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
@@ -373,7 +355,7 @@ fun AddAccountScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = "Use these demo credentials:",
+                        text = stringResource(id = R.string.demo_credentials_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -384,21 +366,21 @@ fun AddAccountScreen(
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Text(
-                            text = "• Server: demo.local",
+                            text = stringResource(id = R.string.bullet_server, "demo.local"),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = "• Username: demo",
+                            text = stringResource(id = R.string.bullet_username, "demo"),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = "• Password: demo",
+                            text = stringResource(id = R.string.bullet_password, "demo"),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                             ),
@@ -443,8 +425,8 @@ fun UsernameTextFieldWithAutofill(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Username") },
-        placeholder = { Text("user@example.com") },
+        label = { Text(stringResource(id = R.string.username)) },
+        placeholder = { Text(stringResource(id = R.string.username_placeholder)) },
         singleLine = true,
         isError = isError,
         supportingText = supportingText,
@@ -498,7 +480,7 @@ fun PasswordTextFieldWithAutofill(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Password") },
+        label = { Text(stringResource(id = R.string.password)) },
         singleLine = true,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         isError = isError,
@@ -514,7 +496,7 @@ fun PasswordTextFieldWithAutofill(
             IconButton(onClick = { onPasswordVisibilityChanged(!passwordVisible) }) {
                 Icon(
                     imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    contentDescription = if (passwordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                 )
             }
         },
@@ -536,7 +518,7 @@ fun PasswordTextFieldWithAutofill(
 
 data class AddAccountUiState(
     val accountName: String = "",
-    val protocol: String = "https://",
+    val protocol: String = HTTPS_PREFIX,
     val serverUrl: String = "",
     val username: String = "",
     val password: String = "",
@@ -563,7 +545,8 @@ class AddAccountViewModel @Inject constructor(
     private val serverUrlValidator: ServerUrlValidator,
     private val credentialStore: CredentialStore,
     private val androidAccountManager: AndroidAccountManager,
-    private val calendarContractSync: CalendarContractSync
+    private val calendarContractSync: CalendarContractSync,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AddAccountUiState())
@@ -576,16 +559,10 @@ class AddAccountViewModel @Inject constructor(
         )
     }
     
-    fun onProtocolChanged(protocol: String) {
-        _uiState.value = _uiState.value.copy(
-            protocol = protocol
-        )
-    }
-    
     fun onServerUrlChanged(url: String) {
         // Strip any protocol prefix if user accidentally included it
         val cleanUrl = url
-            .removePrefix("https://")
+            .removePrefix(HTTPS_PREFIX)
             .removePrefix("http://")
         
         _uiState.value = _uiState.value.copy(
@@ -614,12 +591,12 @@ class AddAccountViewModel @Inject constructor(
         // Validate required fields
         if (state.serverUrl.isBlank() || state.username.isBlank() || state.password.isBlank()) {
             _uiState.value = _uiState.value.copy(
-                errorMessage = "Please fill in server URL, username, and password to test credentials"
+                errorMessage = appContext.getString(R.string.test_credentials_fill_all_fields)
             )
             return
         }
         
-        val fullUrl = state.protocol + state.serverUrl
+    val fullUrl = HTTPS_PREFIX + state.serverUrl
         
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -642,7 +619,7 @@ class AddAccountViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isTestingCredentials = false,
-                    credentialTestResult = "✗ ${e.message ?: "Connection failed"}"
+                    credentialTestResult = "✗ ${e.message ?: appContext.getString(R.string.connection_failed)}"
                 )
             }
         }
@@ -656,22 +633,22 @@ class AddAccountViewModel @Inject constructor(
         var hasError = false
         
         if (state.accountName.isBlank()) {
-            _uiState.value = state.copy(accountNameError = "Account name is required")
+            _uiState.value = state.copy(accountNameError = appContext.getString(R.string.account_name_required))
             hasError = true
         }
         
         if (state.serverUrl.isBlank()) {
-            _uiState.value = _uiState.value.copy(serverUrlError = "Server URL is required")
+            _uiState.value = _uiState.value.copy(serverUrlError = appContext.getString(R.string.server_url_required))
             hasError = true
         }
         
         if (state.username.isBlank()) {
-            _uiState.value = _uiState.value.copy(usernameError = "Username is required")
+            _uiState.value = _uiState.value.copy(usernameError = appContext.getString(R.string.username_required))
             hasError = true
         }
         
         if (state.password.isBlank()) {
-            _uiState.value = _uiState.value.copy(passwordError = "Password is required")
+            _uiState.value = _uiState.value.copy(passwordError = appContext.getString(R.string.password_required))
             hasError = true
         }
         
@@ -689,7 +666,7 @@ class AddAccountViewModel @Inject constructor(
         }
         
         // Combine protocol + serverUrl for validation
-        val fullUrl = state.protocol + state.serverUrl
+    val fullUrl = HTTPS_PREFIX + state.serverUrl
         
         // Validate server URL
         val urlValidation = serverUrlValidator.validate(fullUrl)
@@ -697,7 +674,7 @@ class AddAccountViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 serverUrlError = when (urlValidation) {
                     is ValidationResult.Error -> urlValidation.message
-                    else -> "Invalid server URL"
+                    else -> appContext.getString(R.string.invalid_server_url)
                 }
             )
             return
@@ -722,7 +699,7 @@ class AddAccountViewModel @Inject constructor(
                 if (existingAccount != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "An account with the same server URL and username already exists (${existingAccount.accountName}). Please use a different server or username."
+                        errorMessage = appContext.getString(R.string.account_exists_message, existingAccount.accountName)
                     )
                     return@launch
                 }
@@ -914,7 +891,7 @@ class AddAccountViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Failed to add account: ${e.message}"
+                    errorMessage = appContext.getString(R.string.failed_to_add_account, e.message ?: appContext.getString(R.string.unknown))
                 )
             }
         }
@@ -966,7 +943,7 @@ class AddAccountViewModel @Inject constructor(
                     accountName = state.accountName,
                     serverUrl = "https://demo.local",
                     username = "demo",
-                    displayName = "Demo Account",
+                    displayName = appContext.getString(R.string.demo_account_display_name),
                     email = "demo@davy.app",
                     calendarEnabled = true,
                     contactsEnabled = true,
@@ -975,7 +952,7 @@ class AddAccountViewModel @Inject constructor(
                     lastAuthenticatedAt = System.currentTimeMillis(),
                     authType = AuthType.BASIC,
                     certificateFingerprint = null,
-                    notes = "Demo account - local only, no server connection"
+                    notes = appContext.getString(R.string.demo_account_notes)
                 )
                 
                 val accountId = accountRepository.insert(account)
@@ -996,69 +973,103 @@ class AddAccountViewModel @Inject constructor(
                     Timber.d("Created Android account for demo")
                 }
                 
-                // Create sample calendars
+                val accountBaseUrl = "https://demo.local/accounts/$accountId"
+                val calendarBaseUrl = "$accountBaseUrl/calendars"
+                val contactsBaseUrl = "$accountBaseUrl/contacts"
+                val webCalBaseUrl = "$accountBaseUrl/webcal"
+                val now = System.currentTimeMillis()
+
+                val personalCalendarSyncedAt = now - TimeUnit.MINUTES.toMillis(5)
+                val workCalendarSyncedAt = now - TimeUnit.MINUTES.toMillis(45)
+                val familyCalendarSyncedAt = now - TimeUnit.MINUTES.toMillis(120)
+
+                // Create sample calendars with per-account URLs to avoid conflicts across demo accounts
                 val sampleCalendars = listOf(
                     com.davy.domain.model.Calendar(
                         id = 0,
                         accountId = accountId,
-                        calendarUrl = "https://demo.local/calendars/personal",
-                        displayName = "Personal Calendar",
-                        description = "My personal events",
+                        calendarUrl = "$calendarBaseUrl/personal",
+                        displayName = appContext.getString(R.string.personal_calendar),
+                        description = appContext.getString(R.string.personal_events_description),
                         color = 0xFF2196F3.toInt(), // Blue
                         supportsVTODO = true,
                         supportsVJOURNAL = false,
                         syncEnabled = true,
-                        visible = true
+                        visible = true,
+                        createdAt = personalCalendarSyncedAt,
+                        updatedAt = personalCalendarSyncedAt,
+                        lastSyncedAt = personalCalendarSyncedAt
                     ),
                     com.davy.domain.model.Calendar(
                         id = 0,
                         accountId = accountId,
-                        calendarUrl = "https://demo.local/calendars/work",
-                        displayName = "Work Calendar",
-                        description = "Work meetings and tasks",
+                        calendarUrl = "$calendarBaseUrl/work",
+                        displayName = appContext.getString(R.string.work_calendar),
+                        description = appContext.getString(R.string.work_meetings_tasks),
                         color = 0xFFF44336.toInt(), // Red
                         supportsVTODO = true,
                         supportsVJOURNAL = false,
                         syncEnabled = true,
-                        visible = true
+                        visible = true,
+                        createdAt = workCalendarSyncedAt,
+                        updatedAt = workCalendarSyncedAt,
+                        lastSyncedAt = workCalendarSyncedAt
                     ),
                     com.davy.domain.model.Calendar(
                         id = 0,
                         accountId = accountId,
-                        calendarUrl = "https://demo.local/calendars/family",
-                        displayName = "Family Events",
-                        description = "Family birthdays and gatherings",
+                        calendarUrl = "$calendarBaseUrl/family",
+                        displayName = appContext.getString(R.string.family_events),
+                        description = appContext.getString(R.string.family_birthdays_gatherings),
                         color = 0xFF4CAF50.toInt(), // Green
                         supportsVTODO = false,
                         supportsVJOURNAL = false,
                         syncEnabled = false,
-                        visible = true
+                        visible = true,
+                        createdAt = familyCalendarSyncedAt,
+                        updatedAt = familyCalendarSyncedAt,
+                        lastSyncedAt = familyCalendarSyncedAt
                     )
                 )
-                
+
                 // Insert sample calendars
                 sampleCalendars.forEach { calendar ->
                     val calendarId = calendarRepository.insert(calendar)
                     Timber.d("Created demo calendar: %s (ID: %d)", calendar.displayName, calendarId)
                 }
                 
+                try {
+                    calendarContractSync.syncToCalendarProvider(accountId)
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to sync demo calendars to provider")
+                }
+                
                 // Create sample address books
+                val personalContactsSyncedAt = now - TimeUnit.MINUTES.toMillis(3)
+                val businessContactsSyncedAt = now - TimeUnit.MINUTES.toMillis(60)
+
                 val sampleAddressBooks = listOf(
                     com.davy.domain.model.AddressBook(
                         id = 0,
                         accountId = accountId,
-                        url = "https://demo.local/contacts/personal",
-                        displayName = "Personal Contacts",
-                        description = "My personal contacts",
-                        syncEnabled = true
+                        url = "$contactsBaseUrl/personal",
+                        displayName = appContext.getString(R.string.personal_contacts),
+                        description = appContext.getString(R.string.my_personal_contacts),
+                        ctag = "demo-personal-ctag",
+                        syncEnabled = true,
+                        createdAt = personalContactsSyncedAt,
+                        updatedAt = personalContactsSyncedAt
                     ),
                     com.davy.domain.model.AddressBook(
                         id = 0,
                         accountId = accountId,
-                        url = "https://demo.local/contacts/business",
-                        displayName = "Business Contacts",
-                        description = "Work-related contacts",
-                        syncEnabled = true
+                        url = "$contactsBaseUrl/business",
+                        displayName = appContext.getString(R.string.business_contacts),
+                        description = appContext.getString(R.string.work_related_contacts),
+                        ctag = "demo-business-ctag",
+                        syncEnabled = true,
+                        createdAt = businessContactsSyncedAt,
+                        updatedAt = businessContactsSyncedAt
                     )
                 )
                 
@@ -1066,6 +1077,38 @@ class AddAccountViewModel @Inject constructor(
                 sampleAddressBooks.forEach { addressBook ->
                     val addressBookId = addressBookRepository.insert(addressBook)
                     Timber.d("Created demo address book: %s (ID: %d)", addressBook.displayName, addressBookId)
+
+                    androidAccountManager.createAddressBookAccount(
+                        mainAccountName = account.accountName,
+                        addressBookName = addressBook.displayName,
+                        addressBookId = addressBookId,
+                        addressBookUrl = addressBook.url
+                    )?.let {
+                        Timber.d("Created demo address book account: %s", it.name)
+                    }
+                }
+
+                // Create sample WebCal subscription with simulated sync timestamp
+                val webCalSyncedAt = now - TimeUnit.MINUTES.toMillis(15)
+                val sampleWebCals = listOf(
+                    WebCalSubscription(
+                        id = 0,
+                        accountId = accountId,
+                        subscriptionUrl = "$webCalBaseUrl/public-holidays.ics",
+                        displayName = appContext.getString(R.string.webcal),
+                        description = appContext.getString(R.string.webcal_subscription_description),
+                        color = 0xFF9C27B0.toInt(),
+                        syncEnabled = true,
+                        visible = true,
+                        createdAt = webCalSyncedAt,
+                        updatedAt = webCalSyncedAt,
+                        lastSyncedAt = webCalSyncedAt
+                    )
+                )
+
+                sampleWebCals.forEach { subscription ->
+                    webCalSubscriptionRepository.insert(subscription)
+                    Timber.d("Created demo webcal subscription: %s", subscription.displayName)
                 }
                 
                 Timber.d("=== Demo account setup complete ===")
@@ -1079,7 +1122,7 @@ class AddAccountViewModel @Inject constructor(
                 Timber.e(e, "Failed to create demo account")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Failed to create demo account: ${e.message}"
+                    errorMessage = appContext.getString(R.string.failed_to_create_demo_account, e.message ?: appContext.getString(R.string.unknown))
                 )
             }
         }

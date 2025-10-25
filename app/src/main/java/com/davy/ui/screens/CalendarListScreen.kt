@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,12 +68,12 @@ fun CalendarListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Calendars") },
+                title = { Text(stringResource(id = com.davy.R.string.calendars)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = com.davy.R.string.back)
                         )
                     }
                 },
@@ -81,7 +82,7 @@ fun CalendarListScreen(
                     IconButton(onClick = { showSyncMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.Sync,
-                            contentDescription = "Sync options"
+                            contentDescription = stringResource(id = com.davy.R.string.sync)
                         )
                     }
                     DropdownMenu(
@@ -89,7 +90,7 @@ fun CalendarListScreen(
                         onDismissRequest = { showSyncMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Sync Calendars Only") },
+                            text = { Text(stringResource(id = com.davy.R.string.sync_calendars_only)) },
                             onClick = {
                                 showSyncMenu = false
                                 viewModel.syncCalendarsOnly()
@@ -108,7 +109,7 @@ fun CalendarListScreen(
                     IconButton(onClick = viewModel::refresh, enabled = !isBusy) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = stringResource(id = com.davy.R.string.refresh)
                         )
                     }
                 }
@@ -136,13 +137,13 @@ fun CalendarListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "No account configured",
+                            text = stringResource(id = com.davy.R.string.no_account_configured),
                             style = MaterialTheme.typography.headlineSmall,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Please add an account first",
+                            text = stringResource(id = com.davy.R.string.please_add_account_first),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
@@ -157,13 +158,13 @@ fun CalendarListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "No calendars found",
+                            text = stringResource(id = com.davy.R.string.no_calendars_found),
                             style = MaterialTheme.typography.headlineSmall,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Sync with your server to fetch calendars",
+                            text = stringResource(id = com.davy.R.string.sync_with_server_to_fetch_calendars),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
@@ -209,14 +210,14 @@ fun CalendarListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Error: ${state.message}",
+                            text = stringResource(id = com.davy.R.string.error) + ": ${state.message}",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = viewModel::refresh) {
-                            Text("Retry")
+                            Text(stringResource(id = com.davy.R.string.retry))
                         }
                     }
                 }
@@ -290,7 +291,7 @@ fun CalendarItemCard(
                     
                     if (calendar.lastSyncedAt != null) {
                         Text(
-                            text = "Last synced: ${formatDate(calendar.lastSyncedAt)}",
+                            text = stringResource(id = com.davy.R.string.last_sync, formatDate(calendar.lastSyncedAt)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -314,7 +315,7 @@ fun CalendarItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Sync",
+                        text = stringResource(id = com.davy.R.string.sync),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -337,7 +338,7 @@ fun CalendarItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Visible",
+                        text = stringResource(id = com.davy.R.string.visible),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -364,11 +365,11 @@ fun CalendarItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(id = com.davy.R.string.sync_now),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(id = com.davy.R.string.sync_now))
                 }
                 
                 // Reset & Full Sync button (for debugging sync issues)
@@ -383,11 +384,11 @@ fun CalendarItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Reset sync token and trigger full sync",
+                        contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Reset & Full Sync")
+                    Text(stringResource(id = com.davy.R.string.reset_full_sync))
                 }
             }
             
@@ -403,7 +404,7 @@ fun CalendarItemCard(
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "Synced with Android",
+                            stringResource(id = com.davy.R.string.synced_with_android),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer

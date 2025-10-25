@@ -10,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.davy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,10 +21,10 @@ fun FaqScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("FAQ") },
+                title = { Text(stringResource(id = R.string.faq)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.back))
                     }
                 }
             )
@@ -37,13 +39,13 @@ fun FaqScreen(
         ) {
             // Q1
             Text(
-                text = "What is DAVy?",
+                text = stringResource(id = R.string.faq_what_is_davy),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "DAVy is a CalDAV/CardDAV sync client for Android that synchronizes calendars, contacts, and tasks with your server.",
+                text = stringResource(id = R.string.faq_what_is_davy_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -53,13 +55,13 @@ fun FaqScreen(
             
             // Q2
             Text(
-                text = "Which servers are supported?",
+                text = stringResource(id = R.string.faq_which_servers),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "DAVy works with any CalDAV/CardDAV compliant server including Nextcloud, ownCloud, Radicale, Baïkal, and more.",
+                text = stringResource(id = R.string.faq_which_servers_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -69,17 +71,13 @@ fun FaqScreen(
             
             // Q3
             Text(
-                text = "Why is my sync not working?",
+                text = stringResource(id = R.string.faq_sync_not_working),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Check:\n" +
-                        "• Server URL is correct (including https://)\n" +
-                        "• Username and password are valid\n" +
-                        "• WiFi-only sync is disabled or WiFi is connected\n" +
-                        "• Auto-sync is enabled in Android Settings",
+                text = stringResource(id = R.string.faq_sync_not_working_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -89,13 +87,13 @@ fun FaqScreen(
             
             // Q4
             Text(
-                text = "How do I enable auto-sync?",
+                text = stringResource(id = R.string.faq_enable_auto_sync),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Go to Android Settings → Accounts → DAVy → Enable 'Automatically sync data'",
+                text = stringResource(id = R.string.faq_enable_auto_sync_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -105,13 +103,13 @@ fun FaqScreen(
             
             // Q5
             Text(
-                text = "Can I sync multiple accounts?",
+                text = stringResource(id = R.string.faq_multiple_accounts),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Yes! Add multiple accounts by tapping the + button on the main screen. Each account syncs independently.",
+                text = stringResource(id = R.string.faq_multiple_accounts_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -121,13 +119,13 @@ fun FaqScreen(
             
             // Q6
             Text(
-                text = "Where are my synced events/contacts?",
+                text = stringResource(id = R.string.faq_where_are_my_data),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Calendar events appear in Android's Calendar app. Contacts appear in Android's Contacts app. DAVy handles the sync, your default apps display the data.",
+                text = stringResource(id = R.string.faq_where_are_my_data_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -137,13 +135,13 @@ fun FaqScreen(
             
             // Q7
             Text(
-                text = "How do I delete an account?",
+                text = stringResource(id = R.string.faq_how_delete_account),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Long-press an account card on the main screen and confirm deletion. This removes the account and stops syncing.",
+                text = stringResource(id = R.string.faq_how_delete_account_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -153,13 +151,13 @@ fun FaqScreen(
             
             // Q8
             Text(
-                text = "What is WiFi-only sync?",
+                text = stringResource(id = R.string.faq_what_is_wifi_only),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Enable this in account settings to only sync when connected to WiFi, saving mobile data.",
+                text = stringResource(id = R.string.faq_what_is_wifi_only_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -169,13 +167,13 @@ fun FaqScreen(
             
             // Q9
             Text(
-                text = "What happens if I rename an account?",
+                text = stringResource(id = R.string.faq_rename_account),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Renaming an account can cause it to become disabled in the Android Calendar. This is because Android uses the account name as an identifier. You can re-enable the Account inside your Calendar App.",
+                text = stringResource(id = R.string.faq_rename_account_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

@@ -316,6 +316,10 @@ class SyncWorker @AssistedInject constructor(
                             is com.davy.sync.webcal.WebCalSyncResult.NotModified -> Timber.d("WebCal subscription $subscriptionId not modified")
                         }
                     }
+                } catch (e: CancellationException) {
+                    // Propagate cancellation without showing error notification
+                    Timber.i("WebCal sync cancelled")
+                    throw e
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to sync WebCal subscriptions for account ${account.accountName}")
                     NotificationHelper.showErrorNotification(

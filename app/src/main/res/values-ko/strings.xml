@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">계정을 추가하려면 DAVy 앱을 사용하세요</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">모두 동기화</string>
+    <string name="shortcut_sync_all_long">모두 동기화</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">뒤로</string>
+    <string name="settings">설정</string>
+    <string name="about">정보</string>
+    <string name="ok">확인</string>
+    <string name="cancel">취소</string>
+    <string name="delete">삭제</string>
+    <string name="edit">편집</string>
+    <string name="save">저장</string>
+    <string name="sync">동기화</string>
+    <string name="error">오류</string>
+    <string name="loading">로딩 중…</string>
+    <string name="retry">재시도</string>
+    <string name="close">닫기</string>
+    <string name="add">추가</string>
+    <string name="remove">제거</string>
+    <string name="refresh">새로고침</string>
+    <string name="enabled">활성화됨</string>
+    <string name="disabled">비활성화됨</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - 계정</string>
+    <string name="add_account">계정 추가</string>
+    <string name="account_details">계정 세부정보</string>
+    <string name="account_settings">계정 설정</string>
+    <string name="delete_account">계정 삭제</string>
+    <string name="delete_account_confirmation">이 계정을 삭제하시겠습니까? 동기화된 모든 데이터가 제거됩니다.</string>
+    <string name="no_accounts">계정이 없습니다</string>
+    <string name="no_accounts_description">시작하려면 첫 번째 CalDAV/CardDAV 계정을 추가하세요</string>
+    <string name="account_name">계정 이름</string>
+    <string name="server_url">서버 URL</string>
+    <string name="username">사용자 이름</string>
+    <string name="password">비밀번호</string>
+    <string name="account_color">계정 색상</string>
+    
+    <!-- Sync -->
+    <string name="syncing">동기화 중…</string>
+    <string name="sync_all">모두 동기화</string>
+    <string name="sync_successful">동기화 성공</string>
+    <string name="sync_failed">동기화 실패</string>
+    <string name="last_sync">마지막 동기화: %1$s</string>
+    <string name="never_synced">동기화 안 됨</string>
+    <string name="auto_sync">자동 동기화</string>
+    <string name="sync_on_wifi_only">WiFi에서만 동기화</string>
+    
+    <!-- Collections -->
+    <string name="collections">컬렉션</string>
+    <string name="collections_title">DAVy - 컬렉션</string>
+    <string name="calendars">캘린더</string>
+    <string name="contacts">연락처</string>
+    <string name="tasks">작업</string>
+    <string name="address_books">주소록</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">캘린더 세부정보</string>
+    <string name="calendar_list">캘린더 목록</string>
+    <string name="event_details">일정 세부정보</string>
+    <string name="all_day_event">종일 일정</string>
+    <string name="date_time">날짜 및 시간</string>
+    <string name="description">설명</string>
+    <string name="location">위치</string>
+    <string name="attendees">참석자 (%1$d)</string>
+    <string name="reminders">알림</string>
+    <string name="reminder_before">%1$d분 전 (%2$s)</string>
+    <string name="recurrence">반복</string>
+    <string name="availability">가능 여부</string>
+    <string name="delete_event">일정 삭제</string>
+    <string name="delete_event_confirmation">이 일정을 삭제하시겠습니까?</string>
+    <string name="edit_event">일정 편집</string>
+    <string name="edit_event_future_update">일정 편집은 향후 업데이트에서 구현됩니다.</string>
+    <string name="event_not_found">일정을 찾을 수 없습니다</string>
+    <string name="failed_to_load_event">일정 로드 실패: %1$s</string>
+    <string name="failed_to_delete_event">일정 삭제 실패: %1$s</string>
+    <string name="event_type">유형</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">주소록 세부정보</string>
+    <string name="address_book_list">주소록 목록</string>
+    <string name="contact_details">연락처 세부정보</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">동기화 설정</string>
+    <string name="settings_appearance_title">모양</string>
+    <string name="settings_advanced_title">고급</string>
+    <string name="settings_backup_title">백업 및 복원</string>
+    <string name="settings_permissions_title">권한</string>
+    <string name="dark_mode">다크 모드</string>
+    <string name="debug_logging">디버그 로깅</string>
+    <string name="battery_optimization">배터리 최적화</string>
+    <string name="battery_optimization_disabled">비활성화됨</string>
+    <string name="battery_optimization_enabled">활성화됨 (권장)</string>
+    <string name="battery_optimization_description">안정적인 백그라운드 동기화를 위해 배터리 최적화를 비활성화하세요</string>
+    <string name="permissions_status">권한 상태</string>
+    <string name="all_permissions_granted">모든 권한 허용됨</string>
+    <string name="some_permissions_missing">일부 권한 누락</string>
+    <string name="backup_database">데이터베이스 백업</string>
+    <string name="restore_database">데이터베이스 복원</string>
+    
+    <!-- About Screen -->
+    <string name="version">버전 %1$s</string>
+    <string name="app_description">DAVy는 Android용 최신 CalDAV, CardDAV 및 WebCal 동기화 앱입니다. 모든 기기에서 캘린더, 연락처 및 작업을 동기화하세요.</string>
+    <string name="technology_stack">기술 스택</string>
+    <string name="key_dependencies">주요 종속성</string>
+    <string name="license">라이선스: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin 및 Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room Database</string>
+    <string name="tech_coroutines">• Coroutines 및 Flow</string>
+    <string name="tech_okhttp">• OkHttp 및 Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">자주 묻는 질문</string>
+    <string name="faq_what_is_davy">DAVy란 무엇인가요?</string>
+    <string name="faq_what_is_davy_answer">DAVy는 서버와 캘린더, 연락처 및 작업을 동기화하는 Android용 CalDAV/CardDAV 동기화 클라이언트입니다.</string>
+    <string name="faq_which_servers">어떤 서버가 지원되나요?</string>
+    <string name="faq_which_servers_answer">DAVy는 Nextcloud, ownCloud, Radicale, Baïkal 등을 포함한 모든 CalDAV/CardDAV 호환 서버와 작동합니다.</string>
+    <string name="faq_sync_not_working">동기화가 작동하지 않는 이유는?</string>
+    <string name="faq_sync_not_working_answer">• 서버 URL이 올바른지 확인 (https:// 포함)\n• 사용자 이름과 비밀번호가 유효한지 확인\n• WiFi에서만 동기화가 비활성화되었거나 WiFi에 연결되어 있는지 확인\n• Android 설정에서 자동 동기화가 활성화되어 있는지 확인</string>
+    <string name="faq_enable_auto_sync">자동 동기화를 활성화하는 방법은?</string>
+    <string name="faq_enable_auto_sync_answer">Android 설정 → 계정 → DAVy → \'데이터 자동 동기화\' 활성화</string>
+    <string name="faq_multiple_accounts">여러 계정을 동기화할 수 있나요?</string>
+    <string name="faq_multiple_accounts_answer">예, 여러 CalDAV/CardDAV 계정을 동시에 추가하고 동기화할 수 있습니다.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">가이드</string>
+    <string name="getting_started">시작하기</string>
+    <string name="setup_guides">설정 가이드</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">오류가 발생했습니다</string>
+    <string name="error_network">네트워크 오류. 연결을 확인하세요.</string>
+    <string name="error_authentication">인증 실패. 자격 증명을 확인하세요.</string>
+    <string name="error_server">서버 오류. 나중에 다시 시도하세요.</string>
+    <string name="success">성공</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">메뉴</string>
+    <string name="content_description_sync">동기화</string>
+    <string name="content_description_add">추가</string>
+    <string name="content_description_delete">삭제</string>
+    <string name="content_description_edit">편집</string>
+    <string name="content_description_info">정보</string>
+    <string name="content_description_help">도움말</string>
+    <string name="content_description_back">뒤로</string>
+    <string name="content_description_settings">설정</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">계정</string>
+    <string name="nav_collections">컬렉션</string>
+    <string name="nav_settings">설정</string>
+    <string name="nav_guides">가이드</string>
+    <string name="nav_faq">자주 묻는 질문</string>
+    <string name="nav_about">정보</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">yyyy년 M월 d일</string>
+    <string name="datetime_format_long">yyyy년 M월 d일 HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="other">%d개의 일정</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="other">%d개의 연락처</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="other">%d개의 작업</item>
+    </plurals>
+</resources>

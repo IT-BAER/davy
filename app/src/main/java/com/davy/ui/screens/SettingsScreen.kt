@@ -19,8 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.davy.BuildConfig
+import com.davy.R
 import com.davy.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -83,12 +86,12 @@ fun SettingsScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(id = R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.back)
                         )
                     }
                 }
@@ -102,20 +105,20 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Sync Settings
-            SettingsHeader(text = "Synchronization")
+            SettingsHeader(text = stringResource(id = R.string.settings_sync_title))
             
             SwitchSettingItem(
                 icon = Icons.Default.Sync,
-                title = "Auto-sync",
-                subtitle = "Automatically sync calendars and contacts",
+                title = stringResource(id = R.string.auto_sync),
+                subtitle = stringResource(id = R.string.auto_sync_subtitle),
                 checked = autoSyncEnabled,
                 onCheckedChange = viewModel::updateAutoSync
             )
             
             SwitchSettingItem(
                 icon = Icons.Default.Wifi,
-                title = "WiFi only",
-                subtitle = "Only sync when connected to WiFI",
+                title = stringResource(id = R.string.sync_on_wifi_only),
+                subtitle = stringResource(id = R.string.sync_on_wifi_only_subtitle),
                 checked = syncOnWifiOnly,
                 onCheckedChange = viewModel::updateSyncOnWifiOnly
             )
@@ -123,13 +126,13 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // Battery
-            SettingsHeader(text = "Battery")
+            SettingsHeader(text = stringResource(id = R.string.battery))
             
             ClickableSettingItemWithStatus(
                 icon = if (isBatteryOptimizationDisabled) Icons.Default.BatteryFull else Icons.Default.BatterySaver,
-                title = "Battery optimization",
-                subtitle = "Configure battery restrictions for reliable sync",
-                status = if (isBatteryOptimizationDisabled) "Unrestricted" else "Optimized",
+                title = stringResource(id = R.string.battery_optimization),
+                subtitle = stringResource(id = R.string.battery_optimization_description),
+                status = if (isBatteryOptimizationDisabled) stringResource(id = R.string.battery_optimization_disabled) else stringResource(id = R.string.battery_optimization_enabled),
                 isStatusGood = isBatteryOptimizationDisabled,
                 onClick = {
                     // Launch battery optimization settings using ActivityResultLauncher
@@ -140,24 +143,24 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // Permissions
-            SettingsHeader(text = "Permissions")
+            SettingsHeader(text = stringResource(id = R.string.settings_permissions_title))
             
             ClickableSettingItem(
                 icon = Icons.Default.Security,
-                title = "View permissions",
-                subtitle = "Check granted permissions and manage them",
+                title = stringResource(id = R.string.view_permissions),
+                subtitle = stringResource(id = R.string.view_permissions_subtitle),
                 onClick = { showPermissionsDialog = true }
             )
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // Appearance
-            SettingsHeader(text = "Appearance")
+            SettingsHeader(text = stringResource(id = R.string.settings_appearance_title))
             
             SwitchSettingItem(
                 icon = Icons.Default.DarkMode,
-                title = "Dark mode",
-                subtitle = "Use dark theme",
+                title = stringResource(id = R.string.dark_mode),
+                subtitle = stringResource(id = R.string.dark_mode_subtitle),
                 checked = isDarkMode,
                 onCheckedChange = viewModel::toggleDarkMode
             )
@@ -165,31 +168,31 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // Backup & Restore
-            SettingsHeader(text = "Backup & Restore")
+            SettingsHeader(text = stringResource(id = R.string.settings_backup_title))
             
             ClickableSettingItem(
                 icon = Icons.Default.Save,
-                title = "Backup all settings",
-                subtitle = "Create a backup of all accounts and app settings",
+                title = stringResource(id = R.string.backup_all_settings),
+                subtitle = stringResource(id = R.string.backup_all_settings_subtitle),
                 onClick = { showBackupDialog = true }
             )
             
             ClickableSettingItem(
                 icon = Icons.Default.Upload,
-                title = "Restore from backup",
-                subtitle = "Restore accounts and settings from a backup file",
+                title = stringResource(id = R.string.restore_from_backup),
+                subtitle = stringResource(id = R.string.restore_from_backup_subtitle),
                 onClick = { showRestoreDialog = true }
             )
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // Developer
-            SettingsHeader(text = "Developer")
+            SettingsHeader(text = stringResource(id = R.string.developer))
             
             SwitchSettingItem(
                 icon = Icons.Default.BugReport,
-                title = "Debug logging",
-                subtitle = "Enable detailed logging for troubleshooting (excludes passwords)",
+                title = stringResource(id = R.string.debug_logging),
+                subtitle = stringResource(id = R.string.debug_logging_subtitle),
                 checked = debugLoggingEnabled,
                 onCheckedChange = viewModel::updateDebugLogging
             )
@@ -197,19 +200,19 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // About
-            SettingsHeader(text = "About")
+            SettingsHeader(text = stringResource(id = R.string.about))
             
             ClickableSettingItem(
                 icon = Icons.Default.Info,
-                title = "Version",
-                subtitle = "1.0.0",
+                title = stringResource(id = R.string.version_title),
+                subtitle = stringResource(id = R.string.version, BuildConfig.VERSION_NAME),
                 onClick = { /* Show version details */ }
             )
             
             ClickableSettingItem(
                 icon = Icons.Default.Description,
-                title = "License",
-                subtitle = "Apache 2.0 - Open source software",
+                title = stringResource(id = R.string.license_title),
+                subtitle = stringResource(id = R.string.license_description),
                 onClick = { 
                     android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
                         data = android.net.Uri.parse("https://www.apache.org/licenses/LICENSE-2.0")
@@ -228,7 +231,7 @@ fun SettingsScreen(
     if (showPermissionsDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionsDialog = false },
-            title = { Text("App Permissions") },
+            title = { Text(stringResource(id = R.string.app_permissions)) },
             text = {
                 Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
                     permissions.forEach { permission ->
@@ -285,12 +288,12 @@ fun SettingsScreen(
                         }
                     }
                 ) {
-                    Text("Manage")
+                    Text(stringResource(id = R.string.manage))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showPermissionsDialog = false }) {
-                    Text("Close")
+                    Text(stringResource(id = R.string.close))
                 }
             }
         )
@@ -323,7 +326,7 @@ fun SettingsScreen(
                                 backupResult = filename
                                 backupError = null
                             } else {
-                                backupError = "Failed to write backup file"
+                                backupError = context.getString(R.string.failed_to_write_backup_file)
                                 backupResult = null
                             }
                         }
@@ -342,7 +345,7 @@ fun SettingsScreen(
         
         AlertDialog(
             onDismissRequest = { showBackupDialog = false },
-            title = { Text("Backup All Settings") },
+            title = { Text(stringResource(id = R.string.backup_all_settings)) },
             text = {
                 Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     when {
@@ -352,12 +355,12 @@ fun SettingsScreen(
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                Text("Creating backup...")
+                                Text(stringResource(id = R.string.creating_backup))
                             }
                         }
                         backupError != null -> {
                             Text(
-                                text = "Error: $backupError",
+                                text = stringResource(id = R.string.error) + ": " + backupError,
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
@@ -374,18 +377,18 @@ fun SettingsScreen(
                                 
                                 Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Full Backup Created Successfully!",
+                                        text = stringResource(id = R.string.full_backup_created_successfully),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         color = Color(0xFF4CAF50)  // Green
                                     )
                                     Text(
-                                        text = "Saved as: $backupResult",
+                                        text = stringResource(id = R.string.saved_as) + " " + backupResult!!,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "⚠ Passwords are NOT included in backups for security reasons.",
+                                        text = stringResource(id = R.string.passwords_not_included_backup),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -394,16 +397,16 @@ fun SettingsScreen(
                             }
                         }
                         else -> {
-                            Text("Create a full backup of all accounts, app settings, and configurations.")
+                            Text(stringResource(id = R.string.create_full_backup_description))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "You will choose where to save the backup file.",
+                                text = stringResource(id = R.string.choose_where_to_save_backup),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "⚠ Passwords will NOT be backed up for security reasons.",
+                                text = stringResource(id = R.string.passwords_not_backed_up_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -423,18 +426,18 @@ fun SettingsScreen(
                             backupFileSaver.launch("davy_full_backup_$timestamp.json")
                         }
                     ) {
-                        Text("Choose Location")
+                        Text(stringResource(id = R.string.choose_location))
                     }
                 } else {
                     TextButton(onClick = { showBackupDialog = false }) {
-                        Text("Close")
+                        Text(stringResource(id = R.string.close))
                     }
                 }
             },
             dismissButton = {
                 if (backupResult == null && !isBackingUp) {
                     TextButton(onClick = { showBackupDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             }
@@ -462,18 +465,29 @@ fun SettingsScreen(
                             is com.davy.domain.manager.BackupRestoreManager.RestoreResult.Success -> {
                                 val filename = com.davy.ui.util.getFileNameFromUri(context, uri)
                                 val parts = mutableListOf<String>()
-                                
+
                                 if (result.accountsRestored > 0) {
-                                    parts.add("${result.accountsRestored} account${if (result.accountsRestored != 1) "s" else ""}")
+                                    parts.add(
+                                        context.resources.getQuantityString(
+                                            R.plurals.accounts_restored,
+                                            result.accountsRestored,
+                                            result.accountsRestored
+                                        )
+                                    )
                                 }
                                 if (result.settingsRestored) {
-                                    parts.add("app settings")
+                                    parts.add(context.getString(R.string.app_settings))
                                 }
-                                
+
+                                val joiner = context.getString(R.string.and_joiner)
                                 restoreResult = if (parts.isNotEmpty()) {
-                                    "Restored from $filename:\n${parts.joinToString(" and ")}"
+                                    context.getString(
+                                        R.string.restored_from_filename_with_details,
+                                        filename,
+                                        parts.joinToString(joiner)
+                                    )
                                 } else {
-                                    "Restored from $filename (no changes needed)"
+                                    context.getString(R.string.restored_from_filename_no_changes, filename)
                                 }
                                 restoreError = null
                             }
@@ -483,7 +497,7 @@ fun SettingsScreen(
                             }
                         }
                     } else {
-                        restoreError = "Failed to read backup file"
+                        restoreError = context.getString(R.string.failed_to_read_backup_file)
                         restoreResult = null
                     }
                     isRestoring = false
@@ -496,7 +510,7 @@ fun SettingsScreen(
         
         AlertDialog(
             onDismissRequest = { showRestoreDialog = false },
-            title = { Text("Restore Settings") },
+            title = { Text(stringResource(id = R.string.restore_settings)) },
             text = {
                 Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     when {
@@ -506,12 +520,12 @@ fun SettingsScreen(
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                Text("Restoring settings...")
+                                Text(stringResource(id = R.string.restoring_settings))
                             }
                         }
                         restoreError != null -> {
                             Text(
-                                text = "Error: $restoreError",
+                                text = stringResource(id = R.string.error) + ": " + restoreError,
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
@@ -528,7 +542,7 @@ fun SettingsScreen(
                                 
                                 Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Settings Restored Successfully!",
+                                        text = stringResource(id = R.string.settings_restored_successfully),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         color = Color(0xFF4CAF50)  // Green
@@ -539,7 +553,7 @@ fun SettingsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "⚠ Remember to re-enter passwords for your accounts.",
+                                        text = stringResource(id = R.string.remember_reenter_passwords),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -548,16 +562,16 @@ fun SettingsScreen(
                             }
                         }
                         else -> {
-                            Text("Select a backup file to restore all accounts, app settings, and configurations.")
+                            Text(stringResource(id = R.string.select_backup_file_to_restore))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "You will choose a backup file from your device.",
+                                text = stringResource(id = R.string.choose_backup_file_from_device),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "⚠ Passwords are not stored in backups and must be re-entered.",
+                                text = stringResource(id = R.string.passwords_not_stored_in_backups),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -573,18 +587,18 @@ fun SettingsScreen(
                             backupFileOpener.launch(arrayOf("application/json", "text/plain", "*/*"))
                         }
                     ) {
-                        Text("Choose File")
+                        Text(stringResource(id = R.string.choose_file))
                     }
                 } else {
                     TextButton(onClick = { showRestoreDialog = false }) {
-                        Text("Close")
+                        Text(stringResource(id = R.string.close))
                     }
                 }
             },
             dismissButton = {
                 if (restoreResult == null && !isRestoring) {
                     TextButton(onClick = { showRestoreDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             }

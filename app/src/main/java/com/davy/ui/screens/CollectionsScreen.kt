@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.davy.ui.LocalSyncManager
 import kotlinx.coroutines.launch
@@ -40,18 +41,23 @@ fun CollectionsScreen(
         pageCount = { 4 }
     )
     
-    // Tab titles
-    val tabs = listOf("Calendars", "Contacts", "Tasks", "Address Books")
+    // Tab titles (localized)
+    val tabs = listOf(
+        stringResource(id = com.davy.R.string.calendars),
+        stringResource(id = com.davy.R.string.contacts),
+        stringResource(id = com.davy.R.string.tasks),
+        stringResource(id = com.davy.R.string.address_books)
+    )
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("DAVy - Collections") },
+                title = { Text(stringResource(id = com.davy.R.string.collections_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = com.davy.R.string.back)
                         )
                     }
                 },
@@ -59,7 +65,7 @@ fun CollectionsScreen(
                     IconButton(onClick = { syncManager.syncAllNow() }) {
                         Icon(
                             imageVector = Icons.Default.Sync,
-                            contentDescription = "Sync all"
+                            contentDescription = stringResource(id = com.davy.R.string.sync_all)
                         )
                     }
                 }

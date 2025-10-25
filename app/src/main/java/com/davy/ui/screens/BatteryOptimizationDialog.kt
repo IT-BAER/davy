@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.davy.R
 
 /**
  * Dialog that guides users to exclude the app from battery optimization.
@@ -39,7 +41,7 @@ fun BatteryOptimizationDialog(
         },
         title = {
             Text(
-                text = "Battery Optimization",
+                text = stringResource(id = R.string.battery_optimization),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
@@ -49,26 +51,24 @@ fun BatteryOptimizationDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "For reliable background sync, DAVy needs to be excluded from battery optimization.",
+                    text = stringResource(id = R.string.battery_optimization_dialog_intro),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
                 Text(
-                    text = "Without this exemption:",
+                    text = stringResource(id = R.string.battery_optimization_dialog_without_exemption),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 
                 Text(
-                    text = "• Sync may be delayed or stopped\n" +
-                           "• Calendar events may not update\n" +
-                           "• Contact changes may not sync",
+                    text = stringResource(id = R.string.battery_optimization_dialog_bullets),
                     style = MaterialTheme.typography.bodySmall
                 )
                 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Text(
-                        text = "Tap \"Open Settings\" to disable battery optimization for DAVy.",
+                        text = stringResource(id = R.string.battery_optimization_dialog_open_settings_cta),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -94,13 +94,13 @@ fun BatteryOptimizationDialog(
                         onDismiss()
                     }
                 ) {
-                    Text("Open Settings")
+                    Text(stringResource(id = R.string.open_settings))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Later")
+                Text(stringResource(id = R.string.later))
             }
         }
     )
@@ -141,20 +141,20 @@ fun BatteryOptimizationCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Battery Optimization Active",
+                    text = stringResource(id = R.string.battery_optimization_active),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onErrorContainer
                 )
                 
                 Text(
-                    text = "Sync may be unreliable",
+                    text = stringResource(id = R.string.sync_may_be_unreliable),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
                 )
             }
             
             TextButton(onClick = onOpenDialog) {
-                Text("Fix")
+                Text(stringResource(id = R.string.fix))
             }
         }
     }

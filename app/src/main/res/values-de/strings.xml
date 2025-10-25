@@ -1,0 +1,585 @@
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">Bitte verwende die DAVy-App, um Konten hinzuzufügen</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">Alle Sync.</string>
+    <string name="shortcut_sync_all_long">Alle synchronisieren</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">Zurück</string>
+    <string name="settings">Einstellungen</string>
+    <string name="about">Über</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="delete">Löschen</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="save">Speichern</string>
+    <string name="sync">Synchronisieren</string>
+    <string name="error">Fehler</string>
+    <string name="loading">Lädt…</string>
+    <string name="retry">Wiederholen</string>
+    <string name="close">Schließen</string>
+    <string name="add">Hinzufügen</string>
+    <string name="remove">Entfernen</string>
+    <string name="refresh">Aktualisieren</string>
+    <string name="enabled">Aktiviert</string>
+    <string name="disabled">Deaktiviert</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - Konten</string>
+    <string name="add_account">Hinzufügen</string>
+    <string name="account_details">Kontodetails</string>
+    <string name="account_settings">Kontoeinstellungen</string>
+    <string name="delete_account">Konto löschen</string>
+    <string name="delete_account_question">Konto löschen?</string>
+    <string name="delete_account_confirmation_named">Möchtest du %1$s wirklich löschen?</string>
+    <string name="delete_account_confirmation">Möchtest du dieses Konto wirklich löschen? Dadurch werden alle synchronisierten Daten entfernt.</string>
+    <string name="no_accounts">Noch keine Konten</string>
+    <string name="no_accounts_description">Füge dein erstes CalDAV/CardDAV-Konto hinzu, um zu beginnen</string>
+    <string name="account_name">Kontoname</string>
+    <string name="server_url">Server-URL</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="account_color">Kontofarbe</string>
+    
+    <!-- Sync -->
+    <string name="syncing">Synchronisiert…</string>
+    <string name="sync_all">Alle synchronisieren</string>
+    <string name="sync_successful">Synchronisierung erfolgreich</string>
+    <string name="sync_failed">Synchronisierung fehlgeschlagen</string>
+    <string name="last_sync">Letzter Sync: %1$s</string>
+    <string name="never_synced">Nie synchronisiert</string>
+    <string name="auto_sync">Automatische Synchronisierung</string>
+    <string name="auto_sync_subtitle">Kalender und Kontakte automatisch synchronisieren</string>
+    <string name="sync_on_wifi_only">Nur über WLAN synchronisieren</string>
+    <string name="sync_on_wifi_only_subtitle">Nur bei WLAN-Verbindung synchronisieren</string>
+    
+    <!-- Collections -->
+    <string name="collections">Sammlungen</string>
+    <string name="collections_title">DAVy - Sammlungen</string>
+    <string name="calendars">Kalender</string>
+    <string name="contacts">Kontakte</string>
+    <string name="tasks">Aufgaben</string>
+    <string name="address_books">Adressbücher</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">Kalenderdetails</string>
+    <string name="calendar_list">Kalenderliste</string>
+    <string name="event_details">Ereignisdetails</string>
+    <string name="all_day_event">Ganztägiges Ereignis</string>
+    <string name="date_time">Datum &amp; Uhrzeit</string>
+    <string name="description">Beschreibung</string>
+    <string name="location">Ort</string>
+    <string name="attendees">Teilnehmer (%1$d)</string>
+    <string name="reminders">Erinnerungen</string>
+    <string name="reminder_before">%1$d Minuten vorher (%2$s)</string>
+    <string name="recurrence">Wiederholung</string>
+    <string name="availability">Verfügbarkeit</string>
+    <string name="delete_event">Ereignis löschen</string>
+    <string name="delete_event_confirmation">Möchtest du dieses Ereignis wirklich löschen?</string>
+    <string name="edit_event">Ereignis bearbeiten</string>
+    <string name="edit_event_future_update">Die Ereignisbearbeitung wird in einem zukünftigen Update implementiert.</string>
+    <string name="event_not_found">Ereignis nicht gefunden</string>
+    <string name="failed_to_load_event">Fehler beim Laden des Ereignisses: %1$s</string>
+    <string name="failed_to_delete_event">Fehler beim Löschen des Ereignisses: %1$s</string>
+    <string name="event_type">Typ</string>
+    <string name="start">Beginn</string>
+    <string name="end">Ende</string>
+    <string name="timezone">Zeitzone</string>
+    <string name="status">Status</string>
+    <string name="organizer">Organisator</string>
+    <string name="uid">UID</string>
+    <string name="details">Details</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">Adressbuchdetails</string>
+    <string name="address_book_list">Adressbuchliste</string>
+    <string name="contact_details">Kontaktdetails</string>
+    <string name="add_contact">Kontakt hinzufügen</string>
+    <string name="no_contacts">Keine Kontakte</string>
+    <string name="add_account_to_sync_contacts">Fügen Sie ein Konto hinzu, um Kontakte zu synchronisieren</string>
+    <string name="contact_creation_future_update">Das Erstellen von Kontakten wird in einem zukünftigen Update implementiert.</string>
+    <!-- Kontaktdetails (neu) -->
+    <string name="phone_numbers">Telefonnummern</string>
+    <string name="emails">E-Mails</string>
+    <string name="addresses">Adressen</string>
+    <string name="websites">Websites</string>
+    <string name="website">Website</string>
+    <string name="organization">Organisation</string>
+    <string name="company">Firma</string>
+    <string name="department">Abteilung</string>
+    <string name="job_title">Berufsbezeichnung</string>
+    <string name="important_dates">Wichtige Daten</string>
+    <string name="birthday">Geburtstag</string>
+    <string name="anniversary">Jahrestag</string>
+    <string name="notes">Notizen</string>
+    <string name="technical_details">Technische Details</string>
+    <string name="etag">ETag</string>
+    <string name="contact_not_found">Kontakt nicht gefunden</string>
+    <string name="failed_to_load_contact">Kontakt konnte nicht geladen werden</string>
+    <string name="failed_to_delete_contact">Kontakt konnte nicht gelöscht werden</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">Synchronisierungseinstellungen</string>
+    <string name="settings_appearance_title">Erscheinungsbild</string>
+    <string name="settings_advanced_title">Erweitert</string>
+    <string name="settings_backup_title">Sicherung &amp; Wiederherstellung</string>
+    <string name="settings_permissions_title">Berechtigungen</string>
+    <string name="battery">Akku</string>
+    <string name="dark_mode">Dunkler Modus</string>
+    <string name="dark_mode_subtitle">Dunkles Thema verwenden</string>
+    <string name="debug_logging">Debug-Protokollierung</string>
+    <string name="debug_logging_subtitle">Detailliertes Logging für die Fehlersuche aktivieren (Passwörter ausgeschlossen)</string>
+    <string name="battery_optimization">Batterieoptimierung</string>
+    <string name="battery_optimization_disabled">Deaktiviert</string>
+    <string name="battery_optimization_enabled">Aktiviert (Empfohlen)</string>
+    <string name="battery_optimization_description">Deaktiviere die Batterieoptimierung, um eine zuverlässige Hintergrundsynchronisierung zu gewährleisten</string>
+    <string name="view_permissions">Berechtigungen anzeigen</string>
+    <string name="view_permissions_subtitle">Erteilte Berechtigungen prüfen und verwalten</string>
+    <string name="permissions_status">Berechtigungsstatus</string>
+    <string name="all_permissions_granted">Alle Berechtigungen erteilt</string>
+    <string name="some_permissions_missing">Einige Berechtigungen fehlen</string>
+    <string name="backup_database">Datenbank sichern</string>
+    <string name="restore_database">Datenbank wiederherstellen</string>
+    <string name="backup_all_settings">Alle Einstellungen sichern</string>
+    <string name="backup_all_settings_subtitle">Erstelle ein Backup aller Konten und App-Einstellungen</string>
+    <string name="restore_from_backup">Aus Backup wiederherstellen</string>
+    <string name="restore_from_backup_subtitle">Konten und Einstellungen aus einer Sicherungsdatei wiederherstellen</string>
+    <string name="developer">Entwickler</string>
+    <string name="version_title">Version</string>
+    <string name="app_permissions">App-Berechtigungen</string>
+    
+    <!-- About Screen -->
+    <string name="version">Version %1$s</string>
+    <string name="app_description">DAVy ist eine moderne CalDAV-, CardDAV- und WebCal-Synchronisations-App für Android. Halte deine Kalender, Kontakte und Aufgaben auf all deinen Geräten synchron.</string>
+    <string name="technology_stack">Technologie-Stack</string>
+    <string name="key_dependencies">Wichtige Abhängigkeiten</string>
+    <string name="license">Lizenz: Apache 2.0</string>
+    <string name="license_title">Lizenz</string>
+    <string name="license_description">DAVy ist Open-Source-Software unter der Apache-2.0-Lizenz</string>
+    <string name="app_tagline">CalDAV • CardDAV • WebCal</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin &amp; Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room-Datenbank</string>
+    <string name="tech_coroutines">• Coroutines &amp; Flow</string>
+    <string name="tech_okhttp">• OkHttp &amp; Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">FAQ</string>
+    <string name="faq_what_is_davy">Was ist DAVy?</string>
+    <string name="faq_what_is_davy_answer">DAVy ist ein CalDAV/CardDAV-Sync-Client für Android, der Kalender, Kontakte und Aufgaben mit Ihrem Server synchronisiert.</string>
+    <string name="faq_which_servers">Welche Server werden unterstützt?</string>
+    <string name="faq_which_servers_answer">DAVy funktioniert mit jedem CalDAV/CardDAV-kompatiblen Server, einschließlich Nextcloud, ownCloud, Radicale, Baïkal und mehr.</string>
+    <string name="faq_sync_not_working">Warum funktioniert meine Synchronisierung nicht?</string>
+    <string name="faq_sync_not_working_answer">• Server-URL ist korrekt (einschließlich https://)\n• Benutzername und Passwort sind gültig\n• Nur-WLAN-Synchronisierung ist deaktiviert oder WLAN ist verbunden\n• Auto-Sync ist in den Android-Einstellungen aktiviert</string>
+    <string name="faq_enable_auto_sync">Wie aktiviere ich die automatische Synchronisierung?</string>
+    <string name="faq_enable_auto_sync_answer">Geh zu Android-Einstellungen → Konten → DAVy → Aktiviere „Daten automatisch synchronisieren“</string>
+    <string name="faq_multiple_accounts">Kann ich mehrere Konten synchronisieren?</string>
+    <string name="faq_multiple_accounts_answer">Ja, Sie können mehrere CalDAV/CardDAV-Konten gleichzeitig hinzufügen und synchronisieren.</string>
+    <string name="faq_where_are_my_data">Wo sind meine synchronisierten Ereignisse/Kontakte?</string>
+    <string name="faq_where_are_my_data_answer">Kalenderereignisse erscheinen in der Android-Kalender-App. Kontakte erscheinen in der Android-Kontakte-App. DAVy übernimmt die Synchronisierung, die Standard-Apps zeigen die Daten an.</string>
+    <string name="faq_how_delete_account">Wie lösche ich ein Konto?</string>
+    <string name="faq_how_delete_account_answer">Tippe auf der Hauptseite ein Konto länger an und bestätige das Löschen. Dadurch wird das Konto entfernt und die Synchronisierung beendet.</string>
+    <string name="faq_what_is_wifi_only">Was ist die Nur-WLAN-Synchronisierung?</string>
+    <string name="faq_what_is_wifi_only_answer">Aktiviere dies in den Kontoeinstellungen, damit nur bei bestehender WLAN-Verbindung synchronisiert wird. Das spart mobile Daten.</string>
+    <string name="faq_rename_account">Was passiert, wenn ich ein Konto umbenenne?</string>
+    <string name="faq_rename_account_answer">Das Umbenennen eines Kontos kann dazu führen, dass es in der Android-Kalender-App deaktiviert wird, da Android den Kontonamen als Kennung verwendet. Sie können das Konto in Ihrer Kalender-App wieder aktivieren.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">Anleitungen</string>
+    <string name="help">Hilfe</string>
+    <string name="getting_started">Erste Schritte</string>
+    <string name="setup_guides">Einrichtungsanleitungen</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">Ein Fehler ist aufgetreten</string>
+    <string name="error_network">Netzwerkfehler. Bitte überprüfe deine Verbindung.</string>
+    <string name="error_authentication">Authentifizierung fehlgeschlagen. Bitte überprüfe deine Anmeldedaten.</string>
+    <string name="error_server">Serverfehler. Bitte versuchen Sie es später erneut.</string>
+    <string name="success">Erfolg</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">Menü</string>
+    <string name="content_description_sync">Synchronisieren</string>
+    <string name="content_description_add">Hinzufügen</string>
+    <string name="content_description_delete">Löschen</string>
+    <string name="content_description_edit">Bearbeiten</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_help">Hilfe</string>
+    <string name="content_description_back">Zurück</string>
+    <string name="content_description_settings">Einstellungen</string>
+    <string name="content_description_app_logo">App-Logo</string>
+    
+    <!-- Misc -->
+    <string name="contact">Kontakt</string>
+    <string name="send_email">E-Mail senden</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">Konten</string>
+    <string name="nav_collections">Sammlungen</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_guides">Anleitungen</string>
+    <string name="nav_faq">FAQ</string>
+    <string name="nav_about">Über</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd. MMM yyyy</string>
+    <string name="datetime_format_long">dd. MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">Keine Ereignisse</item>
+        <item quantity="one">1 Ereignis</item>
+        <item quantity="other">%d Ereignisse</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">Keine Kontakte</item>
+        <item quantity="one">1 Kontakt</item>
+        <item quantity="other">%d Kontakte</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">Keine Aufgaben</item>
+        <item quantity="one">1 Aufgabe</item>
+        <item quantity="other">%d Aufgaben</item>
+    </plurals>
+
+    <!-- Battery Optimization Dialog/Text -->
+    <string name="battery_optimization_dialog_intro">Für eine zuverlässige Hintergrundsynchronisierung muss DAVy von der Batterieoptimierung ausgenommen werden.</string>
+    <string name="battery_optimization_dialog_without_exemption">Ohne diese Ausnahme:</string>
+    <string name="battery_optimization_dialog_bullets">• Die Synchronisierung kann verzögert oder gestoppt werden
+• Kalenderereignisse werden möglicherweise nicht aktualisiert
+• Kontaktänderungen werden möglicherweise nicht synchronisiert</string>
+    <string name="battery_optimization_dialog_open_settings_cta">Tippe auf &quot;Einstellungen öffnen&quot;, um die Batterieoptimierung für DAVy zu deaktivieren.</string>
+    <string name="open_settings">Einstellungen öffnen</string>
+    <string name="later">Später</string>
+    <string name="fix">Beheben</string>
+    <string name="battery_optimization_active">Batterieoptimierung aktiv</string>
+    <string name="sync_may_be_unreliable">Synchronisierung kann unzuverlässig sein</string>
+
+    <!-- Common Actions Extended -->
+    <string name="sync_now">Jetzt synchronisieren</string>
+    <string name="reset_full_sync">Zurücksetzen &amp; Vollsynchronisierung</string>
+    <string name="sync_calendars_only">Nur Kalender synchronisieren</string>
+    <string name="sync_contacts_only">Nur Kontakte synchronisieren</string>
+    <string name="manage">Verwalten</string>
+    <string name="choose_location">Speicherort auswählen</string>
+    <string name="choose_file">Datei auswählen</string>
+    <string name="creating_backup">Backup wird erstellt...</string>
+    <string name="restoring_settings">Einstellungen werden wiederhergestellt...</string>
+    <string name="failed_to_write_backup_file">Backup-Datei konnte nicht geschrieben werden</string>
+    <string name="full_backup_created_successfully">Vollständiges Backup erfolgreich erstellt!</string>
+    <string name="saved_as">Gespeichert als:</string>
+    <string name="passwords_not_included_backup">⚠ Passwörter werden aus Sicherheitsgründen NICHT in Backups aufgenommen.</string>
+    <string name="create_full_backup_description">Erstelle ein vollständiges Backup aller Konten, App-Einstellungen und Konfigurationen.</string>
+    <string name="choose_where_to_save_backup">Du wählst aus, wo die Sicherungsdatei gespeichert wird.</string>
+    <string name="passwords_not_backed_up_note">⚠ Passwörter werden aus Sicherheitsgründen NICHT gesichert.</string>
+    <string name="restore_settings">Einstellungen wiederherstellen</string>
+    <string name="settings_restored_successfully">Einstellungen erfolgreich wiederhergestellt!</string>
+    <string name="remember_reenter_passwords">⚠ Passwörter müssen für deine Konten erneut eingegeben werden.</string>
+    <string name="select_backup_file_to_restore">Wähle eine Sicherungsdatei, um Konten, App-Einstellungen und Konfigurationen wiederherzustellen.</string>
+    <string name="choose_backup_file_from_device">Du wählst eine Sicherungsdatei von deinem Gerät.</string>
+    <string name="passwords_not_stored_in_backups">⚠ Passwörter werden nicht in Backups gespeichert und müssen erneut eingegeben werden.</string>
+    <string name="failed_to_read_backup_file">Sicherungsdatei konnte nicht gelesen werden</string>
+    <plurals name="accounts_restored">
+        <item quantity="one">%d Konto</item>
+        <item quantity="other">%d Konten</item>
+    </plurals>
+    <string name="app_settings">App-Einstellungen</string>
+    <string name="and_joiner"> und </string>
+    <string name="restored_from_filename_with_details">Aus %1$s wiederhergestellt:
+%2$s</string>
+    <string name="restored_from_filename_no_changes">Aus %1$s wiederhergestellt (keine Änderungen erforderlich)</string>
+
+    <!-- Screens/Titles -->
+    <string name="task_lists">Aufgabenlisten</string>
+    <string name="add_task">Aufgabe hinzufügen</string>
+    <string name="task_creation_future_update">Die Aufgabenerstellung wird in einem zukünftigen Update implementiert.</string>
+    <string name="user_guides">Benutzeranleitungen</string>
+    <string name="calendar_settings">Kalendereinstellungen</string>
+    <string name="address_book_settings">Adressbucheinstellungen</string>
+
+    <!-- Contact/Deletion -->
+    <string name="delete_contact">Kontakt löschen</string>
+    <string name="delete_contact_confirmation">Möchtest du diesen Kontakt wirklich löschen?</string>
+    <string name="delete_calendar_question">Kalender löschen?</string>
+    <string name="delete_calendar_confirmation_named">Möchtest du „%1$s“ wirklich löschen?</string>
+    <string name="delete_address_book_question">Adressbuch löschen?</string>
+    <string name="rename_address_book">Adressbuch umbenennen</string>
+    <string name="delete_address_book_confirmation_named">Möchtest du „%1$s“ wirklich löschen?</string>
+
+    <!-- Common extras -->
+    <string name="unknown">Unbekannt</string>
+    <string name="none">Keine</string>
+
+    <!-- Account Settings (neu) -->
+    <string name="account_information">Kontoinformationen</string>
+    <string name="rename_account">Konto umbenennen</string>
+    <string name="rename_account_title">Konto umbenennen</string>
+    <string name="rename">Umbenennen</string>
+    <string name="server_with_value">Server: %1$s</string>
+    <string name="authentication">Authentifizierung</string>
+    <string name="leave_empty_keep_password">Leer lassen, um aktuelles Passwort zu behalten</string>
+    <string name="testing">Wird getestet...</string>
+    <string name="valid">Gültig</string>
+    <string name="failed">Fehlgeschlagen</string>
+    <string name="test">Testen</string>
+    <string name="applying">Wird angewendet...</string>
+    <string name="applied">Angewendet!</string>
+    <string name="apply">Anwenden</string>
+    <string name="apply_changes">Änderungen anwenden</string>
+
+    <!-- Sync-Details (neu) -->
+    <string name="disable_mobile_data_sync">Synchronisierung über mobile Daten deaktivieren</string>
+    <string name="calendar_sync_interval">Kalender-Sync-Intervall</string>
+    <string name="contact_sync_interval">Kontakte-Sync-Intervall</string>
+    <string name="webcal_sync_interval">WebCal-Sync-Intervall</string>
+    <string name="manual">Manuell</string>
+
+    <!-- CalDAV/CardDAV Einstellungen (neu) -->
+    <string name="caldav_settings">CalDAV-Einstellungen</string>
+    <string name="carddav_settings">CardDAV-Einstellungen</string>
+    <string name="skip_events_older_than">Ereignisse älter als ... überspringen</string>
+    <string name="manage_calendar_colors">Kalenderfarben verwalten</string>
+    <string name="use_server_side_calendar_colors">Serverseitige Kalenderfarben verwenden</string>
+    <string name="event_colors">Ereignisfarben</string>
+    <string name="use_colors_from_individual_events">Farben aus einzelnen Ereignissen verwenden</string>
+    <string name="contact_group_method">Kontaktgruppenmethode</string>
+    <string name="group_vcards">vCards gruppieren</string>
+    <string name="categories">Kategorien</string>
+    <string name="account_actions">Kontoaktionen</string>
+    <string name="backup_settings">Einstellungen sichern</string>
+    <string name="create_backup_of_account_configuration">Sicherung der Kontokonfiguration erstellen</string>
+    <string name="restore_account_from_backup_file">Konto aus Sicherungsdatei wiederherstellen</string>
+    <string name="permanently_remove_this_account">Dieses Konto dauerhaft entfernen</string>
+    <string name="delete_account_data_removal_note">Dadurch werden alle mit diesem Konto verbundenen Kalender, Kontakte und Aufgaben entfernt.</string>
+
+    <!-- Zertifikatsdialog (neu) -->
+    <string name="client_certificate">Client-Zertifikat</string>
+    <string name="client_certificate_title">Client-Zertifikat</string>
+    <string name="select_client_certificate_for_auth">Wähle ein Client-Zertifikat zur Authentifizierung aus:</string>
+    <string name="choose_from_system_certificates">Aus Systemzertifikaten auswählen</string>
+    <string name="enter_certificate_alias_manually">Oder Zertifikatsalias manuell eingeben:</string>
+    <string name="certificate_alias">Zertifikatsalias</string>
+    <string name="enter_certificate_alias">Zertifikatsalias eingeben</string>
+    <string name="no_certificate_selected">Kein Zertifikat ausgewählt</string>
+    <string name="install_certificate">Zertifikat installieren</string>
+    <string name="done">Fertig</string>
+
+    <!-- Backup/Wiederherstellung Beschreibungen (neu) -->
+    <string name="create_account_backup_description">Erstelle ein Backup deiner Kontoeinstellungen, Synchronisierungskonfiguration und Sammlungsmetadaten.</string>
+    <string name="select_backup_file_to_restore_account">Wähle eine Sicherungsdatei, um Kontoeinstellungen und Konfigurationen wiederherzustellen.</string>
+
+    <!-- Dauer-Bezeichnungen (neu) -->
+    <plurals name="duration_minutes">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minuten</item>
+    </plurals>
+    <plurals name="duration_hours">
+        <item quantity="one">%d Stunde</item>
+        <item quantity="other">%d Stunden</item>
+    </plurals>
+    <plurals name="duration_days">
+        <item quantity="one">%d Tag</item>
+        <item quantity="other">%d Tage</item>
+    </plurals>
+    <plurals name="duration_years">
+        <item quantity="one">%d Jahr</item>
+        <item quantity="other">%d Jahre</item>
+    </plurals>
+    <string name="all_events">Alle Ereignisse</string>
+
+    <!-- Kalenderliste (neu) -->
+    <string name="no_account_configured">Kein Konto konfiguriert</string>
+    <string name="please_add_account_first">Bitte füge zuerst ein Konto hinzu</string>
+    <string name="no_calendars_found">Keine Kalender gefunden</string>
+    <string name="sync_with_server_to_fetch_calendars">Aktualisiere die Liste, um Kalender abzurufen</string>
+    <string name="visible">Sichtbar</string>
+    <string name="synced_with_android">Mit Android synchronisiert</string>
+    
+    <!-- Adressbuchliste (neu) -->
+    <string name="no_address_books">Keine Adressbücher</string>
+    <string name="add_account_to_sync_address_books">Konto hinzufügen, um Adressbücher zu synchronisieren</string>
+    <string name="sync_with_server">Liste aktualisieren</string>
+    <string name="sync_with_server_to_fetch_address_books">Aktualisiere die Liste, um Adressbücher abzurufen</string>
+    <string name="enable_bidirectional_sync">Bidirektionale Synchronisierung aktivieren</string>
+    <string name="visible_in_app">In der App sichtbar</string>
+    <string name="show_in_contacts_list">In Kontaktliste anzeigen</string>
+    
+    <!-- Kalenderdetails (neu) -->
+    <string name="calendar_information">Kalenderinformationen</string>
+    <string name="url">URL</string>
+    <string name="sync_token">Sync-Token</string>
+    <string name="permissions">Berechtigungen</string>
+    <string name="write">Schreiben</string>
+    <string name="read_only_forced_suffix"> (Nur-Lesen erzwungen)</string>
+    <string name="source">Quelle</string>
+    <string name="owner">Besitzer</string>
+    <string name="sync_enabled">Synchronisierung aktiviert</string>
+    <string name="automatic_sync_enabled">Automatische Synchronisierung aktiviert</string>
+    <string name="sync_disabled">Synchronisierung deaktiviert</string>
+    <string name="wifi_only_sync_on">Nur über WLAN synchronisieren</string>
+    <string name="wifi_only_sync_off">Über jedes Netzwerk synchronisieren</string>
+    <string name="read_only">Nur-Lesen</string>
+    <string name="server_enforced_cannot_write">Server erzwungen (kein Schreiben möglich)</string>
+    <string name="changes_prevented">Änderungen verhindert</string>
+    <string name="changes_allowed">Änderungen erlaubt</string>
+    <string name="delete_calendar">Kalender löschen</string>
+    <string name="supports_tasks">Unterstützt Aufgaben</string>
+    <string name="supports_journal">Unterstützt Journal</string>
+    <string name="delete_calendar_warning">Dadurch wird der Kalender sowohl vom Server als auch von deinem Gerät gelöscht. Alle Ereignisse in diesem Kalender werden dauerhaft entfernt.</string>
+    
+    <!-- Adressbuchdetails (neu) -->
+    <string name="address_book_information">Adressbuchinformationen</string>
+    <string name="delete_address_book">Adressbuch löschen</string>
+    <string name="delete_address_book_warning">Dadurch wird das Adressbuch sowohl vom Server als auch von deinem Gerät gelöscht. Alle Kontakte in diesem Adressbuch werden dauerhaft entfernt.</string>
+    
+    <!-- Konto hinzufügen (neu) -->
+    <string name="protocol_label">Protokoll</string>
+    <string name="account_name_placeholder">Mein Kalender</string>
+    <string name="server_url_placeholder">nextcloud.example.com</string>
+    <string name="username_placeholder">user@example.com</string>
+    <string name="show_password">Passwort anzeigen</string>
+    <string name="hide_password">Passwort ausblenden</string>
+    <string name="test_credentials_fill_all_fields">Bitte gib Server-URL, Benutzername und Passwort ein, um Anmeldedaten zu testen</string>
+    <string name="invalid_server_url">Ungültige Server-URL</string>
+    <string name="account_name_required">Kontoname ist erforderlich</string>
+    <string name="server_url_required">Server-URL ist erforderlich</string>
+    <string name="username_required">Benutzername ist erforderlich</string>
+    <string name="password_required">Passwort ist erforderlich</string>
+    <string name="account_exists_message">Ein Konto mit derselben Server-URL und demselben Benutzernamen existiert bereits (%1$s). Bitte verwende einen anderen Server oder Benutzernamen.</string>
+    <string name="failed_to_add_account">Konto konnte nicht hinzugefügt werden: %1$s</string>
+    <string name="failed_to_create_demo_account">Demo-Konto konnte nicht erstellt werden: %1$s</string>
+    <string name="connection_failed">Verbindung fehlgeschlagen</string>
+    <string name="connecting">Verbindet...</string>
+    <string name="auto_discover_services_hint">Die App erkennt CalDAV- und CardDAV-Dienste auf deinem Server automatisch</string>
+    <string name="caldav_carddav_account_title">CalDAV/CardDAV-Konto</string>
+    <string name="caldav_carddav_account_subtitle">Kompatibel mit Nextcloud, ownCloud und anderen CalDAV/CardDAV-Servern</string>
+    <string name="demo_explore_title">Möchtest du die App zuerst erkunden?</string>
+    <string name="demo_credentials_hint">Verwende diese Demo-Zugangsdaten:</string>
+    <string name="demo_account_display_name">Demo-Konto</string>
+    <string name="demo_account_notes">Demo-Konto – nur lokal, keine Serververbindung</string>
+    <string name="personal_calendar">Persönlicher Kalender</string>
+    <string name="work_calendar">Arbeitskalender</string>
+    <string name="family_events">Familienereignisse</string>
+    <string name="personal_events_description">Meine persönlichen Ereignisse</string>
+    <string name="work_meetings_tasks">Besprechungen und Aufgaben bei der Arbeit</string>
+    <string name="family_birthdays_gatherings">Geburtstage und Familientreffen</string>
+    <string name="personal_contacts">Persönliche Kontakte</string>
+    <string name="business_contacts">Geschäftskontakte</string>
+    <string name="my_personal_contacts">Meine persönlichen Kontakte</string>
+    <string name="work_related_contacts">Arbeitsbezogene Kontakte</string>
+    <string name="bullet_server">• Server: %1$s</string>
+    <string name="bullet_username">• Benutzername: %1$s</string>
+    <string name="bullet_password">• Passwort: %1$s</string>
+    
+    <!-- Batch-Löschbestätigungen (neu) -->
+    <string name="delete_selected_calendars_title">Ausgewählte Kalender löschen?</string>
+    <string name="delete_selected_calendars_message">Dadurch werden die ausgewählten Kalender sowohl vom Server als auch von deinem Gerät gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="delete_selected_address_books_title">Ausgewählte Adressbücher löschen?</string>
+    <string name="delete_selected_address_books_message">Dadurch werden die ausgewählten Adressbücher sowohl vom Server als auch von deinem Gerät gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="delete_selected_webcal_title">Ausgewählte WebCal-Abonnements löschen?</string>
+    <string name="delete_selected_webcal_message">Dadurch werden die ausgewählten WebCal-Abonnements von deinem Gerät gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="selected_count">Ausgewählt: %1$d</string>
+    
+    <!-- Relative time (neu) -->
+    <string name="just_now">Gerade eben</string>
+    <string name="hour_ago">Vor 1 Stunde</string>
+    <string name="yesterday">Gestern</string>
+    <plurals name="minutes_ago">
+        <item quantity="one">Vor %d Minute</item>
+        <item quantity="other">Vor %d Minuten</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">Vor %d Stunde</item>
+        <item quantity="other">Vor %d Stunden</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">Vor %d Tag</item>
+        <item quantity="other">Vor %d Tagen</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="one">Vor %d Woche</item>
+        <item quantity="other">Vor %d Wochen</item>
+    </plurals>
+
+    <!-- Tags und Labels (neu) -->
+    <string name="events">Ereignisse</string>
+    <string name="journal">Journal</string>
+    <string name="shared">Geteilt</string>
+
+    <!-- Sync/Einstellungen gemeinsame Labels (neu) -->
+    <string name="synchronization">Synchronisierung</string>
+    <string name="sync_interval">Sync-Intervall</string>
+    <string name="wifi_only_sync">Nur-WLAN-Synchronisierung</string>
+    <string name="use_account_default">Kontostandard verwenden</string>
+    <string name="calendar_color">Kalenderfarbe</string>
+    <string name="tap_to_choose_color">Zum Auswählen tippen</string>
+    <string name="rename_calendar">Kalender umbenennen</string>
+    <string name="calendar_name">Kalendername</string>
+    <string name="address_book_name">Adressbuchname</string>
+
+    <!-- WebCal (neu) -->
+    <string name="webcal_subscriptions">WebCal-Abonnements</string>
+    <string name="subscribe_to_read_only_feeds">Nur-Lesen-Kalenderfeeds abonnieren</string>
+    <string name="subscribe_to_webcal">WebCal abonnieren</string>
+    <string name="webcal_subscription_description">Abonniere einen Nur-Lesen-Kalenderfeed. Das Abonnement wird lokal gespeichert und regelmäßig synchronisiert.</string>
+    <string name="display_name">Anzeigename</string>
+    <string name="display_name_placeholder">Mein Kalender</string>
+    <string name="webcal_url">WebCal-URL</string>
+    <string name="webcal_url_placeholder">webcal://example.com/kalender.ics</string>
+    <string name="display_name_required">Anzeigename ist erforderlich</string>
+    <string name="url_required">URL ist erforderlich</string>
+    <string name="invalid_webcal_url">URL muss mit webcal://, webcals://, http:// oder https:// beginnen</string>
+    
+    <!-- Guides Page (neu) -->
+    <string name="guides_getting_started_title">Erste Schritte</string>
+    <string name="guides_getting_started_body">1. Füge ein Konto über die +‑Taste hinzu
+2. Gib die CalDAV/CardDAV‑Server‑URL ein
+3. Trage Benutzername und Passwort ein
+4. DAVy erkennt verfügbare Kalender und Kontakte automatisch</string>
+    <string name="guides_calendars_title">Kalender verwalten</string>
+    <string name="guides_calendars_body">• Tippe auf ein Konto, um Kalender anzuzeigen
+• Nutze „Liste aktualisieren“, um verfügbare Kalender zu aktualisieren
+• Synchronisiere einzelne Kalender oder nutze „Alle synchronisieren“
+• Erstelle neue Kalender mit der +‑Taste
+• Halte einen Kalender lange gedrückt, um ihn zu löschen</string>
+    <string name="guides_contacts_title">Kontakte verwalten</string>
+    <string name="guides_contacts_body">• Wechsle zum Tab „Kontakte“, um Adressbücher anzuzeigen
+• Kontakte werden je nach Einstellungen automatisch synchronisiert
+• Alle synchronisierten Kontakte erscheinen in der Android‑Kontakte‑App</string>
+    <string name="guides_account_settings_title">Kontoeinstellungen</string>
+    <string name="guides_account_settings_body">• Tippe im Kontodetail auf das Zahnrad
+• Lege Anmeldedaten fest
+• Aktiviere Nur‑WLAN‑Synchronisierung
+• Wähle Kalenderfarben
+• Wähle die Kontaktgruppen‑Methode
+• Überspringe alte Kalenderereignisse</string>
+    <string name="guides_sync_title">Synchronisierung</string>
+    <string name="guides_sync_body">• „Alle synchronisieren“ synchronisiert Kalender, Kontakte und Aufgaben
+• Eigene Sync‑Schaltflächen pro Ressourcentyp
+• Auto‑Sync kann in den Android‑Einstellungen aktiviert werden
+• Nur‑WLAN‑Option in den Kontoeinstellungen verfügbar</string>
+
+    <!-- Intervallbezeichnungen (neu) -->
+    <string name="every_duration">Alle %1$s</string>
+    <string name="every_hour">Jede Stunde</string>
+    <string name="once_a_day">Einmal täglich</string>
+</resources>

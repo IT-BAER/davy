@@ -51,6 +51,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -304,6 +306,13 @@ fun AccountDetailScreen(
         viewModel.toggleBatchSelectionMode()
     }
 
+    LaunchedEffect(uiState.accountDeleted) {
+        if (uiState.accountDeleted) {
+            viewModel.onAccountDeletionHandled()
+            onNavigateBack()
+        }
+    }
+
     val calDavListState = rememberLazyListState()
     val cardDavListState = rememberLazyListState()
     val webCalListState = rememberLazyListState()
@@ -364,10 +373,10 @@ fun AccountDetailScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text(uiState.account?.accountName ?: "Account") },
+                title = { Text(uiState.account?.accountName ?: stringResource(id = R.string.account)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.content_description_back))
                     }
                 },
                 actions = {
@@ -381,17 +390,17 @@ fun AccountDetailScreen(
                     ) {
                         Icon(
                             imageVector = if (isBatchMode) Icons.Default.CheckCircle else Icons.Default.Checklist,
-                            contentDescription = if (isBatchMode) "Exit Batch Selection" else "Batch Selection",
+                            contentDescription = if (isBatchMode) stringResource(id = R.string.exit_batch_selection) else stringResource(id = R.string.batch_selection),
                             tint = if (isBatchMode) MaterialTheme.colorScheme.primary else LocalContentColor.current
                         )
                     }
                     
                     IconButton(onClick = { onNavigateToSettings(accountId) }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(id = R.string.content_description_settings))
                     }
                     Box {
                         IconButton(onClick = { showMenuDropdown = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.content_description_menu))
                         }
                         DropdownMenu(
                             expanded = showMenuDropdown,
@@ -400,7 +409,7 @@ fun AccountDetailScreen(
                             when (currentTab.type) {
                                 AccountDetailTabType.CalDav -> {
                                     DropdownMenuItem(
-                                        text = { Text("Sync Calendars") },
+                                        text = { Text(stringResource(id = R.string.sync_calendars_only)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (!isBusy) viewModel.syncAllCalendars()
@@ -410,7 +419,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Create Calendar") },
+                                        text = { Text(stringResource(id = R.string.create_calendar)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             showCreateCalendarDialog = true
@@ -420,7 +429,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Delete Selected") },
+                                        text = { Text(stringResource(id = R.string.delete_selected)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (isBatchMode && selectedCalendarIds.isNotEmpty() && !isBusy) {
@@ -436,7 +445,7 @@ fun AccountDetailScreen(
 
                                 AccountDetailTabType.CardDav -> {
                                     DropdownMenuItem(
-                                        text = { Text("Sync Contacts") },
+                                        text = { Text(stringResource(id = R.string.sync_contacts_only)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (!isBusy) viewModel.syncAllAddressBooks()
@@ -446,7 +455,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Create Address Book") },
+                                        text = { Text(stringResource(id = R.string.create_address_book)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             showCreateAddressBookDialog = true
@@ -456,7 +465,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Delete Selected") },
+                                        text = { Text(stringResource(id = R.string.delete_selected)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (isBatchMode && selectedAddressBookIds.isNotEmpty() && !isBusy) {
@@ -472,7 +481,7 @@ fun AccountDetailScreen(
 
                                 AccountDetailTabType.WebCal -> {
                                     DropdownMenuItem(
-                                        text = { Text("Sync WebCal Subscriptions") },
+                                        text = { Text(stringResource(id = R.string.sync_webcal_subscriptions)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (!isBusy) viewModel.syncWebCalSubscriptions()
@@ -482,7 +491,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Add WebCal Subscription") },
+                                        text = { Text(stringResource(id = R.string.add_webcal_subscription)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             showAddWebCalDialog = true
@@ -492,7 +501,7 @@ fun AccountDetailScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Delete Selected") },
+                                        text = { Text(stringResource(id = R.string.delete_selected)) },
                                         onClick = {
                                             showMenuDropdown = false
                                             if (isBatchMode && selectedWebCalIds.isNotEmpty() && !isBusy) {
@@ -526,11 +535,11 @@ fun AccountDetailScreen(
                 // Batch sync button (shows in batch selection mode)
                 if (isBatchMode && totalSelected > 0) {
                     ExtendedFloatingActionButton(
-                        text = { Text("Sync Selected ($totalSelected)") },
+                        text = { Text(stringResource(id = R.string.sync_selected_with_count, totalSelected)) },
                         icon = {
                             Icon(
                                 Icons.Default.DoneAll,
-                                contentDescription = "Sync Selected"
+                                contentDescription = stringResource(id = R.string.content_description_sync_selected)
                             )
                         },
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -563,11 +572,11 @@ fun AccountDetailScreen(
                     val globalSyncRotation = rememberSyncRotation(isGlobalSyncing)
                     ExtendedFloatingActionButton(
                         modifier = Modifier.widthIn(min = 140.dp),
-                        text = { Text("Sync All") },
+                        text = { Text(stringResource(id = R.string.sync_now)) },
                         icon = {
                             Icon(
                                 Icons.Default.Sync,
-                                contentDescription = "Sync All",
+                                contentDescription = stringResource(id = R.string.content_description_sync),
                                 modifier = Modifier.rotate(if (isGlobalSyncing) globalSyncRotation else 0f)
                             )
                         },
@@ -590,7 +599,7 @@ fun AccountDetailScreen(
                 // Get Lists button (second/bottom position) - always visible
                 ExtendedFloatingActionButton(
                     modifier = Modifier.widthIn(min = 140.dp),
-                    text = { Text("Get Lists") },
+                    text = { Text(stringResource(id = R.string.sync_with_server)) },
                     icon = { 
                         if (uiState.isRefreshingCollections) {
                             CircularProgressIndicator(
@@ -601,7 +610,7 @@ fun AccountDetailScreen(
                         } else {
                             Icon(
                                 Icons.Outlined.RuleFolder, 
-                                contentDescription = "Get Lists"
+                                contentDescription = null
                             )
                         }
                     },
@@ -635,11 +644,16 @@ fun AccountDetailScreen(
             ) {
                 TabRow(selectedTabIndex = pagerState.currentPage) {
                 accountDetailTabs.forEachIndexed { index, tab ->
+                    val tabTitle = when (tab.type) {
+                        AccountDetailTabType.CalDav -> stringResource(id = R.string.caldav)
+                        AccountDetailTabType.CardDav -> stringResource(id = R.string.carddav)
+                        AccountDetailTabType.WebCal -> stringResource(id = R.string.webcal)
+                    }
                     val iconContent: (@Composable () -> Unit)? = if (showTabIcons) {
                         { 
                             Icon(
                                 tab.icon, 
-                                contentDescription = tab.title
+                                contentDescription = tabTitle
                             )
                         }
                     } else {
@@ -653,7 +667,7 @@ fun AccountDetailScreen(
                             }
                         },
                         icon = iconContent,
-                        text = { Text(tab.title) }
+                        text = { Text(tabTitle) }
                     )
                 }
             }
@@ -685,19 +699,19 @@ fun AccountDetailScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Battery Optimization Active",
+                                text = stringResource(id = R.string.battery_optimization_active),
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Text(
-                                text = "Sync may be delayed. Tap to disable.",
+                                text = stringResource(id = R.string.sync_may_be_unreliable),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = "Warning",
+                            contentDescription = stringResource(id = R.string.content_description_warning),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -796,13 +810,13 @@ fun AccountDetailScreen(
         val selectedCalendarIds by viewModel.selectedCalendarIds.collectAsStateWithLifecycle()
         AlertDialog(
             onDismissRequest = { showDeleteSelectedCalendarsDialog = false },
-            title = { Text("Delete selected calendars?") },
+            title = { Text(stringResource(id = R.string.delete_selected_calendars_title)) },
             text = {
                 Column {
-                    Text("This will delete the selected calendars from both the server and your device. This action cannot be undone.")
+                    Text(stringResource(id = R.string.delete_selected_calendars_message))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Selected: ${selectedCalendarIds.size}",
+                        text = stringResource(id = R.string.selected_count, selectedCalendarIds.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -815,10 +829,10 @@ fun AccountDetailScreen(
                         viewModel.clearBatchSelections()
                         showDeleteSelectedCalendarsDialog = false
                     }
-                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                ) { Text(stringResource(id = R.string.delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteSelectedCalendarsDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteSelectedCalendarsDialog = false }) { Text(stringResource(id = R.string.cancel)) }
             }
         )
     }
@@ -828,13 +842,13 @@ fun AccountDetailScreen(
         val selectedAddressBookIds by viewModel.selectedAddressBookIds.collectAsStateWithLifecycle()
         AlertDialog(
             onDismissRequest = { showDeleteSelectedAddressBooksDialog = false },
-            title = { Text("Delete selected address books?") },
+            title = { Text(stringResource(id = R.string.delete_selected_address_books_title)) },
             text = {
                 Column {
-                    Text("This will delete the selected address books from both the server and your device. This action cannot be undone.")
+                    Text(stringResource(id = R.string.delete_selected_address_books_message))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Selected: ${selectedAddressBookIds.size}",
+                        text = stringResource(id = R.string.selected_count, selectedAddressBookIds.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -847,10 +861,10 @@ fun AccountDetailScreen(
                         viewModel.clearBatchSelections()
                         showDeleteSelectedAddressBooksDialog = false
                     }
-                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                ) { Text(stringResource(id = R.string.delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteSelectedAddressBooksDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteSelectedAddressBooksDialog = false }) { Text(stringResource(id = R.string.cancel)) }
             }
         )
     }
@@ -860,13 +874,13 @@ fun AccountDetailScreen(
         val selectedWebCalIds by viewModel.selectedWebCalIds.collectAsStateWithLifecycle()
         AlertDialog(
             onDismissRequest = { showDeleteSelectedWebCalDialog = false },
-            title = { Text("Delete selected WebCal subscriptions?") },
+            title = { Text(stringResource(id = R.string.delete_selected_webcal_title)) },
             text = {
                 Column {
-                    Text("This will delete the selected WebCal subscriptions from your device. This action cannot be undone.")
+                    Text(stringResource(id = R.string.delete_selected_webcal_message))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Selected: ${selectedWebCalIds.size}",
+                        text = stringResource(id = R.string.selected_count, selectedWebCalIds.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -879,10 +893,10 @@ fun AccountDetailScreen(
                         viewModel.clearBatchSelections()
                         showDeleteSelectedWebCalDialog = false
                     }
-                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                ) { Text(stringResource(id = R.string.delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteSelectedWebCalDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteSelectedWebCalDialog = false }) { Text(stringResource(id = R.string.cancel)) }
             }
         )
     }
@@ -946,7 +960,7 @@ fun CalDAVTabContent(
     ) {
         if (calendars.isEmpty()) {
             Text(
-                text = "No calendars found. Sync this account to fetch calendars from the server.",
+                text = stringResource(id = R.string.no_calendars_found) + " " + stringResource(id = R.string.sync_with_server_to_fetch_calendars),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
@@ -1105,7 +1119,7 @@ private fun CalendarCard(
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "Events",
+                            stringResource(id = R.string.events),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1120,7 +1134,7 @@ private fun CalendarCard(
                             modifier = Modifier.padding(0.dp)
                         ) {
                             Text(
-                                "Tasks",
+                                stringResource(id = R.string.tasks),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1136,7 +1150,7 @@ private fun CalendarCard(
                             modifier = Modifier.padding(0.dp)
                         ) {
                             Text(
-                                "Journal",
+                                stringResource(id = R.string.journal),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1153,24 +1167,10 @@ private fun CalendarCard(
                             modifier = Modifier.padding(0.dp).alpha(0.7f)
                         ) {
                             Text(
-                                "Read-only",
+                                stringResource(id = R.string.read_only),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                        }
-                    } else if (!calendar.syncEnabled) {
-                        // Separate tag to indicate sync is disabled without implying read-only
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            modifier = Modifier.padding(0.dp).alpha(0.7f)
-                        ) {
-                            Text(
-                                "Sync off",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         }
                     }
@@ -1182,7 +1182,7 @@ private fun CalendarCard(
                         val ownerName = calendar.owner
                             .substringBeforeLast("/")
                             .substringAfterLast("/")
-                            .takeIf { it.isNotEmpty() } ?: "Unknown"
+                            .takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.unknown)
                         
                         // Only show "Shared" tag if owner is different from current user
                         // Owner details will be shown in calendar settings dialog when tapping the card
@@ -1193,7 +1193,7 @@ private fun CalendarCard(
                                 modifier = Modifier.padding(0.dp).alpha(0.7f)
                             ) {
                                 Text(
-                                    "Shared",
+                                    stringResource(id = R.string.shared),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color.White
@@ -1211,9 +1211,9 @@ private fun CalendarCard(
                 // Display last sync time
                 Text(
                     text = if (calendar.lastSyncedAt != null) {
-                        "Last synced: ${formatTimestamp(calendar.lastSyncedAt)}"
+                        stringResource(id = R.string.last_sync, formatRelativeTime(calendar.lastSyncedAt))
                     } else {
-                        "Never synced"
+                        stringResource(id = R.string.never_synced)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1285,24 +1285,28 @@ private fun CalendarSettingsDialog(
             ) {
                 // Calendar Information Section
                 Text(
-                    text = "Calendar Information",
+                    text = stringResource(id = R.string.calendar_information),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 
                 Text(
-                    text = "Owner: ${if (calendar.owner != null) {
+                    text = stringResource(id = R.string.owner) + ": " + (if (calendar.owner != null) {
                         calendar.owner
                             .substringBeforeLast("/")
                             .substringAfterLast("/")
-                            .takeIf { it.isNotEmpty() } ?: "Unknown"
-                    } else "Not available"}",
+                            .takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.unknown)
+                    } else stringResource(id = R.string.none)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Text(
-                    text = "Last Sync: ${if (calendar.lastSyncedAt != null) formatTimestamp(calendar.lastSyncedAt) else "Never synced"}",
+                    text = if (calendar.lastSyncedAt != null) {
+                        stringResource(id = R.string.last_sync, formatRelativeTime(calendar.lastSyncedAt))
+                    } else {
+                        stringResource(id = R.string.never_synced)
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1311,7 +1315,7 @@ private fun CalendarSettingsDialog(
                 
                 // Sync Settings Section
                 Text(
-                    text = "Sync Settings",
+                    text = stringResource(id = R.string.settings_sync_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
@@ -1330,11 +1334,11 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Synchronization",
+                                text = stringResource(id = R.string.synchronization),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = if (isSyncEnabled) "Automatic sync enabled" else "Sync disabled",
+                                text = if (isSyncEnabled) stringResource(id = R.string.automatic_sync_enabled) else stringResource(id = R.string.sync_disabled),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1366,19 +1370,11 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Sync interval",
+                                text = stringResource(id = R.string.sync_interval),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = when (syncIntervalMinutes) {
-                                    null -> "Use account default"
-                                    15 -> "Every 15 minutes"
-                                    30 -> "Every 30 minutes"
-                                    60 -> "Every hour"
-                                    240 -> "Every 4 hours"
-                                    1440 -> "Once a day"
-                                    else -> "$syncIntervalMinutes minutes"
-                                },
+                                text = syncIntervalLabel(syncIntervalMinutes),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1403,11 +1399,11 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "WiFi-only sync",
+                                text = stringResource(id = R.string.wifi_only_sync),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = if (wifiOnlySync) "Sync only on WiFi" else "Sync on any network",
+                                text = if (wifiOnlySync) stringResource(id = R.string.wifi_only_sync_on) else stringResource(id = R.string.wifi_only_sync_off),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1441,16 +1437,16 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Read-Only",
+                                text = stringResource(id = R.string.read_only),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
                                 text = if (isServerReadOnly) {
-                                    "Server enforced (cannot write)"
+                                    stringResource(id = R.string.server_enforced_cannot_write)
                                 } else if (forceReadOnly) {
-                                    "Changes prevented"
+                                    stringResource(id = R.string.changes_prevented)
                                 } else {
-                                    "Changes allowed"
+                                    stringResource(id = R.string.changes_allowed)
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1474,7 +1470,7 @@ private fun CalendarSettingsDialog(
                 
                 // Appearance Section
                 Text(
-                    text = "Appearance",
+                    text = stringResource(id = R.string.settings_appearance_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
@@ -1493,11 +1489,11 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Calendar color",
+                                text = stringResource(id = R.string.calendar_color),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "Tap to choose color",
+                                text = stringResource(id = R.string.tap_to_choose_color),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1527,7 +1523,7 @@ private fun CalendarSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Rename calendar",
+                                text = stringResource(id = R.string.rename_calendar),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
@@ -1555,13 +1551,13 @@ private fun CalendarSettingsDialog(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete calendar")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.delete_calendar))
                 }
                 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Cancel button
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     
                     // Save button
@@ -1578,7 +1574,7 @@ private fun CalendarSettingsDialog(
                             onDismiss()
                         }
                     ) {
-                        Text("Save")
+                        Text(stringResource(id = R.string.save))
                     }
                 }
             }
@@ -1591,12 +1587,12 @@ private fun CalendarSettingsDialog(
         var newName by remember { mutableStateOf(calendar.displayName) }
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Rename Calendar") },
+            title = { Text(stringResource(id = R.string.rename_calendar)) },
             text = {
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    label = { Text("Calendar Name") },
+                    label = { Text(stringResource(id = R.string.calendar_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1611,12 +1607,12 @@ private fun CalendarSettingsDialog(
                     },
                     enabled = newName.isNotBlank()
                 ) {
-                    Text("Rename")
+                    Text(stringResource(id = R.string.rename))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRenameDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -1626,17 +1622,37 @@ private fun CalendarSettingsDialog(
     if (showIntervalPicker) {
         AlertDialog(
             onDismissRequest = { showIntervalPicker = false },
-            title = { Text("Sync Interval") },
+            title = { Text(stringResource(id = R.string.sync_interval)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(
-                        null to "Use account default",
-                        15 to "Every 15 minutes",
-                        30 to "Every 30 minutes",
-                        60 to "Every hour",
-                        240 to "Every 4 hours",
-                        1440 to "Once a day"
-                    ).forEach { (minutes, label) ->
+                    listOf(null, 15, 30, 60, 240, 1440).forEach { minutes ->
+                        val label = if (minutes == null) {
+                            stringResource(id = R.string.use_account_default)
+                        } else {
+                            val m = minutes
+                            when {
+                                m == 60 -> stringResource(id = R.string.every_hour)
+                                m == 1440 -> stringResource(id = R.string.once_a_day)
+                                m < 60 -> stringResource(
+                                    id = R.string.every_duration,
+                                    pluralStringResource(id = R.plurals.duration_minutes, count = m, m)
+                                )
+                                m % 60 == 0 && m < 1440 -> {
+                                    val hours = m / 60
+                                    stringResource(
+                                        id = R.string.every_duration,
+                                        pluralStringResource(id = R.plurals.duration_hours, count = hours, hours)
+                                    )
+                                }
+                                else -> {
+                                    val days = m / 1440
+                                    stringResource(
+                                        id = R.string.every_duration,
+                                        pluralStringResource(id = R.plurals.duration_days, count = days, days)
+                                    )
+                                }
+                            }
+                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1662,7 +1678,7 @@ private fun CalendarSettingsDialog(
             },
             confirmButton = {
                 TextButton(onClick = { showIntervalPicker = false }) {
-                    Text("Close")
+                    Text(stringResource(id = R.string.close))
                 }
             }
         )
@@ -1684,13 +1700,13 @@ private fun CalendarSettingsDialog(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Delete Calendar?") },
+            title = { Text(stringResource(id = R.string.delete_calendar_question)) },
             text = {
                 Column {
-                    Text("Are you sure you want to delete \"${calendar.displayName}\"?")
+                    Text(stringResource(id = R.string.delete_calendar_confirmation_named, calendar.displayName))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "This will delete the calendar from both the server and your device. All events in this calendar will be permanently removed.",
+                        text = stringResource(id = R.string.delete_calendar_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -1712,14 +1728,14 @@ private fun CalendarSettingsDialog(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(id = R.string.delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
                     
                     // Cancel button on the right
                     TextButton(onClick = { showDeleteConfirmation = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             },
@@ -1803,7 +1819,7 @@ fun WebCalSubscriptionCard(
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "WebCal",
+                            stringResource(id = R.string.webcal),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1817,7 +1833,7 @@ fun WebCalSubscriptionCard(
                         modifier = Modifier.padding(0.dp).alpha(0.7f)
                     ) {
                         Text(
-                            "Read-only",
+                            stringResource(id = R.string.read_only),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onErrorContainer
@@ -1830,9 +1846,9 @@ fun WebCalSubscriptionCard(
                 // Display last sync time
                 Text(
                     text = if (subscription.lastSyncedAt != null) {
-                        "Last synced: ${formatTimestamp(subscription.lastSyncedAt)}"
+                        stringResource(id = R.string.last_sync, formatRelativeTime(subscription.lastSyncedAt))
                     } else {
-                        "Never synced"
+                        stringResource(id = R.string.never_synced)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1916,7 +1932,7 @@ fun CardDAVTabContent(
     ) {
         if (addressBooks.isEmpty()) {
             Text(
-                text = "No address books found. Sync this account to fetch address books from the server.",
+                text = stringResource(id = R.string.no_address_books) + " " + stringResource(id = R.string.sync_with_server_to_fetch_address_books),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
@@ -2048,7 +2064,7 @@ private fun AddressBookCard(
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "Contacts",
+                            stringResource(id = R.string.contacts),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -2065,7 +2081,7 @@ private fun AddressBookCard(
                             modifier = Modifier.padding(0.dp).alpha(0.7f)
                         ) {
                             Text(
-                                "Read-only",
+                                stringResource(id = R.string.read_only),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -2080,7 +2096,7 @@ private fun AddressBookCard(
                         val ownerName = addressBook.owner
                             .substringBeforeLast("/")
                             .substringAfterLast("/")
-                            .takeIf { it.isNotEmpty() } ?: "Unknown"
+                            .takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.unknown)
                         
                         // Only show "Shared" tag if owner is different from current user
                         // Owner details will be shown in addressbook settings dialog when tapping the card
@@ -2091,7 +2107,7 @@ private fun AddressBookCard(
                                 modifier = Modifier.padding(0.dp).alpha(0.7f)
                             ) {
                                 Text(
-                                    "Shared",
+                                    stringResource(id = R.string.shared),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color.White
@@ -2112,9 +2128,9 @@ private fun AddressBookCard(
                 // Display last sync time
                 Text(
                     text = if (addressBook.ctag != null) {
-                        "Last synced: ${formatTimestamp(addressBook.updatedAt)}"
+                        stringResource(id = R.string.last_sync, formatRelativeTime(addressBook.updatedAt))
                     } else {
-                        "Never synced"
+                        stringResource(id = R.string.never_synced)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2276,7 +2292,7 @@ private fun AddressBookSettingsDialog(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Rename Address Book")
+                    Text(stringResource(id = R.string.rename_address_book))
                 }
                 
                 HorizontalDivider()
@@ -2284,7 +2300,7 @@ private fun AddressBookSettingsDialog(
                 // Owner info (extracted from addressBook.owner field)
                 Column {
                     Text(
-                        text = "Owner",
+                        text = stringResource(id = R.string.owner),
                         style = MaterialTheme.typography.titleSmall
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -2294,9 +2310,9 @@ private fun AddressBookSettingsDialog(
                             addressBook.owner
                                 .substringBeforeLast("/")
                                 .substringAfterLast("/")
-                                .takeIf { it.isNotEmpty() } ?: "Unknown"
+                                .takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.unknown)
                         } else {
-                            "Not available"
+                            stringResource(id = R.string.none)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2314,12 +2330,12 @@ private fun AddressBookSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Last Sync",
+                            text = stringResource(id = R.string.last_sync, ""),
                             style = MaterialTheme.typography.titleSmall
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = formatTimestamp(addressBook.updatedAt),
+                            text = formatRelativeTime(addressBook.updatedAt),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -2337,7 +2353,7 @@ private fun AddressBookSettingsDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Sync,
-                            contentDescription = "Sync now",
+                            contentDescription = stringResource(id = R.string.sync_now),
                             modifier = Modifier.rotate(if (isSyncing) rotation else 0f),
                             tint = if (isSyncing) {
                                 MaterialTheme.colorScheme.primary
@@ -2363,7 +2379,7 @@ private fun AddressBookSettingsDialog(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete address book")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.delete_address_book))
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2379,14 +2395,14 @@ private fun AddressBookSettingsDialog(
                             onDismiss()
                         }
                     ) {
-                        Text("Save")
+                        Text(stringResource(id = R.string.save))
                     }
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -2396,12 +2412,12 @@ private fun AddressBookSettingsDialog(
         var newName by remember { mutableStateOf(addressBook.displayName) }
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Rename Address Book") },
+            title = { Text(stringResource(id = R.string.rename_address_book)) },
             text = {
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    label = { Text("Address Book Name") },
+                    label = { Text(stringResource(id = R.string.address_book_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -2416,12 +2432,12 @@ private fun AddressBookSettingsDialog(
                     },
                     enabled = newName.isNotBlank()
                 ) {
-                    Text("Rename")
+                    Text(stringResource(id = R.string.rename))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRenameDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -2431,7 +2447,7 @@ private fun AddressBookSettingsDialog(
     if (showIntervalPicker) {
         AlertDialog(
             onDismissRequest = { showIntervalPicker = false },
-            title = { Text("Sync Interval") },
+            title = { Text(stringResource(id = R.string.sync_interval)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
@@ -2467,7 +2483,7 @@ private fun AddressBookSettingsDialog(
             },
             confirmButton = {
                 TextButton(onClick = { showIntervalPicker = false }) {
-                    Text("Close")
+                    Text(stringResource(id = R.string.close))
                 }
             }
         )
@@ -2477,7 +2493,7 @@ private fun AddressBookSettingsDialog(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Delete Address Book?") },
+            title = { Text(stringResource(id = R.string.delete_address_book_question)) },
             text = {
                 Column {
                     Text("Are you sure you want to delete \"${addressBook.displayName}\"?")
@@ -2504,11 +2520,11 @@ private fun AddressBookSettingsDialog(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(id = R.string.delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-                    TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") }
+                    TextButton(onClick = { showDeleteConfirmation = false }) { Text(stringResource(id = R.string.cancel)) }
                 }
             },
             dismissButton = null
@@ -2601,7 +2617,7 @@ fun WebCalTabContent(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "WebCal Subscriptions",
+                        text = stringResource(id = R.string.webcal_subscriptions),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                     )
@@ -2609,7 +2625,7 @@ fun WebCalTabContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Subscribe to read-only calendar feeds via HTTP(S)",
+                        text = stringResource(id = R.string.subscribe_to_read_only_feeds),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -2623,7 +2639,7 @@ fun WebCalTabContent(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Subscribe to WebCal")
+                        Text(stringResource(id = R.string.subscribe_to_webcal))
                     }
                 }
             }
@@ -2735,7 +2751,7 @@ private fun WebCalCard(subscription: WebCalSubscription) {
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "Events",
+                            stringResource(id = R.string.events),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -2749,7 +2765,7 @@ private fun WebCalCard(subscription: WebCalSubscription) {
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Text(
-                            "Read-only",
+                            stringResource(id = R.string.read_only),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onErrorContainer
@@ -2762,9 +2778,9 @@ private fun WebCalCard(subscription: WebCalSubscription) {
                 // Display last sync time
                 Text(
                     text = if (subscription.lastSyncedAt != null) {
-                        "Last synced: ${formatTimestamp(subscription.lastSyncedAt)}"
+                        stringResource(id = R.string.last_sync, formatRelativeTime(subscription.lastSyncedAt))
                     } else {
-                        "Never synced"
+                        stringResource(id = R.string.never_synced)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2780,6 +2796,7 @@ fun WebCalUrlInputDialog(
     onDismiss: () -> Unit,
     onSubmit: (url: String, displayName: String) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var url by remember { mutableStateOf("") }
     var displayName by remember { mutableStateOf("") }
     var urlError by remember { mutableStateOf<String?>(null) }
@@ -2788,11 +2805,11 @@ fun WebCalUrlInputDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Public, contentDescription = null) },
-        title = { Text("Add WebCal Subscription") },
+        title = { Text(stringResource(id = R.string.add_webcal_subscription)) },
         text = {
             Column {
                 Text(
-                    text = "Subscribe to a read-only calendar feed. The subscription will be stored locally and synced periodically.",
+                    text = stringResource(id = R.string.webcal_subscription_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -2805,8 +2822,8 @@ fun WebCalUrlInputDialog(
                         displayName = it
                         nameError = null
                     },
-                    label = { Text("Display Name") },
-                    placeholder = { Text("My Calendar") },
+                    label = { Text(stringResource(id = R.string.display_name)) },
+                    placeholder = { Text(stringResource(id = R.string.display_name_placeholder)) },
                     singleLine = true,
                     isError = nameError != null,
                     supportingText = nameError?.let { { Text(it) } },
@@ -2821,8 +2838,8 @@ fun WebCalUrlInputDialog(
                         url = it
                         urlError = null
                     },
-                    label = { Text("WebCal URL") },
-                    placeholder = { Text("webcal://example.com/calendar.ics") },
+                    label = { Text(stringResource(id = R.string.webcal_url)) },
+                    placeholder = { Text(stringResource(id = R.string.webcal_url_placeholder)) },
                     singleLine = true,
                     isError = urlError != null,
                     supportingText = urlError?.let { { Text(it) } },
@@ -2835,13 +2852,13 @@ fun WebCalUrlInputDialog(
                 onClick = {
                     // Validate display name
                     if (displayName.isBlank()) {
-                        nameError = "Display name is required"
+                        nameError = context.getString(R.string.display_name_required)
                         return@TextButton
                     }
                     
                     // Validate URL
                     if (url.isBlank()) {
-                        urlError = "URL is required"
+                        urlError = context.getString(R.string.url_required)
                         return@TextButton
                     }
                     
@@ -2849,19 +2866,19 @@ fun WebCalUrlInputDialog(
                         !url.startsWith("webcals://") &&
                         !url.startsWith("http://") &&
                         !url.startsWith("https://")) {
-                        urlError = "URL must start with webcal://, webcals://, http://, or https://"
+                        urlError = context.getString(R.string.invalid_webcal_url)
                         return@TextButton
                     }
                     
                     onSubmit(url, displayName)
                 }
             ) {
-                Text("Add Subscription")
+                Text(stringResource(id = R.string.add_webcal_subscription))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -2910,7 +2927,7 @@ fun AccountSettingsDialog(
         onDismissRequest = onDismiss,
         title = { 
             Column {
-                Text("Account Settings")
+                Text(stringResource(id = R.string.account_settings))
                 Text(
                     text = account.accountName,
                     style = MaterialTheme.typography.bodySmall,
@@ -2927,7 +2944,7 @@ fun AccountSettingsDialog(
             ) {
                 // Authentication Section
                 Text(
-                    text = "Authentication",
+                    text = stringResource(id = R.string.authentication),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
@@ -2935,7 +2952,7 @@ fun AccountSettingsDialog(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(id = R.string.username)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
@@ -2944,7 +2961,7 @@ fun AccountSettingsDialog(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password (leave empty to keep current)") },
+                    label = { Text(stringResource(id = R.string.leave_empty_keep_password)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
@@ -2953,7 +2970,7 @@ fun AccountSettingsDialog(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                contentDescription = if (passwordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                             )
                         }
                     }
@@ -2976,11 +2993,11 @@ fun AccountSettingsDialog(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Client certificate",
+                                text = stringResource(id = R.string.client_certificate),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = if (certificatePath.isNotBlank()) certificatePath else "None",
+                                text = if (certificatePath.isNotBlank()) certificatePath else stringResource(id = R.string.none),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2993,17 +3010,17 @@ fun AccountSettingsDialog(
                 
                 // Account Info Section
                 Text(
-                    text = "Account Information",
+                    text = stringResource(id = R.string.account_information),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 Text(
-                    text = "Server: ${account.serverUrl}",
+                    text = stringResource(id = R.string.server_with_value, account.serverUrl),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Username: ${account.username}",
+                    text = stringResource(id = R.string.username) + ": " + account.username,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -3012,7 +3029,7 @@ fun AccountSettingsDialog(
                 
                 // Sync Settings Section
                 Text(
-                    text = "Sync Settings",
+                    text = stringResource(id = R.string.settings_sync_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
@@ -3028,11 +3045,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Calendar sync",
+                            text = stringResource(id = R.string.calendar_sync_interval),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = syncIntervalOptions.find { it.first == calendarSyncInterval }?.second ?: "Unknown",
+                            text = if (calendarSyncInterval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(calendarSyncInterval),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3051,11 +3068,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Contact sync",
+                            text = stringResource(id = R.string.contact_sync_interval),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = syncIntervalOptions.find { it.first == contactSyncInterval }?.second ?: "Unknown",
+                            text = if (contactSyncInterval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(contactSyncInterval),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3074,11 +3091,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "WebCal sync",
+                            text = stringResource(id = R.string.webcal_sync_interval),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = syncIntervalOptions.find { it.first == webCalSyncInterval }?.second ?: "Unknown",
+                            text = if (webCalSyncInterval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(webCalSyncInterval),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3096,11 +3113,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Sync only on WiFi",
+                            text = stringResource(id = R.string.wifi_only_sync),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Disable mobile data sync",
+                            text = stringResource(id = R.string.disable_mobile_data_sync),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3119,7 +3136,7 @@ fun AccountSettingsDialog(
                 
                 // CalDAV Settings
                 Text(
-                    text = "CalDAV Settings",
+                    text = stringResource(id = R.string.caldav_settings),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
@@ -3131,11 +3148,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Manage calendar colors",
+                            text = stringResource(id = R.string.manage_calendar_colors),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Use server-side calendar colors",
+                            text = stringResource(id = R.string.use_server_side_calendar_colors),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3157,11 +3174,11 @@ fun AccountSettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Event colors",
+                            text = stringResource(id = R.string.event_colors),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Use colors from individual events",
+                            text = stringResource(id = R.string.use_colors_from_individual_events),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3202,12 +3219,12 @@ fun AccountSettingsDialog(
                 onSave(updatedAccount, newPassword)
                 onDismiss()
             }) {
-                Text("Save")
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -3216,7 +3233,7 @@ fun AccountSettingsDialog(
     if (showCalendarIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showCalendarIntervalDialog = false },
-            title = { Text("Calendar sync interval") },
+            title = { Text(stringResource(id = R.string.calendar_sync_interval)) },
             text = {
                 Column {
                     syncIntervalOptions.forEach { (interval, label) ->
@@ -3238,7 +3255,7 @@ fun AccountSettingsDialog(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(if (interval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(interval))
                         }
                     }
                 }
@@ -3246,7 +3263,7 @@ fun AccountSettingsDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showCalendarIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -3255,7 +3272,7 @@ fun AccountSettingsDialog(
     if (showContactIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showContactIntervalDialog = false },
-            title = { Text("Contact sync interval") },
+            title = { Text(stringResource(id = R.string.contact_sync_interval)) },
             text = {
                 Column {
                     syncIntervalOptions.forEach { (interval, label) ->
@@ -3277,7 +3294,7 @@ fun AccountSettingsDialog(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(if (interval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(interval))
                         }
                     }
                 }
@@ -3285,7 +3302,7 @@ fun AccountSettingsDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showContactIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -3294,7 +3311,7 @@ fun AccountSettingsDialog(
     if (showWebCalIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showWebCalIntervalDialog = false },
-            title = { Text("WebCal sync interval") },
+            title = { Text(stringResource(id = R.string.webcal_sync_interval)) },
             text = {
                 Column {
                     syncIntervalOptions.forEach { (interval, label) ->
@@ -3316,7 +3333,7 @@ fun AccountSettingsDialog(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(if (interval == -1) stringResource(id = R.string.manual) else syncIntervalLabel(interval))
                         }
                     }
                 }
@@ -3324,7 +3341,7 @@ fun AccountSettingsDialog(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showWebCalIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -3341,12 +3358,12 @@ fun RenameAccountDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Rename Account") },
+        title = { Text(stringResource(id = R.string.rename_account_title)) },
         text = {
             TextField(
                 value = newName,
                 onValueChange = { newName = it },
-                label = { Text("Account Name") },
+                label = { Text(stringResource(id = R.string.account_name)) },
                 singleLine = true
             )
         },
@@ -3355,12 +3372,12 @@ fun RenameAccountDialog(
                 onClick = { onRename(newName) },
                 enabled = newName.isNotBlank()
             ) {
-                Text("Rename")
+                Text(stringResource(id = R.string.rename))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -3377,19 +3394,19 @@ fun CreateCalendarDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create Calendar") },
+        title = { Text(stringResource(id = R.string.create_calendar)) },
         text = {
             Column {
                 TextField(
                     value = calendarName,
                     onValueChange = { calendarName = it },
-                    label = { Text("Calendar Name") },
+                    label = { Text(stringResource(id = R.string.calendar_name)) },
                     singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                Text("Calendar Color:", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(id = R.string.calendar_color) + ":", style = MaterialTheme.typography.bodyMedium)
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
@@ -3409,7 +3426,7 @@ fun CreateCalendarDialog(
                             .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                     )
                     Text(
-                        text = "Tap to choose color",
+                        text = stringResource(id = R.string.tap_to_choose_color),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -3421,12 +3438,12 @@ fun CreateCalendarDialog(
                 onClick = { onCreate(calendarName, selectedColor) },
                 enabled = calendarName.isNotBlank()
             ) {
-                Text("Create")
+                Text(stringResource(id = R.string.add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -3450,13 +3467,13 @@ fun CreateAddressBookDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create Address Book") },
+        title = { Text(stringResource(id = R.string.create_address_book)) },
         text = {
             Column {
                 TextField(
                     value = addressBookName,
                     onValueChange = { addressBookName = it },
-                    label = { Text("Address Book Name") },
+                    label = { Text(stringResource(id = R.string.address_book_name)) },
                     singleLine = true
                 )
             }
@@ -3466,12 +3483,12 @@ fun CreateAddressBookDialog(
                 onClick = { onCreate(addressBookName) },
                 enabled = addressBookName.isNotBlank()
             ) {
-                Text("Create")
+                Text(stringResource(id = R.string.add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -3480,22 +3497,53 @@ fun CreateAddressBookDialog(
 /**
  * Format timestamp to readable date string.
  */
-private fun formatTimestamp(timestamp: Long): String {
+@Composable
+private fun formatRelativeTime(timestamp: Long): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
-    
+
     return when {
-        diff < 60_000 -> "Just now"
-        diff < 3600_000 -> "${diff / 60_000} minutes ago"
-        diff < 7200_000 -> "1 hour ago"
-        diff < 86400_000 -> "${diff / 3600_000} hours ago"
-        diff < 172800_000 -> "Yesterday"
-        diff < 604800_000 -> "${diff / 86400_000} days ago"
-        diff < 2592000_000 -> "${diff / 604800_000} weeks ago"
+        diff < 60_000 -> stringResource(id = R.string.just_now)
+        diff < 3_600_000 -> {
+            val minutes = (diff / 60_000).toInt().coerceAtLeast(1)
+            pluralStringResource(id = R.plurals.minutes_ago, count = minutes, minutes)
+        }
+        diff < 7_200_000 -> stringResource(id = R.string.hour_ago)
+        diff < 86_400_000 -> {
+            val hours = (diff / 3_600_000).toInt().coerceAtLeast(1)
+            pluralStringResource(id = R.plurals.hours_ago, count = hours, hours)
+        }
+        diff < 172_800_000 -> stringResource(id = R.string.yesterday)
+        diff < 604_800_000 -> {
+            val days = (diff / 86_400_000).toInt().coerceAtLeast(1)
+            pluralStringResource(id = R.plurals.days_ago, count = days, days)
+        }
+        diff < 2_592_000_000 -> {
+            val weeks = (diff / 604_800_000).toInt().coerceAtLeast(1)
+            pluralStringResource(id = R.plurals.weeks_ago, count = weeks, weeks)
+        }
         else -> {
-            val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+            val pattern = stringResource(id = R.string.date_format_short)
+            val sdf = java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault())
             sdf.format(java.util.Date(timestamp))
         }
+    }
+}
+
+@Composable
+private fun syncIntervalLabel(minutes: Int?): String {
+    return when {
+        minutes == null -> stringResource(id = R.string.use_account_default)
+        minutes < 60 -> pluralStringResource(id = R.plurals.duration_minutes, count = minutes, minutes)
+        minutes % 60 == 0 && minutes < 1440 -> {
+            val hours = minutes / 60
+            pluralStringResource(id = R.plurals.duration_hours, count = hours, hours)
+        }
+        minutes % 1440 == 0 -> {
+            val days = minutes / 1440
+            pluralStringResource(id = R.plurals.duration_days, count = days, days)
+        }
+        else -> pluralStringResource(id = R.plurals.duration_minutes, count = minutes, minutes)
     }
 }
 

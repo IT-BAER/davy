@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">Gebruik de DAVy-app om accounts toe te voegen</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">Alles synch.</string>
+    <string name="shortcut_sync_all_long">Alles synchroniseren</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">Terug</string>
+    <string name="settings">Instellingen</string>
+    <string name="about">Over</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annuleren</string>
+    <string name="delete">Verwijderen</string>
+    <string name="edit">Bewerken</string>
+    <string name="save">Opslaan</string>
+    <string name="sync">Synchroniseren</string>
+    <string name="error">Fout</string>
+    <string name="loading">Laden…</string>
+    <string name="retry">Opnieuw proberen</string>
+    <string name="close">Sluiten</string>
+    <string name="add">Toevoegen</string>
+    <string name="remove">Verwijderen</string>
+    <string name="refresh">Vernieuwen</string>
+    <string name="enabled">Ingeschakeld</string>
+    <string name="disabled">Uitgeschakeld</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - Accounts</string>
+    <string name="add_account">Account toevoegen</string>
+    <string name="account_details">Accountdetails</string>
+    <string name="account_settings">Accountinstellingen</string>
+    <string name="delete_account">Account verwijderen</string>
+    <string name="delete_account_confirmation">Weet u zeker dat u dit account wilt verwijderen? Hiermee worden alle gesynchroniseerde gegevens verwijderd.</string>
+    <string name="no_accounts">Nog geen accounts</string>
+    <string name="no_accounts_description">Voeg uw eerste CalDAV/CardDAV-account toe om te beginnen</string>
+    <string name="account_name">Accountnaam</string>
+    <string name="server_url">Server-URL</string>
+    <string name="username">Gebruikersnaam</string>
+    <string name="password">Wachtwoord</string>
+    <string name="account_color">Accountkleur</string>
+    
+    <!-- Sync -->
+    <string name="syncing">Synchroniseren…</string>
+    <string name="sync_all">Alles synchroniseren</string>
+    <string name="sync_successful">Synchronisatie geslaagd</string>
+    <string name="sync_failed">Synchronisatie mislukt</string>
+    <string name="last_sync">Laatste synchronisatie: %1$s</string>
+    <string name="never_synced">Nooit gesynchroniseerd</string>
+    <string name="auto_sync">Automatisch synchroniseren</string>
+    <string name="sync_on_wifi_only">Alleen via WiFi synchroniseren</string>
+    
+    <!-- Collections -->
+    <string name="collections">Verzamelingen</string>
+    <string name="collections_title">DAVy - Verzamelingen</string>
+    <string name="calendars">Kalenders</string>
+    <string name="contacts">Contacten</string>
+    <string name="tasks">Taken</string>
+    <string name="address_books">Adresboeken</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">Kalenderdetails</string>
+    <string name="calendar_list">Kalenderlijst</string>
+    <string name="event_details">Gebeurtenisdetails</string>
+    <string name="all_day_event">Hele dag gebeurtenis</string>
+    <string name="date_time">Datum &amp; tijd</string>
+    <string name="description">Beschrijving</string>
+    <string name="location">Locatie</string>
+    <string name="attendees">Deelnemers (%1$d)</string>
+    <string name="reminders">Herinneringen</string>
+    <string name="reminder_before">%1$d minuten van tevoren (%2$s)</string>
+    <string name="recurrence">Herhaling</string>
+    <string name="availability">Beschikbaarheid</string>
+    <string name="delete_event">Gebeurtenis verwijderen</string>
+    <string name="delete_event_confirmation">Weet u zeker dat u deze gebeurtenis wilt verwijderen?</string>
+    <string name="edit_event">Gebeurtenis bewerken</string>
+    <string name="edit_event_future_update">Bewerken van gebeurtenissen wordt geïmplementeerd in een toekomstige update.</string>
+    <string name="event_not_found">Gebeurtenis niet gevonden</string>
+    <string name="failed_to_load_event">Laden van gebeurtenis mislukt: %1$s</string>
+    <string name="failed_to_delete_event">Verwijderen van gebeurtenis mislukt: %1$s</string>
+    <string name="event_type">Type</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">Adresboekdetails</string>
+    <string name="address_book_list">Adresboeklijst</string>
+    <string name="contact_details">Contactdetails</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">Synchronisatie-instellingen</string>
+    <string name="settings_appearance_title">Uiterlijk</string>
+    <string name="settings_advanced_title">Geavanceerd</string>
+    <string name="settings_backup_title">Back-up &amp; herstel</string>
+    <string name="settings_permissions_title">Machtigingen</string>
+    <string name="dark_mode">Donkere modus</string>
+    <string name="debug_logging">Debug-logboek</string>
+    <string name="battery_optimization">Batterijoptimalisatie</string>
+    <string name="battery_optimization_disabled">Uitgeschakeld</string>
+    <string name="battery_optimization_enabled">Ingeschakeld (Aanbevolen)</string>
+    <string name="battery_optimization_description">Schakel batterijoptimalisatie uit voor betrouwbare synchronisatie op de achtergrond</string>
+    <string name="permissions_status">Machtigingsstatus</string>
+    <string name="all_permissions_granted">Alle machtigingen verleend</string>
+    <string name="some_permissions_missing">Sommige machtigingen ontbreken</string>
+    <string name="backup_database">Database back-uppen</string>
+    <string name="restore_database">Database herstellen</string>
+    
+    <!-- About Screen -->
+    <string name="version">Versie %1$s</string>
+    <string name="app_description">DAVy is een moderne CalDAV-, CardDAV- en WebCal-synchronisatie-app voor Android. Houd uw kalenders, contacten en taken gesynchroniseerd op al uw apparaten.</string>
+    <string name="technology_stack">Technologiestack</string>
+    <string name="key_dependencies">Belangrijkste afhankelijkheden</string>
+    <string name="license">Licentie: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin &amp; Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room-database</string>
+    <string name="tech_coroutines">• Coroutines &amp; Flow</string>
+    <string name="tech_okhttp">• OkHttp &amp; Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">Veelgestelde vragen</string>
+    <string name="faq_what_is_davy">Wat is DAVy?</string>
+    <string name="faq_what_is_davy_answer">DAVy is een CalDAV/CardDAV-synchronisatieclient voor Android die kalenders, contacten en taken synchroniseert met uw server.</string>
+    <string name="faq_which_servers">Welke servers worden ondersteund?</string>
+    <string name="faq_which_servers_answer">DAVy werkt met elke CalDAV/CardDAV-compatibele server, inclusief Nextcloud, ownCloud, Radicale, Baïkal en meer.</string>
+    <string name="faq_sync_not_working">Waarom werkt mijn synchronisatie niet?</string>
+    <string name="faq_sync_not_working_answer">• Server-URL is correct (inclusief https://)\n• Gebruikersnaam en wachtwoord zijn geldig\n• Alleen WiFi-synchronisatie is uitgeschakeld of WiFi is verbonden\n• Automatische synchronisatie is ingeschakeld in Android-instellingen</string>
+    <string name="faq_enable_auto_sync">Hoe schakel ik automatische synchronisatie in?</string>
+    <string name="faq_enable_auto_sync_answer">Ga naar Android-instellingen → Accounts → DAVy → Schakel \'Gegevens automatisch synchroniseren\' in</string>
+    <string name="faq_multiple_accounts">Kan ik meerdere accounts synchroniseren?</string>
+    <string name="faq_multiple_accounts_answer">Ja, u kunt meerdere CalDAV/CardDAV-accounts tegelijkertijd toevoegen en synchroniseren.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">Handleidingen</string>
+    <string name="getting_started">Aan de slag</string>
+    <string name="setup_guides">Installatiehandleidingen</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">Er is een fout opgetreden</string>
+    <string name="error_network">Netwerkfout. Controleer uw verbinding.</string>
+    <string name="error_authentication">Authenticatie mislukt. Controleer uw inloggegevens.</string>
+    <string name="error_server">Serverfout. Probeer het later opnieuw.</string>
+    <string name="success">Geslaagd</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_sync">Synchroniseren</string>
+    <string name="content_description_add">Toevoegen</string>
+    <string name="content_description_delete">Verwijderen</string>
+    <string name="content_description_edit">Bewerken</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_help">Help</string>
+    <string name="content_description_back">Terug</string>
+    <string name="content_description_settings">Instellingen</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">Accounts</string>
+    <string name="nav_collections">Verzamelingen</string>
+    <string name="nav_settings">Instellingen</string>
+    <string name="nav_guides">Handleidingen</string>
+    <string name="nav_faq">Veelgestelde vragen</string>
+    <string name="nav_about">Over</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="zero">Geen gebeurtenissen</item>
+        <item quantity="one">1 gebeurtenis</item>
+        <item quantity="other">%d gebeurtenissen</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="zero">Geen contacten</item>
+        <item quantity="one">1 contact</item>
+        <item quantity="other">%d contacten</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="zero">Geen taken</item>
+        <item quantity="one">1 taak</item>
+        <item quantity="other">%d taken</item>
+    </plurals>
+</resources>

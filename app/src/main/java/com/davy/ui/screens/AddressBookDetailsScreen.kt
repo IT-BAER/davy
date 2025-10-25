@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,12 +40,12 @@ fun AddressBookDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Address Book Settings") },
+                title = { Text(stringResource(id = com.davy.R.string.address_book_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = com.davy.R.string.back)
                         )
                     }
                 }
@@ -139,25 +140,25 @@ private fun AddressBookDetailsContent(
 
         // Address Book Information
         Text(
-            text = "Address Book Information",
+            text = stringResource(id = com.davy.R.string.address_book_information),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
-
-        InfoRow("URL", addressBook.url)
+        
+        InfoRow(stringResource(id = com.davy.R.string.url), addressBook.url)
         if (addressBook.owner != null) {
             val ownerName = addressBook.owner
                 .substringBeforeLast("/")
                 .substringAfterLast("/")
-                .takeIf { it.isNotEmpty() } ?: "Unknown"
-            InfoRow("Owner", ownerName)
+                .takeIf { it.isNotEmpty() } ?: stringResource(id = com.davy.R.string.unknown)
+            InfoRow(stringResource(id = com.davy.R.string.owner), ownerName)
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Sync Settings
         Text(
-            text = "Sync Settings",
+            text = stringResource(id = com.davy.R.string.settings_sync_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -176,11 +177,11 @@ private fun AddressBookDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sync Enabled",
+                        text = stringResource(id = com.davy.R.string.sync_enabled),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = if (addressBook.syncEnabled) "Automatic sync enabled" else "Sync disabled",
+                        text = if (addressBook.syncEnabled) stringResource(id = com.davy.R.string.automatic_sync_enabled) else stringResource(id = com.davy.R.string.sync_disabled),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -210,11 +211,11 @@ private fun AddressBookDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "WiFi-only Sync",
+                        text = stringResource(id = com.davy.R.string.sync_on_wifi_only),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = if (wifiOnlySync) "Sync only on WiFi" else "Sync on any network",
+                        text = if (wifiOnlySync) stringResource(id = com.davy.R.string.wifi_only_sync_on) else stringResource(id = com.davy.R.string.wifi_only_sync_off),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -246,16 +247,16 @@ private fun AddressBookDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Read-Only",
+                        text = stringResource(id = com.davy.R.string.read_only),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         text = if (isServerReadOnly) {
-                            "Server enforced (cannot write)"
+                            stringResource(id = com.davy.R.string.server_enforced_cannot_write)
                         } else if (forceReadOnly) {
-                            "Changes prevented"
+                            stringResource(id = com.davy.R.string.changes_prevented)
                         } else {
-                            "Changes allowed"
+                            stringResource(id = com.davy.R.string.changes_allowed)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -293,7 +294,7 @@ private fun AddressBookDetailsContent(
                     ),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete address book")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = com.davy.R.string.delete_address_book))
                 }
                 
                 // Sync Now button on the right
@@ -305,11 +306,11 @@ private fun AddressBookDetailsContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(id = com.davy.R.string.sync_now),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(id = com.davy.R.string.sync_now))
                 }
             }
         }
@@ -322,13 +323,13 @@ private fun AddressBookDetailsContent(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Delete Address Book?") },
+            title = { Text(stringResource(id = com.davy.R.string.delete_address_book_question)) },
             text = {
                 Column {
-                    Text("Are you sure you want to delete \"${addressBook.displayName}\"?")
+                    Text(stringResource(id = com.davy.R.string.delete_address_book_confirmation_named, addressBook.displayName))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "This will delete the address book from both the server and your device. All contacts in this address book will be permanently removed.",
+                        text = stringResource(id = com.davy.R.string.delete_address_book_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -353,7 +354,7 @@ private fun AddressBookDetailsContent(
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-                    TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") }
+                    TextButton(onClick = { showDeleteConfirmation = false }) { Text(stringResource(id = com.davy.R.string.cancel)) }
                 }
             },
             dismissButton = null

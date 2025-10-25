@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,10 +39,10 @@ fun ContactListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contacts") },
+                title = { Text(stringResource(id = com.davy.R.string.contacts)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = com.davy.R.string.content_description_back))
                     }
                 }
             )
@@ -49,8 +50,8 @@ fun ContactListScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showAddDialog = true },
-                icon = { Icon(Icons.Default.Person, "Add") },
-                text = { Text("Add Contact") }
+                icon = { Icon(Icons.Default.Person, stringResource(id = com.davy.R.string.content_description_add)) },
+                text = { Text(stringResource(id = com.davy.R.string.add_contact)) }
             )
         }
     ) { paddingValues ->
@@ -83,12 +84,12 @@ fun ContactListScreen(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "No contacts",
+                            text = stringResource(id = com.davy.R.string.no_contacts),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Add an account to sync contacts",
+                            text = stringResource(id = com.davy.R.string.add_account_to_sync_contacts),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -118,11 +119,11 @@ fun ContactListScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Contact") },
-            text = { Text("Contact creation will be implemented in a future update.") },
+            title = { Text(stringResource(id = com.davy.R.string.add_contact)) },
+            text = { Text(stringResource(id = com.davy.R.string.contact_creation_future_update)) },
             confirmButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(id = com.davy.R.string.ok))
                 }
             }
         )

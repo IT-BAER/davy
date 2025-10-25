@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import com.davy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,10 +49,10 @@ fun TaskScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tasks") },
+                title = { Text(stringResource(id = R.string.tasks)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.back))
                     }
                 }
             )
@@ -58,8 +60,8 @@ fun TaskScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showAddDialog = true },
-                icon = { Icon(Icons.Default.Add, "Add") },
-                text = { Text("Add Task") }
+                icon = { Icon(Icons.Default.Add, stringResource(id = R.string.content_description_add)) },
+                text = { Text(stringResource(id = R.string.add_task)) }
             )
         }
     ) { paddingValues ->
@@ -124,11 +126,11 @@ fun TaskScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Task") },
-            text = { Text("Task creation will be implemented in a future update.") },
+            title = { Text(stringResource(id = R.string.add_task)) },
+            text = { Text(stringResource(id = R.string.task_creation_future_update)) },
             confirmButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(id = R.string.ok))
                 }
             }
         )

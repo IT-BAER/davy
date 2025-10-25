@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.davy.R
+import com.davy.BuildConfig
 
 /**
  * Full screen about page.
@@ -27,12 +29,12 @@ fun AboutScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text("About") },
+                title = { Text(stringResource(id = R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.content_description_back)
                         )
                     }
                 }
@@ -51,19 +53,19 @@ fun AboutScreen(
             // Logo - same as main menu header
             Image(
                 painter = painterResource(id = R.drawable.ic_app_logo),
-                contentDescription = "DAVy Logo",
+                contentDescription = stringResource(id = R.string.content_description_app_logo),
                 modifier = Modifier.size(80.dp)
             )
             
             // App name
             Text(
-                "DAVy",
+                stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge
             )
             
             // Version
             Text(
-                "Version 1.0.0",
+                stringResource(id = R.string.version, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -76,12 +78,11 @@ fun AboutScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Description",
+                    stringResource(id = R.string.description),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    "DAVy is a modern CalDAV, CardDAV, and WebCal synchronization app for Android. " +
-                    "Keep your calendars, contacts, and tasks in sync across all your devices.",
+                    stringResource(id = R.string.app_description),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -94,17 +95,17 @@ fun AboutScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Technology Stack",
+                    stringResource(id = R.string.technology_stack),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TechStackItem("• Kotlin & Jetpack Compose")
-                    TechStackItem("• Material 3 Design")
-                    TechStackItem("• Hilt Dependency Injection")
-                    TechStackItem("• Room Database")
-                    TechStackItem("• Coroutines & Flow")
-                    TechStackItem("• OkHttp & Retrofit")
-                    TechStackItem("• Sardine WebDAV")
+                    TechStackItem(stringResource(id = R.string.tech_kotlin_compose))
+                    TechStackItem(stringResource(id = R.string.tech_material3))
+                    TechStackItem(stringResource(id = R.string.tech_hilt))
+                    TechStackItem(stringResource(id = R.string.tech_room))
+                    TechStackItem(stringResource(id = R.string.tech_coroutines))
+                    TechStackItem(stringResource(id = R.string.tech_okhttp))
+                    TechStackItem(stringResource(id = R.string.tech_sardine))
                 }
             }
             
@@ -116,15 +117,15 @@ fun AboutScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Key Dependencies",
+                    stringResource(id = R.string.key_dependencies),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TechStackItem("• AndroidX Compose")
-                    TechStackItem("• Timber Logging")
-                    TechStackItem("• iCal4j (RFC 5545)")
-                    TechStackItem("• ez-vcard")
-                    TechStackItem("• WorkManager")
+                    TechStackItem(stringResource(id = R.string.tech_compose))
+                    TechStackItem(stringResource(id = R.string.tech_timber))
+                    TechStackItem(stringResource(id = R.string.tech_ical4j))
+                    TechStackItem(stringResource(id = R.string.tech_ezvcard))
+                    TechStackItem(stringResource(id = R.string.tech_workmanager))
                 }
             }
             
@@ -132,7 +133,7 @@ fun AboutScreen(
             
             // License
             Text(
-                "License: Apache 2.0",
+                stringResource(id = R.string.license),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

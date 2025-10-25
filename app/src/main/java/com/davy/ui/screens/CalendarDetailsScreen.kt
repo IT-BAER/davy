@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,12 +46,12 @@ fun CalendarDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Calendar Settings") },
+                title = { Text(stringResource(id = com.davy.R.string.calendar_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = com.davy.R.string.back)
                         )
                     }
                 }
@@ -159,13 +160,13 @@ private fun CalendarDetailsContent(
                 )
                 if (calendar.lastSyncedAt != null) {
                     Text(
-                        text = "Last synced: ${formatDate(calendar.lastSyncedAt)}",
+                        text = stringResource(id = com.davy.R.string.last_sync, formatDate(calendar.lastSyncedAt)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
                     Text(
-                        text = "Never synced",
+                        text = stringResource(id = com.davy.R.string.never_synced),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -177,42 +178,42 @@ private fun CalendarDetailsContent(
 
         // Calendar information section
         Text(
-            text = "Calendar Information",
+            text = stringResource(id = com.davy.R.string.calendar_information),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
-
-        InfoRow("URL", calendar.calendarUrl)
+        
+        InfoRow(stringResource(id = com.davy.R.string.url), calendar.calendarUrl)
         if (calendar.description != null) {
-            InfoRow("Description", calendar.description)
+            InfoRow(stringResource(id = com.davy.R.string.description), calendar.description)
         }
         if (calendar.timezone != null) {
-            InfoRow("Timezone", calendar.timezone)
+            InfoRow(stringResource(id = com.davy.R.string.timezone), calendar.timezone)
         }
         if (calendar.syncToken != null) {
-            InfoRow("Sync Token", calendar.syncToken)
+            InfoRow(stringResource(id = com.davy.R.string.sync_token), calendar.syncToken)
         }
-        InfoRow("Permissions", buildString {
-            if (calendar.privWriteContent) append("Write ")
-            if (calendar.privUnbind) append("Delete")
-            if (calendar.forceReadOnly) append(" (Read-Only Forced)")
+        InfoRow(stringResource(id = com.davy.R.string.permissions), buildString {
+            if (calendar.privWriteContent) append(stringResource(id = com.davy.R.string.write) + " ")
+            if (calendar.privUnbind) append(stringResource(id = com.davy.R.string.delete))
+            if (calendar.forceReadOnly) append(stringResource(id = com.davy.R.string.read_only_forced_suffix))
         })
         if (calendar.source != null) {
-            InfoRow("Source", calendar.source)
+            InfoRow(stringResource(id = com.davy.R.string.source), calendar.source)
         }
         if (calendar.owner != null) {
             val ownerName = calendar.owner
                 .substringBeforeLast("/")
                 .substringAfterLast("/")
                 .takeIf { it.isNotEmpty() } ?: "Unknown"
-            InfoRow("Owner", ownerName)
+            InfoRow(stringResource(id = com.davy.R.string.owner), ownerName)
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Sync settings section
         Text(
-            text = "Sync Settings",
+            text = stringResource(id = com.davy.R.string.settings_sync_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -234,11 +235,11 @@ private fun CalendarDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sync Enabled",
+                        text = stringResource(id = com.davy.R.string.sync_enabled),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = if (calendar.syncEnabled) "Automatic sync enabled" else "Sync disabled",
+                        text = if (calendar.syncEnabled) stringResource(id = com.davy.R.string.automatic_sync_enabled) else stringResource(id = com.davy.R.string.sync_disabled),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -268,11 +269,11 @@ private fun CalendarDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "WiFi-only Sync",
+                        text = stringResource(id = com.davy.R.string.sync_on_wifi_only),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = if (wifiOnlySync) "Sync only on WiFi" else "Sync on any network",
+                        text = if (wifiOnlySync) stringResource(id = com.davy.R.string.wifi_only_sync_on) else stringResource(id = com.davy.R.string.wifi_only_sync_off),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -304,16 +305,16 @@ private fun CalendarDetailsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Read-Only",
+                        text = stringResource(id = com.davy.R.string.read_only),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         text = if (isServerReadOnly) {
-                            "Server enforced (cannot write)"
+                            stringResource(id = com.davy.R.string.server_enforced_cannot_write)
                         } else if (forceReadOnly) {
-                            "Changes prevented"
+                            stringResource(id = com.davy.R.string.changes_prevented)
                         } else {
-                            "Changes allowed"
+                            stringResource(id = com.davy.R.string.changes_allowed)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -350,7 +351,7 @@ private fun CalendarDetailsContent(
                     ),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete calendar")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = com.davy.R.string.delete_calendar))
                 }
                 
                 // Sync Now button on the right
@@ -362,11 +363,11 @@ private fun CalendarDetailsContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(id = com.davy.R.string.sync_now),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(id = com.davy.R.string.sync_now))
                 }
             }
         }
@@ -377,13 +378,13 @@ private fun CalendarDetailsContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (calendar.isSyncedWithAndroid()) {
-                StatusChip("Synced with Android")
+                StatusChip(stringResource(id = com.davy.R.string.synced_with_android))
             }
             if (calendar.supportsVTODO) {
-                StatusChip("Supports Tasks")
+                StatusChip(stringResource(id = com.davy.R.string.supports_tasks))
             }
             if (calendar.supportsVJOURNAL) {
-                StatusChip("Supports Journal")
+                StatusChip(stringResource(id = com.davy.R.string.supports_journal))
             }
         }
 
@@ -406,13 +407,13 @@ private fun CalendarDetailsContent(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Delete Calendar?") },
+            title = { Text(stringResource(id = com.davy.R.string.delete_calendar_question)) },
             text = {
                 Column {
-                    Text("Are you sure you want to delete \"${calendar.displayName}\"?")
+                    Text(stringResource(id = com.davy.R.string.delete_calendar_confirmation_named, calendar.displayName))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "This will delete the calendar from both the server and your device. All events in this calendar will be permanently removed.",
+                        text = stringResource(id = com.davy.R.string.delete_calendar_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -437,7 +438,7 @@ private fun CalendarDetailsContent(
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-                    TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") }
+                    TextButton(onClick = { showDeleteConfirmation = false }) { Text(stringResource(id = com.davy.R.string.cancel)) }
                 }
             },
             dismissButton = null

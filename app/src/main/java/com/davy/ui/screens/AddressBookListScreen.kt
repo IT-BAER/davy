@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -66,10 +67,10 @@ fun AddressBookListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Address Books") },
+                title = { Text(stringResource(id = com.davy.R.string.address_books)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = com.davy.R.string.back))
                     }
                 },
                 actions = {
@@ -77,7 +78,7 @@ fun AddressBookListScreen(
                     IconButton(onClick = { showSyncMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.Sync,
-                            contentDescription = "Sync options"
+                            contentDescription = stringResource(id = com.davy.R.string.sync)
                         )
                     }
                     DropdownMenu(
@@ -85,7 +86,7 @@ fun AddressBookListScreen(
                         onDismissRequest = { showSyncMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Sync Contacts Only") },
+                            text = { Text(stringResource(id = com.davy.R.string.sync_contacts_only)) },
                             onClick = {
                                 showSyncMenu = false
                                 viewModel.syncContactsOnly()
@@ -104,7 +105,7 @@ fun AddressBookListScreen(
                     IconButton(onClick = viewModel::refresh, enabled = !isBusy) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = stringResource(id = com.davy.R.string.refresh)
                         )
                     }
                 }
@@ -139,12 +140,12 @@ fun AddressBookListScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "No address books",
+                            text = stringResource(id = com.davy.R.string.no_address_books),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Add an account to sync address books",
+                            text = stringResource(id = com.davy.R.string.add_account_to_sync_address_books),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -251,11 +252,11 @@ private fun AddressBookItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sync with server",
+                        text = stringResource(id = com.davy.R.string.sync_with_server),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Enable bidirectional synchronization",
+                        text = stringResource(id = com.davy.R.string.enable_bidirectional_sync),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -281,11 +282,11 @@ private fun AddressBookItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Visible in app",
+                        text = stringResource(id = com.davy.R.string.visible_in_app),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Show in contacts list",
+                        text = stringResource(id = com.davy.R.string.show_in_contacts_list),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -310,11 +311,11 @@ private fun AddressBookItemCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync now",
+                        contentDescription = stringResource(id = com.davy.R.string.sync_now),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync Now")
+                    Text(stringResource(id = com.davy.R.string.sync_now))
                 }
             }
             
@@ -338,7 +339,7 @@ private fun AddressBookItemCard(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            "Synced with Android",
+                            stringResource(id = com.davy.R.string.synced_with_android),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )

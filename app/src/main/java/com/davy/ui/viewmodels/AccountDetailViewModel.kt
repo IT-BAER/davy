@@ -38,6 +38,8 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val DEMO_SERVER_URL = "https://demo.local"
+
 @HiltViewModel
 class AccountDetailViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
@@ -128,12 +130,15 @@ class AccountDetailViewModel @Inject constructor(
 
     private var currentAccountId: Long? = null
     
+    private fun isDemoAccountActive(): Boolean = _account.value?.isDemoAccount() == true
+
     init {
         // PERFORMANCE: Preload data on ViewModel creation to avoid lazy loading delays
         // This ensures data is ready when the screen is displayed
     }
 
     fun loadAccount(accountId: Long) {
+        _accountDeleted.value = false
         if (currentAccountId == accountId) return
         currentAccountId = accountId
 
@@ -150,7 +155,11 @@ class AccountDetailViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 // Load calendars - Flow collection on IO thread
                 calendarRepository.getByAccountIdFlow(accountId).collect { cals ->
-                    _calendars.value = cals
+                    _calendars.value = if (isDemoAccountActive()) {
+                        cals.simulateDemoCalendarSyncTimes()
+                    } else {
+                        cals
+                    }
                 }
             }
         }
@@ -159,7 +168,11 @@ class AccountDetailViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 // Load address books - Flow collection on IO thread
                 addressBookRepository.getByAccountIdFlow(accountId).collect { books ->
-                    _addressBooks.value = books
+                    _addressBooks.value = if (isDemoAccountActive()) {
+                        books.simulateDemoAddressBookSyncTimes()
+                    } else {
+                        books
+                    }
                 }
             }
         }
@@ -168,7 +181,11 @@ class AccountDetailViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 // Load WebCal subscriptions - Flow collection on IO thread
                 webCalSubscriptionRepository.getByAccountIdFlow(accountId).collect { subscriptions ->
-                    _webCalSubscriptions.value = subscriptions
+                    _webCalSubscriptions.value = if (isDemoAccountActive()) {
+                        subscriptions.simulateDemoWebCalSyncTimes()
+                    } else {
+                        subscriptions
+                    }
                 }
             }
         }
@@ -327,6 +344,10 @@ class AccountDetailViewModel @Inject constructor(
         }
     }
 
+    fun onAccountDeletionHandled() {
+        _accountDeleted.value = false
+    }
+
     /**
      * Delete multiple calendars by their IDs from both server and device.
      * Performs server DELETE (if URL exists), removes from provider, and deletes from DB.
@@ -380,34 +401,47 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id) ?: return@withContext
-                
+                val isDemoAccount = account.isDemoAccount()
+
                 // Generate UUID for folder name
                 val folderName = java.util.UUID.randomUUID().toString()
-                
-                // Build calendar URL: serverUrl/remote.php/dav/calendars/username/UUID/
-                val calendarUrl = "${account.serverUrl.trimEnd('/')}/remote.php/dav/calendars/${account.username}/$folderName/"
-                
-                Timber.tag("AccountDetailViewModel").d("Creating calendar at: %s", calendarUrl)
-                
-                // Create calendar on server first via MKCALENDAR
-                val response = caldavClient.mkCalendar(
-                    calendarUrl = calendarUrl,
-                    username = account.username,
-                    password = password,
-                    displayName = name,
-                    description = null,
-                    color = color
-                )
-                
-                if (!response.isSuccessful) {
-                    Timber.tag("AccountDetailViewModel").e("Failed to create calendar on server: %s - %s", response.statusCode, response.error)
-                    return@withContext
+
+                // Build calendar URL for remote or demo accounts
+                val calendarUrl = if (isDemoAccount) {
+                    buildDemoCalendarUrl(account.id, folderName)
+                } else {
+                    "${account.serverUrl.trimEnd('/')}/remote.php/dav/calendars/${account.username}/$folderName/"
                 }
-                
-                Timber.tag("AccountDetailViewModel").d("Calendar created on server successfully")
-                
-                // Server creation successful -> create local calendar with URL
+
+                if (!isDemoAccount) {
+                    val password = credentialStore.getPassword(account.id) ?: return@withContext
+                    Timber.tag("AccountDetailViewModel").d("Creating calendar at: %s", calendarUrl)
+
+                    // Create calendar on server first via MKCALENDAR
+                    val response = caldavClient.mkCalendar(
+                        calendarUrl = calendarUrl,
+                        username = account.username,
+                        password = password,
+                        displayName = name,
+                        description = null,
+                        color = color
+                    )
+
+                    if (!response.isSuccessful) {
+                        Timber.tag("AccountDetailViewModel").e(
+                            "Failed to create calendar on server: %s - %s",
+                            response.statusCode,
+                            response.error
+                        )
+                        return@withContext
+                    }
+
+                    Timber.tag("AccountDetailViewModel").d("Calendar created on server successfully")
+                } else {
+                    Timber.tag("AccountDetailViewModel").d("Creating demo calendar locally at: %s", calendarUrl)
+                }
+
+                // Persist the calendar locally (shared for demo and real accounts)
                 val calendar = Calendar(
                     id = 0,
                     accountId = accountId,
@@ -416,22 +450,27 @@ class AccountDetailViewModel @Inject constructor(
                     color = color
                 )
                 val newCalendarId = calendarRepository.insert(calendar)
-                
+
                 Timber.tag("AccountDetailViewModel").d("Calendar inserted into local database")
-                
-                // Sync only the new calendar to Android Calendar Provider so it appears in system Calendar app
+
+                // Sync the new calendar into the Android Calendar Provider so it appears in system apps
                 val syncResult = calendarContractSync.syncSingleCalendarToProvider(accountId, newCalendarId)
                 when (syncResult) {
                     is com.davy.sync.calendar.CalendarContractResult.Success -> {
                         Timber.tag("AccountDetailViewModel").d("Calendar synced to Calendar Provider successfully (single)")
                     }
                     is com.davy.sync.calendar.CalendarContractResult.Error -> {
-                        Timber.tag("AccountDetailViewModel").e("Failed to sync calendar to Calendar Provider: %s", syncResult.message)
+                        Timber.tag("AccountDetailViewModel").e(
+                            "Failed to sync calendar to Calendar Provider: %s",
+                            syncResult.message
+                        )
                     }
                 }
-                
-                // Trigger sync scoped to this new calendar only (no WebCal)
-                syncManager.syncCalendar(accountId, newCalendarId)
+
+                // Trigger sync scoped to this new calendar only when the server exists
+                if (!isDemoAccount) {
+                    syncManager.syncCalendar(accountId, newCalendarId)
+                }
             }
         }
     }
@@ -492,56 +531,66 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id) ?: return@withContext
+                val isDemoAccount = account.isDemoAccount()
 
-                // Build CardDAV address book URL: /remote.php/dav/addressbooks/users/{username}/{UUID}/
+                // Build CardDAV address book URL using the same structure as demo seeding
                 val folderName = java.util.UUID.randomUUID().toString()
-                val addressBookUrl = "${account.serverUrl.trimEnd('/')}/remote.php/dav/addressbooks/users/${account.username}/$folderName/"
-
-                // Create address book on server using MKCOL with CardDAV addressbook resource type
-                try {
-                    val mkcolXml = """
-                        <?xml version="1.0" encoding="utf-8"?>
-                        <d:mkcol xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
-                          <d:set>
-                            <d:prop>
-                              <d:resourcetype>
-                                <d:collection/>
-                                <card:addressbook/>
-                              </d:resourcetype>
-                              <d:displayname>${name}</d:displayname>
-                            </d:prop>
-                          </d:set>
-                        </d:mkcol>
-                    """.trimIndent()
-
-                    val mediaType = "application/xml; charset=utf-8".toMediaType()
-                    val body = mkcolXml.toRequestBody(mediaType)
-                    val request = Request.Builder()
-                        .url(addressBookUrl)
-                        .method("MKCOL", body)
-                        .header("Authorization", Credentials.basic(account.username, password))
-                        .header("Content-Type", "application/xml; charset=utf-8")
-                        .build()
-
-                    // Use a short-lived client for this call (CardDAV client not wired here)
-                    val client = OkHttpClient()
-                    val response = client.newCall(request).execute()
-
-                    if (!response.isSuccessful) {
-                        Timber.tag("AccountDetailViewModel").e(
-                            "Failed to create address book on server: %s - %s",
-                            response.code,
-                            response.message
-                        )
-                        return@withContext
-                    }
-                } catch (e: Exception) {
-                    Timber.tag("AccountDetailViewModel").e(e, "Exception creating address book on server")
-                    return@withContext
+                val addressBookUrl = if (isDemoAccount) {
+                    buildDemoAddressBookUrl(account.id, folderName)
+                } else {
+                    "${account.serverUrl.trimEnd('/')}/remote.php/dav/addressbooks/users/${account.username}/$folderName/"
                 }
 
-                // Server creation successful -> insert local address book with URL
+                if (!isDemoAccount) {
+                    val password = credentialStore.getPassword(account.id) ?: return@withContext
+
+                    // Create address book on server using MKCOL with CardDAV addressbook resource type
+                    try {
+                        val mkcolXml = """
+                            <?xml version="1.0" encoding="utf-8"?>
+                            <d:mkcol xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+                              <d:set>
+                                <d:prop>
+                                  <d:resourcetype>
+                                    <d:collection/>
+                                    <card:addressbook/>
+                                  </d:resourcetype>
+                                  <d:displayname>${name}</d:displayname>
+                                </d:prop>
+                              </d:set>
+                            </d:mkcol>
+                        """.trimIndent()
+
+                        val mediaType = "application/xml; charset=utf-8".toMediaType()
+                        val body = mkcolXml.toRequestBody(mediaType)
+                        val request = Request.Builder()
+                            .url(addressBookUrl)
+                            .method("MKCOL", body)
+                            .header("Authorization", Credentials.basic(account.username, password))
+                            .header("Content-Type", "application/xml; charset=utf-8")
+                            .build()
+
+                        // Use a short-lived client for this call (CardDAV client not wired here)
+                        val client = OkHttpClient()
+                        val response = client.newCall(request).execute()
+
+                        if (!response.isSuccessful) {
+                            Timber.tag("AccountDetailViewModel").e(
+                                "Failed to create address book on server: %s - %s",
+                                response.code,
+                                response.message
+                            )
+                            return@withContext
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("AccountDetailViewModel").e(e, "Exception creating address book on server")
+                        return@withContext
+                    }
+                } else {
+                    Timber.tag("AccountDetailViewModel").d("Creating demo address book locally at: %s", addressBookUrl)
+                }
+
+                // Insert local address book with generated URL (demo or real)
                 val newAddressBook = AddressBook(
                     id = 0,
                     accountId = accountId,
@@ -564,11 +613,13 @@ class AccountDetailViewModel @Inject constructor(
                     Timber.tag("AccountDetailViewModel").w(e, "Failed to create Android address book account")
                 }
 
-                // Trigger sync scoped to this new address book
-                try {
-                    syncManager.syncAddressBook(accountId, newId)
-                } catch (e: Exception) {
-                    Timber.tag("AccountDetailViewModel").e(e, "Failed to trigger sync for new address book")
+                // Trigger sync only when backed by a real server
+                if (!isDemoAccount) {
+                    try {
+                        syncManager.syncAddressBook(accountId, newId)
+                    } catch (e: Exception) {
+                        Timber.tag("AccountDetailViewModel").e(e, "Failed to trigger sync for new address book")
+                    }
                 }
             }
         }
@@ -1439,6 +1490,61 @@ class AccountDetailViewModel @Inject constructor(
     suspend fun restoreBackup(backupJson: String, overwriteExisting: Boolean = false): com.davy.domain.manager.BackupRestoreManager.RestoreResult {
         return withContext(Dispatchers.IO) {
             restoreBackupUseCase(backupJson, overwriteExisting)
+        }
+    }
+}
+
+private fun Account.isDemoAccount(): Boolean = serverUrl.equals(DEMO_SERVER_URL, ignoreCase = true)
+
+private fun buildDemoCalendarUrl(accountId: Long, folderName: String): String {
+    return "${DEMO_SERVER_URL}/accounts/$accountId/calendars/$folderName"
+}
+
+private fun buildDemoAddressBookUrl(accountId: Long, folderName: String): String {
+    return "${DEMO_SERVER_URL}/accounts/$accountId/contacts/$folderName"
+}
+
+private fun List<Calendar>.simulateDemoCalendarSyncTimes(): List<Calendar> {
+    if (none { it.lastSyncedAt == null }) {
+        return this
+    }
+    return map { calendar ->
+        if (calendar.lastSyncedAt != null) {
+            calendar
+        } else {
+            val simulated = if (calendar.createdAt > 0) calendar.createdAt else System.currentTimeMillis()
+            calendar.copy(lastSyncedAt = simulated)
+        }
+    }
+}
+
+private fun List<AddressBook>.simulateDemoAddressBookSyncTimes(): List<AddressBook> {
+    if (none { it.ctag.isNullOrBlank() }) {
+        return this
+    }
+    return map { addressBook ->
+        if (!addressBook.ctag.isNullOrBlank()) {
+            addressBook
+        } else {
+            val simulated = if (addressBook.updatedAt > 0) addressBook.updatedAt else addressBook.createdAt
+            addressBook.copy(
+                ctag = "demo-${addressBook.url}",
+                updatedAt = simulated
+            )
+        }
+    }
+}
+
+private fun List<WebCalSubscription>.simulateDemoWebCalSyncTimes(): List<WebCalSubscription> {
+    if (none { it.lastSyncedAt == null }) {
+        return this
+    }
+    return map { subscription ->
+        if (subscription.lastSyncedAt != null) {
+            subscription
+        } else {
+            val simulated = if (subscription.updatedAt > 0) subscription.updatedAt else subscription.createdAt
+            subscription.copy(lastSyncedAt = simulated)
         }
     }
 }

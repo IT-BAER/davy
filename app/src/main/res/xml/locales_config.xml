@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- List all supported locales for per-app language preferences (Android 13+) -->
+    <locale android:name="en"/> <!-- English -->
+    <locale android:name="es"/> <!-- Spanish -->
+    <locale android:name="fr"/> <!-- French -->
+    <locale android:name="de"/> <!-- German -->
+    <locale android:name="pt"/> <!-- Portuguese -->
+    <locale android:name="ru"/> <!-- Russian -->
+    <locale android:name="zh-rCN"/> <!-- Chinese Simplified -->
+    <locale android:name="ja"/> <!-- Japanese -->
+    <locale android:name="it"/> <!-- Italian -->
+    <locale android:name="nl"/> <!-- Dutch -->
+    <locale android:name="pl"/> <!-- Polish -->
+    <locale android:name="ar"/> <!-- Arabic -->
+    <locale android:name="hi"/> <!-- Hindi -->
+    <locale android:name="ko"/> <!-- Korean -->
+    <locale android:name="tr"/> <!-- Turkish -->
+    <locale android:name="in"/> <!-- Indonesian -->
+</locale-config>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">Gunakan aplikasi DAVy untuk menambahkan akun</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">Sinkr. semua</string>
+    <string name="shortcut_sync_all_long">Sinkronkan semua</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">Kembali</string>
+    <string name="settings">Pengaturan</string>
+    <string name="about">Tentang</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Batal</string>
+    <string name="delete">Hapus</string>
+    <string name="edit">Ubah</string>
+    <string name="save">Simpan</string>
+    <string name="sync">Sinkronkan</string>
+    <string name="error">Kesalahan</string>
+    <string name="loading">Memuat…</string>
+    <string name="retry">Coba lagi</string>
+    <string name="close">Tutup</string>
+    <string name="add">Tambah</string>
+    <string name="remove">Hapus</string>
+    <string name="refresh">Segarkan</string>
+    <string name="enabled">Diaktifkan</string>
+    <string name="disabled">Dinonaktifkan</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - Akun</string>
+    <string name="add_account">Tambah akun</string>
+    <string name="account_details">Detail akun</string>
+    <string name="account_settings">Pengaturan akun</string>
+    <string name="delete_account">Hapus akun</string>
+    <string name="delete_account_confirmation">Apakah Anda yakin ingin menghapus akun ini? Ini akan menghapus semua data yang disinkronkan.</string>
+    <string name="no_accounts">Belum ada akun</string>
+    <string name="no_accounts_description">Tambahkan akun CalDAV/CardDAV pertama Anda untuk memulai</string>
+    <string name="account_name">Nama akun</string>
+    <string name="server_url">URL server</string>
+    <string name="username">Nama pengguna</string>
+    <string name="password">Kata sandi</string>
+    <string name="account_color">Warna akun</string>
+    
+    <!-- Sync -->
+    <string name="syncing">Menyinkronkan…</string>
+    <string name="sync_all">Sinkronkan semua</string>
+    <string name="sync_successful">Sinkronisasi berhasil</string>
+    <string name="sync_failed">Sinkronisasi gagal</string>
+    <string name="last_sync">Sinkronisasi terakhir: %1$s</string>
+    <string name="never_synced">Belum pernah disinkronkan</string>
+    <string name="auto_sync">Sinkronisasi otomatis</string>
+    <string name="sync_on_wifi_only">Sinkronkan hanya melalui WiFi</string>
+    
+    <!-- Collections -->
+    <string name="collections">Koleksi</string>
+    <string name="collections_title">DAVy - Koleksi</string>
+    <string name="calendars">Kalender</string>
+    <string name="contacts">Kontak</string>
+    <string name="tasks">Tugas</string>
+    <string name="address_books">Buku alamat</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">Detail kalender</string>
+    <string name="calendar_list">Daftar kalender</string>
+    <string name="event_details">Detail acara</string>
+    <string name="all_day_event">Acara sepanjang hari</string>
+    <string name="date_time">Tanggal &amp; waktu</string>
+    <string name="description">Deskripsi</string>
+    <string name="location">Lokasi</string>
+    <string name="attendees">Peserta (%1$d)</string>
+    <string name="reminders">Pengingat</string>
+    <string name="reminder_before">%1$d menit sebelumnya (%2$s)</string>
+    <string name="recurrence">Pengulangan</string>
+    <string name="availability">Ketersediaan</string>
+    <string name="delete_event">Hapus acara</string>
+    <string name="delete_event_confirmation">Apakah Anda yakin ingin menghapus acara ini?</string>
+    <string name="edit_event">Ubah acara</string>
+    <string name="edit_event_future_update">Pengeditan acara akan diimplementasikan dalam pembaruan mendatang.</string>
+    <string name="event_not_found">Acara tidak ditemukan</string>
+    <string name="failed_to_load_event">Gagal memuat acara: %1$s</string>
+    <string name="failed_to_delete_event">Gagal menghapus acara: %1$s</string>
+    <string name="event_type">Jenis</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">Detail buku alamat</string>
+    <string name="address_book_list">Daftar buku alamat</string>
+    <string name="contact_details">Detail kontak</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">Pengaturan sinkronisasi</string>
+    <string name="settings_appearance_title">Tampilan</string>
+    <string name="settings_advanced_title">Lanjutan</string>
+    <string name="settings_backup_title">Cadangkan &amp; pulihkan</string>
+    <string name="settings_permissions_title">Izin</string>
+    <string name="dark_mode">Mode gelap</string>
+    <string name="debug_logging">Pencatatan debug</string>
+    <string name="battery_optimization">Optimisasi baterai</string>
+    <string name="battery_optimization_disabled">Dinonaktifkan</string>
+    <string name="battery_optimization_enabled">Diaktifkan (Disarankan)</string>
+    <string name="battery_optimization_description">Nonaktifkan optimisasi baterai untuk sinkronisasi latar belakang yang andal</string>
+    <string name="permissions_status">Status izin</string>
+    <string name="all_permissions_granted">Semua izin diberikan</string>
+    <string name="some_permissions_missing">Beberapa izin hilang</string>
+    <string name="backup_database">Cadangkan database</string>
+    <string name="restore_database">Pulihkan database</string>
+    
+    <!-- About Screen -->
+    <string name="version">Versi %1$s</string>
+    <string name="app_description">DAVy adalah aplikasi sinkronisasi CalDAV, CardDAV, dan WebCal modern untuk Android. Jaga kalender, kontak, dan tugas Anda tetap tersinkronkan di semua perangkat Anda.</string>
+    <string name="technology_stack">Tumpukan teknologi</string>
+    <string name="key_dependencies">Dependensi utama</string>
+    <string name="license">Lisensi: Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin &amp; Jetpack Compose</string>
+    <string name="tech_material3">• Material 3 Design</string>
+    <string name="tech_hilt">• Hilt Dependency Injection</string>
+    <string name="tech_room">• Room Database</string>
+    <string name="tech_coroutines">• Coroutines &amp; Flow</string>
+    <string name="tech_okhttp">• OkHttp &amp; Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber Logging</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">Pertanyaan yang sering diajukan</string>
+    <string name="faq_what_is_davy">Apa itu DAVy?</string>
+    <string name="faq_what_is_davy_answer">DAVy adalah klien sinkronisasi CalDAV/CardDAV untuk Android yang menyinkronkan kalender, kontak, dan tugas dengan server Anda.</string>
+    <string name="faq_which_servers">Server mana yang didukung?</string>
+    <string name="faq_which_servers_answer">DAVy bekerja dengan server yang kompatibel dengan CalDAV/CardDAV, termasuk Nextcloud, ownCloud, Radicale, Baïkal, dan lainnya.</string>
+    <string name="faq_sync_not_working">Mengapa sinkronisasi saya tidak berfungsi?</string>
+    <string name="faq_sync_not_working_answer">• URL server benar (termasuk https://)\n• Nama pengguna dan kata sandi valid\n• Sinkronkan hanya melalui WiFi dinonaktifkan atau WiFi terhubung\n• Sinkronisasi otomatis diaktifkan di pengaturan Android</string>
+    <string name="faq_enable_auto_sync">Bagaimana cara mengaktifkan sinkronisasi otomatis?</string>
+    <string name="faq_enable_auto_sync_answer">Buka Pengaturan Android → Akun → DAVy → Aktifkan \'Sinkronkan data secara otomatis\'</string>
+    <string name="faq_multiple_accounts">Bisakah saya menyinkronkan beberapa akun?</string>
+    <string name="faq_multiple_accounts_answer">Ya, Anda dapat menambahkan dan menyinkronkan beberapa akun CalDAV/CardDAV secara bersamaan.</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">Panduan</string>
+    <string name="getting_started">Memulai</string>
+    <string name="setup_guides">Panduan pengaturan</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">Terjadi kesalahan</string>
+    <string name="error_network">Kesalahan jaringan. Periksa koneksi Anda.</string>
+    <string name="error_authentication">Autentikasi gagal. Periksa kredensial Anda.</string>
+    <string name="error_server">Kesalahan server. Coba lagi nanti.</string>
+    <string name="success">Berhasil</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_sync">Sinkronkan</string>
+    <string name="content_description_add">Tambah</string>
+    <string name="content_description_delete">Hapus</string>
+    <string name="content_description_edit">Ubah</string>
+    <string name="content_description_info">Info</string>
+    <string name="content_description_help">Bantuan</string>
+    <string name="content_description_back">Kembali</string>
+    <string name="content_description_settings">Pengaturan</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">Akun</string>
+    <string name="nav_collections">Koleksi</string>
+    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_guides">Panduan</string>
+    <string name="nav_faq">Pertanyaan yang sering diajukan</string>
+    <string name="nav_about">Tentang</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">dd MMM yyyy</string>
+    <string name="datetime_format_long">dd MMM yyyy HH:mm</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="other">%d acara</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="other">%d kontak</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="other">%d tugas</item>
+    </plurals>
+</resources>

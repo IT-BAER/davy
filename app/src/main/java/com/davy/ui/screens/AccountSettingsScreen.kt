@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.davy.ui.viewmodels.AccountDetailViewModel
@@ -52,10 +54,10 @@ fun AccountSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Account Settings") },
+                title = { Text(stringResource(id = com.davy.R.string.account_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = com.davy.R.string.back))
                     }
                 }
             )
@@ -269,7 +271,7 @@ private fun AccountSettingsContent(
         ) {
         // Account Info Section
         Text(
-            text = "Account Information",
+            text = stringResource(id = com.davy.R.string.account_information),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -290,13 +292,13 @@ private fun AccountSettingsContent(
             )
             Icon(
                 imageVector = Icons.Default.Edit,
-                contentDescription = "Rename account",
+                contentDescription = stringResource(id = com.davy.R.string.rename_account),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
         
         Text(
-            text = "Server: ${account.serverUrl}",
+            text = stringResource(id = com.davy.R.string.server_with_value, account.serverUrl),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -305,7 +307,7 @@ private fun AccountSettingsContent(
         
         // Authentication Section
         Text(
-            text = "Authentication",
+            text = stringResource(id = com.davy.R.string.authentication),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -327,7 +329,7 @@ private fun AccountSettingsContent(
             isError = false,
             supportingText = {
                 Text(
-                    text = "Leave empty to keep current password",
+                    text = stringResource(id = com.davy.R.string.leave_empty_keep_password),
                     style = MaterialTheme.typography.bodySmall
                 )
             },
@@ -376,7 +378,7 @@ private fun AccountSettingsContent(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Testing...")
+                            Text(stringResource(id = com.davy.R.string.testing))
                         }
                         uiState.credentialTestResult?.startsWith("✓") == true -> {
                             Icon(
@@ -386,7 +388,7 @@ private fun AccountSettingsContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Valid")
+                            Text(stringResource(id = com.davy.R.string.valid))
                         }
                         uiState.credentialTestResult?.startsWith("✗") == true -> {
                             Icon(
@@ -395,7 +397,7 @@ private fun AccountSettingsContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Failed")
+                            Text(stringResource(id = com.davy.R.string.failed))
                         }
                         else -> {
                             Icon(
@@ -404,7 +406,7 @@ private fun AccountSettingsContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Test")
+                            Text(stringResource(id = com.davy.R.string.test))
                         }
                     }
                 }
@@ -445,7 +447,7 @@ private fun AccountSettingsContent(
                                 color = LocalContentColor.current
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Applying...")
+                            Text(stringResource(id = com.davy.R.string.applying))
                         }
                         ButtonState.Success -> {
                             Icon(
@@ -469,16 +471,16 @@ private fun AccountSettingsContent(
                                     )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Applied!")
+                            Text(stringResource(id = com.davy.R.string.applied))
                         }
                         else -> {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "Apply changes",
+                                contentDescription = stringResource(id = com.davy.R.string.apply_changes),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Apply")
+                            Text(stringResource(id = com.davy.R.string.apply))
                         }
                     }
                 }
@@ -499,11 +501,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Client certificate",
+                        text = stringResource(id = com.davy.R.string.client_certificate),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = if (certificatePath.isNotBlank()) certificatePath else "None",
+                        text = if (certificatePath.isNotBlank()) certificatePath else stringResource(id = com.davy.R.string.none),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -516,7 +518,7 @@ private fun AccountSettingsContent(
         
         // Sync Settings Section
         Text(
-            text = "Sync Settings",
+            text = stringResource(id = com.davy.R.string.settings_sync_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -529,11 +531,11 @@ private fun AccountSettingsContent(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Sync only on WiFi",
+                        text = stringResource(id = com.davy.R.string.sync_on_wifi_only),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Disable mobile data sync",
+                        text = stringResource(id = com.davy.R.string.disable_mobile_data_sync),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -564,11 +566,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Calendar sync interval",
+                        text = stringResource(id = com.davy.R.string.calendar_sync_interval),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = syncIntervalOptions.find { it.first == calendarSyncInterval }?.second ?: "Unknown",
+                        text = intervalLabel(calendarSyncInterval),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -593,11 +595,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Contact sync interval",
+                        text = stringResource(id = com.davy.R.string.contact_sync_interval),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = syncIntervalOptions.find { it.first == contactSyncInterval }?.second ?: "Unknown",
+                        text = intervalLabel(contactSyncInterval),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -622,11 +624,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "WebCal sync interval",
+                        text = stringResource(id = com.davy.R.string.webcal_sync_interval),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = syncIntervalOptions.find { it.first == webCalSyncInterval }?.second ?: "Unknown",
+                        text = intervalLabel(webCalSyncInterval),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -639,7 +641,7 @@ private fun AccountSettingsContent(
         
         // CalDAV Settings
         Text(
-            text = "CalDAV Settings",
+            text = stringResource(id = com.davy.R.string.caldav_settings),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -658,11 +660,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Skip events older than",
+                        text = stringResource(id = com.davy.R.string.skip_events_older_than),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = eventAgeDays.find { it.first == skipEventsDays }?.second ?: "All events",
+                        text = eventAgeLabel(skipEventsDays),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -678,11 +680,11 @@ private fun AccountSettingsContent(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Manage calendar colors",
+                    text = stringResource(id = com.davy.R.string.manage_calendar_colors),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Use server-side calendar colors",
+                    text = stringResource(id = com.davy.R.string.use_server_side_calendar_colors),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -704,11 +706,11 @@ private fun AccountSettingsContent(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Event colors",
+                    text = stringResource(id = com.davy.R.string.event_colors),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Use colors from individual events",
+                    text = stringResource(id = com.davy.R.string.use_colors_from_individual_events),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -727,7 +729,7 @@ private fun AccountSettingsContent(
         
         // CardDAV Settings
         Text(
-            text = "CardDAV Settings",
+            text = stringResource(id = com.davy.R.string.carddav_settings),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -746,11 +748,14 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Contact Group Method",
+                        text = stringResource(id = com.davy.R.string.contact_group_method),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = contactGroupMethod,
+                        text = when (contactGroupMethod) {
+                            "GROUP_VCARDS" -> stringResource(id = com.davy.R.string.group_vcards)
+                            else -> stringResource(id = com.davy.R.string.categories)
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -763,7 +768,7 @@ private fun AccountSettingsContent(
         
         // Account Actions Section
         Text(
-            text = "Account Actions",
+            text = stringResource(id = com.davy.R.string.account_actions),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
@@ -782,11 +787,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Backup Settings",
+                        text = stringResource(id = com.davy.R.string.backup_settings),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Create backup of account configuration",
+                        text = stringResource(id = com.davy.R.string.create_backup_of_account_configuration),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -809,11 +814,11 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Restore Settings",
+                        text = stringResource(id = com.davy.R.string.restore_settings),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Restore account from backup file",
+                        text = stringResource(id = com.davy.R.string.restore_account_from_backup_file),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -836,12 +841,12 @@ private fun AccountSettingsContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Delete Account",
+                        text = stringResource(id = com.davy.R.string.delete_account),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
                     Text(
-                        text = "Permanently remove this account",
+                        text = stringResource(id = com.davy.R.string.permanently_remove_this_account),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -857,7 +862,7 @@ private fun AccountSettingsContent(
     if (showGroupMethodDialog) {
         AlertDialog(
             onDismissRequest = { showGroupMethodDialog = false },
-            title = { Text("Contact Group Method") },
+            title = { Text(stringResource(id = com.davy.R.string.contact_group_method)) },
             text = {
                 Column {
                     contactGroupMethods.forEach { method ->
@@ -879,14 +884,19 @@ private fun AccountSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(method)
+                            Text(
+                                when (method) {
+                                    "GROUP_VCARDS" -> stringResource(id = com.davy.R.string.group_vcards)
+                                    else -> stringResource(id = com.davy.R.string.categories)
+                                }
+                            )
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showGroupMethodDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -896,10 +906,10 @@ private fun AccountSettingsContent(
     if (showEventAgeDialog) {
         AlertDialog(
             onDismissRequest = { showEventAgeDialog = false },
-            title = { Text("Skip events older than") },
+            title = { Text(stringResource(id = com.davy.R.string.skip_events_older_than)) },
             text = {
                 Column {
-                    eventAgeDays.forEach { (days, label) ->
+                    eventAgeDays.forEach { (days, _) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -918,14 +928,14 @@ private fun AccountSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(eventAgeLabel(days))
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showEventAgeDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -935,10 +945,10 @@ private fun AccountSettingsContent(
     if (showCalendarIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showCalendarIntervalDialog = false },
-            title = { Text("Calendar sync interval") },
+            title = { Text(stringResource(id = com.davy.R.string.calendar_sync_interval)) },
             text = {
                 Column {
-                    syncIntervalOptions.forEach { (interval, label) ->
+                    syncIntervals.forEach { interval ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -957,14 +967,14 @@ private fun AccountSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(intervalLabel(interval))
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showCalendarIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -974,10 +984,10 @@ private fun AccountSettingsContent(
     if (showContactIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showContactIntervalDialog = false },
-            title = { Text("Contact sync interval") },
+            title = { Text(stringResource(id = com.davy.R.string.contact_sync_interval)) },
             text = {
                 Column {
-                    syncIntervalOptions.forEach { (interval, label) ->
+                    syncIntervals.forEach { interval ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -996,14 +1006,14 @@ private fun AccountSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(intervalLabel(interval))
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showContactIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -1013,10 +1023,10 @@ private fun AccountSettingsContent(
     if (showWebCalIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showWebCalIntervalDialog = false },
-            title = { Text("WebCal sync interval") },
+            title = { Text(stringResource(id = com.davy.R.string.webcal_sync_interval)) },
             text = {
                 Column {
-                    syncIntervalOptions.forEach { (interval, label) ->
+                    syncIntervals.forEach { interval ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1035,14 +1045,14 @@ private fun AccountSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(label)
+                            Text(intervalLabel(interval))
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showWebCalIntervalDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -1054,12 +1064,12 @@ private fun AccountSettingsContent(
         
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Rename Account") },
+            title = { Text(stringResource(id = com.davy.R.string.rename_account_title)) },
             text = {
                 TextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    label = { Text("Account Name") },
+                    label = { Text(stringResource(id = com.davy.R.string.account_name)) },
                     singleLine = true
                 )
             },
@@ -1072,12 +1082,12 @@ private fun AccountSettingsContent(
                     },
                     enabled = newName.isNotBlank()
                 ) {
-                    Text("Rename")
+                    Text(stringResource(id = com.davy.R.string.rename))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRenameDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(id = com.davy.R.string.cancel))
                 }
             }
         )
@@ -1087,8 +1097,15 @@ private fun AccountSettingsContent(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Account") },
-            text = { Text("Are you sure you want to delete '${account.accountName}'? This will remove all calendars, contacts, and tasks associated with this account.") },
+            title = { Text(stringResource(id = com.davy.R.string.delete_account)) },
+            text = {
+                Text(
+                    stringResource(
+                        id = com.davy.R.string.delete_account_confirmation_named,
+                        account.accountName
+                    ) + " " + stringResource(id = com.davy.R.string.delete_account_data_removal_note)
+                )
+            },
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1105,14 +1122,14 @@ private fun AccountSettingsContent(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(id = com.davy.R.string.delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
                     
                     // Cancel button on the right
                     TextButton(onClick = { showDeleteDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = com.davy.R.string.cancel))
                     }
                 }
             },
@@ -1164,7 +1181,7 @@ private fun AccountSettingsContent(
         
         AlertDialog(
             onDismissRequest = { showBackupDialog = false },
-            title = { Text("Backup Settings") },
+            title = { Text(stringResource(id = com.davy.R.string.backup_settings)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     when {
@@ -1174,12 +1191,12 @@ private fun AccountSettingsContent(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                Text("Creating backup...")
+                                Text(stringResource(id = com.davy.R.string.creating_backup))
                             }
                         }
                         backupError != null -> {
                             Text(
-                                text = "Error: $backupError",
+                                text = stringResource(id = com.davy.R.string.error) + ": " + backupError,
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
@@ -1196,18 +1213,18 @@ private fun AccountSettingsContent(
                                 
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Backup Created Successfully!",
+                                        text = stringResource(id = com.davy.R.string.full_backup_created_successfully),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         color = Color(0xFF4CAF50)  // Green
                                     )
                                     Text(
-                                        text = "Saved as: $backupResult",
+                                        text = stringResource(id = com.davy.R.string.saved_as) + " " + backupResult,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "Note: Passwords are NOT included in backups for security reasons.",
+                                        text = stringResource(id = com.davy.R.string.passwords_not_included_backup),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -1216,16 +1233,16 @@ private fun AccountSettingsContent(
                             }
                         }
                         else -> {
-                            Text("Create a backup of your account settings, sync configuration, and collection metadata.")
+                            Text(stringResource(id = com.davy.R.string.create_account_backup_description))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "You will choose where to save the backup file.",
+                                text = stringResource(id = com.davy.R.string.choose_where_to_save_backup),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "⚠ Passwords will NOT be backed up for security reasons.",
+                                text = stringResource(id = com.davy.R.string.passwords_not_backed_up_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -1245,18 +1262,18 @@ private fun AccountSettingsContent(
                             backupFileSaver.launch("davy_account_${account.id}_backup_$timestamp.json")
                         }
                     ) {
-                        Text("Choose Location")
+                        Text(stringResource(id = com.davy.R.string.choose_location))
                     }
                 } else {
                     TextButton(onClick = { showBackupDialog = false }) {
-                        Text("Close")
+                        Text(stringResource(id = com.davy.R.string.close))
                     }
                 }
             },
             dismissButton = {
                 if (backupResult == null && !isBackingUp) {
                     TextButton(onClick = { showBackupDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = com.davy.R.string.cancel))
                     }
                 }
             }
@@ -1316,7 +1333,7 @@ private fun AccountSettingsContent(
         
         AlertDialog(
             onDismissRequest = { showRestoreDialog = false },
-            title = { Text("Restore Settings") },
+            title = { Text(stringResource(id = com.davy.R.string.restore_settings)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     when {
@@ -1326,12 +1343,12 @@ private fun AccountSettingsContent(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                Text("Restoring settings...")
+                                Text(stringResource(id = com.davy.R.string.restoring_settings))
                             }
                         }
                         restoreError != null -> {
                             Text(
-                                text = "Error: $restoreError",
+                                text = stringResource(id = com.davy.R.string.error) + ": " + restoreError,
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
@@ -1348,7 +1365,7 @@ private fun AccountSettingsContent(
                                 
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Settings Restored Successfully!",
+                                        text = stringResource(id = com.davy.R.string.settings_restored_successfully),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         color = Color(0xFF4CAF50)  // Green
@@ -1359,7 +1376,7 @@ private fun AccountSettingsContent(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "⚠ Remember to re-enter passwords for your accounts.",
+                                        text = stringResource(id = com.davy.R.string.remember_reenter_passwords),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -1368,16 +1385,16 @@ private fun AccountSettingsContent(
                             }
                         }
                         else -> {
-                            Text("Select a backup file to restore account settings and configurations.")
+                            Text(stringResource(id = com.davy.R.string.select_backup_file_to_restore_account))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "You will choose a backup file from your device.",
+                                text = stringResource(id = com.davy.R.string.choose_backup_file_from_device),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "⚠ Passwords are not stored in backups and must be re-entered.",
+                                text = stringResource(id = com.davy.R.string.passwords_not_stored_in_backups),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -1393,18 +1410,18 @@ private fun AccountSettingsContent(
                             backupFileOpener.launch(arrayOf("application/json", "text/plain", "*/*"))
                         }
                     ) {
-                        Text("Choose File")
+                        Text(stringResource(id = com.davy.R.string.choose_file))
                     }
                 } else {
                     TextButton(onClick = { showRestoreDialog = false }) {
-                        Text("Close")
+                        Text(stringResource(id = com.davy.R.string.close))
                     }
                 }
             },
             dismissButton = {
                 if (restoreResult == null && !isRestoring) {
                     TextButton(onClick = { showRestoreDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = com.davy.R.string.cancel))
                     }
                 }
             }
@@ -1417,10 +1434,10 @@ private fun AccountSettingsContent(
         
         AlertDialog(
             onDismissRequest = { showCertificateDialog = false },
-            title = { Text("Client Certificate") },
+            title = { Text(stringResource(id = com.davy.R.string.client_certificate_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Select a client certificate for authentication:")
+                    Text(stringResource(id = com.davy.R.string.select_client_certificate_for_auth))
                     
                     // Option 1: Choose from Android KeyChain
                     OutlinedButton(
@@ -1437,8 +1454,8 @@ private fun AccountSettingsContent(
                                         // Show snackbar when no certificate selected (or none installed)
                                         scope.launch {
                                             val result = snackbarHostState.showSnackbar(
-                                                message = "No certificate selected",
-                                                actionLabel = "Install Certificate",
+                                                message = context.getString(com.davy.R.string.no_certificate_selected),
+                                                actionLabel = context.getString(com.davy.R.string.install_certificate),
                                                 duration = SnackbarDuration.Long
                                             )
                                             if (result == SnackbarResult.ActionPerformed) {
@@ -1462,14 +1479,14 @@ private fun AccountSettingsContent(
                     ) {
                         Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Choose from System Certificates")
+                        Text(stringResource(id = com.davy.R.string.choose_from_system_certificates))
                     }
                     
                     HorizontalDivider()
                     
                     // Option 2: Manual entry
                     Text(
-                        "Or enter certificate alias manually:",
+                        stringResource(id = com.davy.R.string.enter_certificate_alias_manually),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1477,15 +1494,15 @@ private fun AccountSettingsContent(
                         value = certificatePath,
                         onValueChange = { certificatePath = it },
                         singleLine = true,
-                        label = { Text("Certificate alias") },
-                        placeholder = { Text("Enter certificate alias") },
+                        label = { Text(stringResource(id = com.davy.R.string.certificate_alias)) },
+                        placeholder = { Text(stringResource(id = com.davy.R.string.enter_certificate_alias)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showCertificateDialog = false }) {
-                    Text("Done")
+                    Text(stringResource(id = com.davy.R.string.done))
                 }
             },
             dismissButton = {
@@ -1493,7 +1510,7 @@ private fun AccountSettingsContent(
                     certificatePath = ""
                     showCertificateDialog = false
                 }) {
-                    Text("Remove")
+                    Text(stringResource(id = com.davy.R.string.remove))
                 }
             }
         )
@@ -1515,4 +1532,42 @@ private enum class ButtonState {
     Loading,
     Success,
     Failure
+}
+
+// --- Helpers for interval and event age labels ---
+@Composable
+private fun intervalLabel(intervalMinutes: Int): String {
+    return when (intervalMinutes) {
+        -1 -> stringResource(id = com.davy.R.string.manual)
+        in 1..59 -> pluralStringResource(
+            id = com.davy.R.plurals.duration_minutes,
+            count = intervalMinutes,
+            intervalMinutes
+        )
+        in 60..1439 -> {
+            val hours = intervalMinutes / 60
+            pluralStringResource(id = com.davy.R.plurals.duration_hours, count = hours, hours)
+        }
+        else -> {
+            val days = intervalMinutes / 1440
+            if (days % 365 == 0) {
+                val years = days / 365
+                pluralStringResource(id = com.davy.R.plurals.duration_years, count = years, years)
+            } else {
+                pluralStringResource(id = com.davy.R.plurals.duration_days, count = days, days)
+            }
+        }
+    }
+}
+
+private val syncIntervals = listOf(-1, 15, 30, 60, 120, 240, 720, 1440)
+
+@Composable
+private fun eventAgeLabel(days: Int): String {
+    return when (days) {
+        -1 -> stringResource(id = com.davy.R.string.all_events)
+        365 -> pluralStringResource(id = com.davy.R.plurals.duration_years, count = 1, 1)
+        730 -> pluralStringResource(id = com.davy.R.plurals.duration_years, count = 2, 2)
+        else -> pluralStringResource(id = com.davy.R.plurals.duration_days, count = days, days)
+    }
 }

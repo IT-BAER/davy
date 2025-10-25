@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -44,18 +45,18 @@ fun CalendarEventScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Event Details") },
+                title = { Text(stringResource(id = com.davy.R.string.event_details)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = com.davy.R.string.content_description_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEditDialog = true }) {
-                        Icon(Icons.Default.Edit, "Edit")
+                        Icon(Icons.Default.Edit, stringResource(id = com.davy.R.string.content_description_edit))
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, "Delete")
+                        Icon(Icons.Default.Delete, stringResource(id = com.davy.R.string.content_description_delete))
                     }
                 }
             )
@@ -84,7 +85,7 @@ fun CalendarEventScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Error",
+                            text = stringResource(id = com.davy.R.string.error),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
@@ -126,17 +127,17 @@ fun CalendarEventScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "Date & Time",
+                                text = stringResource(id = com.davy.R.string.date_time),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             HorizontalDivider()
-                            EventDetailRow("Start", formatDateTime(event.dtStart, event.allDay))
-                            EventDetailRow("End", formatDateTime(event.dtEnd, event.allDay))
+                            EventDetailRow(stringResource(id = com.davy.R.string.start), formatDateTime(event.dtStart, event.allDay))
+                            EventDetailRow(stringResource(id = com.davy.R.string.end), formatDateTime(event.dtEnd, event.allDay))
                             if (event.allDay) {
-                                EventDetailRow("Type", "All Day Event")
+                                EventDetailRow(stringResource(id = com.davy.R.string.event_type), stringResource(id = com.davy.R.string.all_day_event))
                             }
                             event.timezone?.let {
-                                EventDetailRow("Timezone", it)
+                                EventDetailRow(stringResource(id = com.davy.R.string.timezone), it)
                             }
                         }
                     }
@@ -151,7 +152,7 @@ fun CalendarEventScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Description",
+                                    text = stringResource(id = com.davy.R.string.description),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 HorizontalDivider()
@@ -173,7 +174,7 @@ fun CalendarEventScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Location",
+                                    text = stringResource(id = com.davy.R.string.location),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 HorizontalDivider()
@@ -195,7 +196,7 @@ fun CalendarEventScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Attendees (${event.attendees.size})",
+                                    text = stringResource(id = com.davy.R.string.attendees, event.attendees.size),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 HorizontalDivider()
@@ -230,13 +231,13 @@ fun CalendarEventScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Reminders",
+                                    text = stringResource(id = com.davy.R.string.reminders),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 HorizontalDivider()
                                 event.reminders.forEach { reminder ->
                                     Text(
-                                        text = "${reminder.minutes} minutes before (${reminder.method})",
+                                        text = stringResource(id = com.davy.R.string.reminder_before, reminder.minutes, reminder.method),
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                 }
@@ -254,7 +255,7 @@ fun CalendarEventScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Recurrence",
+                                    text = stringResource(id = com.davy.R.string.recurrence),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 HorizontalDivider()
@@ -278,20 +279,20 @@ fun CalendarEventScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "Details",
+                                    text = stringResource(id = com.davy.R.string.details),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             HorizontalDivider()
                             event.status?.let {
-                                EventDetailRow("Status", it.name)
+                                    EventDetailRow(stringResource(id = com.davy.R.string.status), it.name)
                             }
                             event.availability?.let {
-                                EventDetailRow("Availability", it.name.replace("_", " "))
+                                    EventDetailRow(stringResource(id = com.davy.R.string.availability), it.name.replace("_", " "))
                             }
                             event.organizer?.let {
-                                EventDetailRow("Organizer", it)
+                                    EventDetailRow(stringResource(id = com.davy.R.string.organizer), it)
                             }
-                            EventDetailRow("UID", event.uid)
+                            EventDetailRow(stringResource(id = com.davy.R.string.uid), event.uid)
                         }
                     }
                 }
@@ -303,8 +304,8 @@ fun CalendarEventScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Event") },
-            text = { Text("Are you sure you want to delete this event?") },
+            title = { Text(stringResource(id = com.davy.R.string.delete_event)) },
+            text = { Text(stringResource(id = com.davy.R.string.delete_event_confirmation)) },
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -321,14 +322,14 @@ fun CalendarEventScreen(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(id = com.davy.R.string.content_description_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
                     
                     // Cancel button on the right
                     TextButton(onClick = { showDeleteDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = com.davy.R.string.cancel))
                     }
                 }
             },
@@ -340,11 +341,11 @@ fun CalendarEventScreen(
     if (showEditDialog) {
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
-            title = { Text("Edit Event") },
-            text = { Text("Event editing will be implemented in a future update.") },
+            title = { Text(stringResource(id = com.davy.R.string.edit_event)) },
+            text = { Text(stringResource(id = com.davy.R.string.edit_event_future_update)) },
             confirmButton = {
                 TextButton(onClick = { showEditDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(id = com.davy.R.string.ok))
                 }
             }
         )

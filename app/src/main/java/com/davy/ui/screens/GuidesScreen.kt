@@ -10,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.davy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,10 +21,10 @@ fun GuidesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("User Guides") },
+                title = { Text(stringResource(id = R.string.user_guides)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.back))
                     }
                 }
             )
@@ -37,16 +39,13 @@ fun GuidesScreen(
         ) {
             // Getting Started
             Text(
-                text = "Getting Started",
+                text = stringResource(id = R.string.guides_getting_started_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "1. Add an account by tapping the + button\n" +
-                        "2. Enter your CalDAV/CardDAV server URL\n" +
-                        "3. Provide your username and password\n" +
-                        "4. DAVy will discover available calendars and contacts",
+                text = stringResource(id = R.string.guides_getting_started_body),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -56,17 +55,13 @@ fun GuidesScreen(
             
             // Managing Calendars
             Text(
-                text = "Managing Calendars",
+                text = stringResource(id = R.string.guides_calendars_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "• Tap on an account to view calendars\n" +
-                        "• Use 'Get Lists' to refresh available calendars\n" +
-                        "• Sync individual calendars or use 'Sync All'\n" +
-                        "• Create new calendars with the + button\n" +
-                        "• Long-press calendars to delete them",
+                text = stringResource(id = R.string.guides_calendars_body),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -76,15 +71,13 @@ fun GuidesScreen(
             
             // Contacts
             Text(
-                text = "Managing Contacts",
+                text = stringResource(id = R.string.guides_contacts_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "• Switch to Contacts tab to view address books\n" +
-                        "• Contacts sync automatically based on settings\n" +
-                        "• All synced contacts appear in Android Contacts",
+                text = stringResource(id = R.string.guides_contacts_body),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -94,18 +87,13 @@ fun GuidesScreen(
             
             // Account Settings
             Text(
-                text = "Account Settings",
+                text = stringResource(id = R.string.guides_account_settings_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "• Tap the settings icon on account details\n" +
-                        "• Configure authentication credentials\n" +
-                        "• Enable WiFi-only sync\n" +
-                        "• Set calendar color preferences\n" +
-                        "• Choose contact group method\n" +
-                        "• Skip old calendar events",
+                text = stringResource(id = R.string.guides_account_settings_body),
                 style = MaterialTheme.typography.bodyMedium
             )
             
@@ -115,16 +103,13 @@ fun GuidesScreen(
             
             // Sync
             Text(
-                text = "Syncing",
+                text = stringResource(id = R.string.guides_sync_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "• 'Sync All' syncs calendars, contacts, and tasks\n" +
-                        "• Individual sync buttons for each resource type\n" +
-                        "• Auto-sync can be enabled in Android Settings\n" +
-                        "• WiFi-only option available in account settings",
+                text = stringResource(id = R.string.guides_sync_body),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

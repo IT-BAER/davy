@@ -12,14 +12,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davy.R
 import com.davy.data.repository.ContactRepository
 import com.davy.domain.model.Contact
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,18 +53,27 @@ fun ContactDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contact Details") },
+                title = { Text(stringResource(R.string.contact_details)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            stringResource(R.string.content_description_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* TODO: Edit */ }) {
-                        Icon(Icons.Default.Edit, "Edit")
+                        Icon(
+                            Icons.Default.Edit,
+                            stringResource(R.string.content_description_edit)
+                        )
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, "Delete")
+                        Icon(
+                            Icons.Default.Delete,
+                            stringResource(R.string.content_description_delete)
+                        )
                     }
                 }
             )
@@ -85,7 +98,7 @@ fun ContactDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = uiState.errorMessage ?: "Error",
+                        text = uiState.errorMessage ?: stringResource(R.string.error),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -101,8 +114,8 @@ fun ContactDetailScreen(
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Delete Contact") },
-                text = { Text("Are you sure you want to delete this contact?") },
+                title = { Text(stringResource(R.string.delete_contact)) },
+                text = { Text(stringResource(R.string.delete_contact_confirmation)) },
                 confirmButton = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -118,14 +131,14 @@ fun ContactDetailScreen(
                         ) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Delete",
+                                contentDescription = stringResource(R.string.content_description_delete),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
                         
                         // Cancel button on the right
                         TextButton(onClick = { showDeleteDialog = false }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 },
@@ -187,7 +200,7 @@ private fun ContactDetailContent(
         
         // Phone numbers
         if (contact.hasPhoneNumbers()) {
-            ContactSection(title = "Phone Numbers", icon = Icons.Default.Phone) {
+            ContactSection(title = stringResource(R.string.phone_numbers), icon = Icons.Default.Phone) {
                 contact.phoneNumbers.forEach { phone ->
                     ContactInfoRow(
                         label = phone.type.name,
@@ -199,7 +212,7 @@ private fun ContactDetailContent(
         
         // Emails
         if (contact.hasEmails()) {
-            ContactSection(title = "Emails", icon = Icons.Default.Email) {
+            ContactSection(title = stringResource(R.string.emails), icon = Icons.Default.Email) {
                 contact.emails.forEach { email ->
                     ContactInfoRow(
                         label = email.type.name,
@@ -211,7 +224,7 @@ private fun ContactDetailContent(
         
         // Addresses
         if (contact.hasPostalAddresses()) {
-            ContactSection(title = "Addresses", icon = Icons.Default.Place) {
+            ContactSection(title = stringResource(R.string.addresses), icon = Icons.Default.Place) {
                 contact.postalAddresses.forEach { address ->
                     ContactInfoRow(
                         label = address.type.name,
@@ -223,10 +236,10 @@ private fun ContactDetailContent(
         
         // Websites
         if (contact.websites.isNotEmpty()) {
-            ContactSection(title = "Websites", icon = Icons.Default.Language) {
+            ContactSection(title = stringResource(R.string.websites), icon = Icons.Default.Language) {
                 contact.websites.forEach { website ->
                     ContactInfoRow(
-                        label = "Website",
+                        label = stringResource(R.string.website),
                         value = website
                     )
                 }
@@ -235,34 +248,34 @@ private fun ContactDetailContent(
         
         // Organization details
         if (contact.organization != null || contact.jobTitle != null) {
-            ContactSection(title = "Organization", icon = Icons.Default.Business) {
+            ContactSection(title = stringResource(R.string.organization), icon = Icons.Default.Business) {
                 contact.organization?.let {
-                    ContactInfoRow("Company", it)
+                    ContactInfoRow(stringResource(R.string.company), it)
                 }
                 contact.organizationUnit?.let {
-                    ContactInfoRow("Department", it)
+                    ContactInfoRow(stringResource(R.string.department), it)
                 }
                 contact.jobTitle?.let {
-                    ContactInfoRow("Job Title", it)
+                    ContactInfoRow(stringResource(R.string.job_title), it)
                 }
             }
         }
         
         // Personal info
         if (contact.birthday != null || contact.anniversary != null) {
-            ContactSection(title = "Important Dates", icon = Icons.Default.Cake) {
+            ContactSection(title = stringResource(R.string.important_dates), icon = Icons.Default.Cake) {
                 contact.birthday?.let {
-                    ContactInfoRow("Birthday", it)
+                    ContactInfoRow(stringResource(R.string.birthday), it)
                 }
                 contact.anniversary?.let {
-                    ContactInfoRow("Anniversary", it)
+                    ContactInfoRow(stringResource(R.string.anniversary), it)
                 }
             }
         }
         
         // Notes
         contact.note?.let { note ->
-            ContactSection(title = "Notes", icon = Icons.AutoMirrored.Filled.Note) {
+            ContactSection(title = stringResource(R.string.notes), icon = Icons.AutoMirrored.Filled.Note) {
                 Text(
                     text = note,
                     style = MaterialTheme.typography.bodyMedium
@@ -271,13 +284,13 @@ private fun ContactDetailContent(
         }
         
         // Technical details
-        ContactSection(title = "Technical Details", icon = Icons.Default.Info) {
-            ContactInfoRow("UID", contact.uid)
+        ContactSection(title = stringResource(R.string.technical_details), icon = Icons.Default.Info) {
+            ContactInfoRow(stringResource(R.string.uid), contact.uid)
             contact.contactUrl?.let {
-                ContactInfoRow("URL", it)
+                ContactInfoRow(stringResource(R.string.url), it)
             }
             contact.etag?.let {
-                ContactInfoRow("ETag", it)
+                ContactInfoRow(stringResource(R.string.etag), it)
             }
         }
     }
@@ -346,7 +359,8 @@ data class ContactDetailUiState(
 
 @HiltViewModel
 class ContactDetailViewModel @Inject constructor(
-    private val contactRepository: ContactRepository
+    private val contactRepository: ContactRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ContactDetailUiState())
@@ -365,13 +379,13 @@ class ContactDetailViewModel @Inject constructor(
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Contact not found"
+                        errorMessage = context.getString(R.string.contact_not_found)
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "Failed to load contact"
+                    errorMessage = e.message ?: context.getString(R.string.failed_to_load_contact)
                 )
             }
         }
@@ -386,7 +400,7 @@ class ContactDetailViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    errorMessage = e.message ?: "Failed to delete contact"
+                    errorMessage = e.message ?: context.getString(R.string.failed_to_delete_contact)
                 )
             }
         }

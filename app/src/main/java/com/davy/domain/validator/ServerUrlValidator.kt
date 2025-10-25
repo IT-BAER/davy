@@ -54,7 +54,7 @@ class ServerUrlValidator @Inject constructor() {
         // Add scheme if missing
         val urlWithScheme = when {
             trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://") -> trimmedUrl
-            isLocalhost(trimmedUrl) -> "http://$trimmedUrl" // Allow HTTP for localhost
+            isLocalhost(trimmedUrl) -> "http://$trimmedUrl" // Allow HTTP for localhost workflows
             else -> "https://$trimmedUrl" // Default to HTTPS for security
         }
         
@@ -76,12 +76,9 @@ class ServerUrlValidator @Inject constructor() {
             return hostValidation
         }
         
-        // Warn about HTTP for non-localhost
+        // Block HTTP for non-localhost targets
         if (parsedUrl.protocol == HTTP_SCHEME && !isLocalhost(parsedUrl.host)) {
-            return ValidationResult.Warning(
-                normalizedUrl = normalizeUrl(parsedUrl),
-                message = "HTTP is insecure. Consider using HTTPS for remote servers."
-            )
+            return ValidationResult.Error("HTTP is not supported. Please use an HTTPS server URL.")
         }
         
         // Success

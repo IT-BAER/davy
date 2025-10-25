@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVy</string>
+    
+    <!-- Account types -->
+    <string name="account_type">com.davy</string>
+    <string name="account_type_address_book">com.davy.addressbook</string>
+    
+    <!-- Account preferences -->
+    <string name="account_prefs_use_app">DAVyアプリを使用してアカウントを追加してください</string>
+    
+    <!-- App Shortcuts -->
+    <string name="shortcut_sync_all_short">すべて同期</string>
+    <string name="shortcut_sync_all_long">すべて同期</string>
+    
+    <!-- Common UI Elements -->
+    <string name="back">戻る</string>
+    <string name="settings">設定</string>
+    <string name="about">について</string>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="delete">削除</string>
+    <string name="edit">編集</string>
+    <string name="save">保存</string>
+    <string name="sync">同期</string>
+    <string name="error">エラー</string>
+    <string name="loading">読み込み中…</string>
+    <string name="retry">再試行</string>
+    <string name="close">閉じる</string>
+    <string name="add">追加</string>
+    <string name="remove">削除</string>
+    <string name="refresh">更新</string>
+    <string name="enabled">有効</string>
+    <string name="disabled">無効</string>
+    
+    <!-- Account Management -->
+    <string name="account_list_title">DAVy - アカウント</string>
+    <string name="add_account">アカウントを追加</string>
+    <string name="account_details">アカウントの詳細</string>
+    <string name="account_settings">アカウント設定</string>
+    <string name="delete_account">アカウントを削除</string>
+    <string name="delete_account_confirmation">このアカウントを削除してもよろしいですか？同期されたすべてのデータが削除されます。</string>
+    <string name="no_accounts">アカウントがありません</string>
+    <string name="no_accounts_description">最初のCalDAV/CardDAVアカウントを追加して開始します</string>
+    <string name="account_name">アカウント名</string>
+    <string name="server_url">サーバーURL</string>
+    <string name="username">ユーザー名</string>
+    <string name="password">パスワード</string>
+    <string name="account_color">アカウントの色</string>
+    
+    <!-- Sync -->
+    <string name="syncing">同期中…</string>
+    <string name="sync_all">すべて同期</string>
+    <string name="sync_successful">同期成功</string>
+    <string name="sync_failed">同期失敗</string>
+    <string name="last_sync">最終同期：%1$s</string>
+    <string name="never_synced">未同期</string>
+    <string name="auto_sync">自動同期</string>
+    <string name="sync_on_wifi_only">WiFiのみ同期</string>
+    
+    <!-- Collections -->
+    <string name="collections">コレクション</string>
+    <string name="collections_title">DAVy - コレクション</string>
+    <string name="calendars">カレンダー</string>
+    <string name="contacts">連絡先</string>
+    <string name="tasks">タスク</string>
+    <string name="address_books">アドレス帳</string>
+    
+    <!-- Calendar -->
+    <string name="calendar_details">カレンダーの詳細</string>
+    <string name="calendar_list">カレンダーリスト</string>
+    <string name="event_details">イベントの詳細</string>
+    <string name="all_day_event">終日イベント</string>
+    <string name="date_time">日時</string>
+    <string name="description">説明</string>
+    <string name="location">場所</string>
+    <string name="attendees">参加者 (%1$d)</string>
+    <string name="reminders">リマインダー</string>
+    <string name="reminder_before">%1$d分前 (%2$s)</string>
+    <string name="recurrence">繰り返し</string>
+    <string name="availability">空き状況</string>
+    <string name="delete_event">イベントを削除</string>
+    <string name="delete_event_confirmation">このイベントを削除してもよろしいですか？</string>
+    <string name="edit_event">イベントを編集</string>
+    <string name="edit_event_future_update">イベントの編集は将来のアップデートで実装されます。</string>
+    <string name="event_not_found">イベントが見つかりません</string>
+    <string name="failed_to_load_event">イベントの読み込みに失敗しました：%1$s</string>
+    <string name="failed_to_delete_event">イベントの削除に失敗しました：%1$s</string>
+    <string name="event_type">種類</string>
+    
+    <!-- Address Book -->
+    <string name="address_book_details">アドレス帳の詳細</string>
+    <string name="address_book_list">アドレス帳リスト</string>
+    <string name="contact_details">連絡先の詳細</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_sync_title">同期設定</string>
+    <string name="settings_appearance_title">外観</string>
+    <string name="settings_advanced_title">詳細設定</string>
+    <string name="settings_backup_title">バックアップと復元</string>
+    <string name="settings_permissions_title">権限</string>
+    <string name="dark_mode">ダークモード</string>
+    <string name="debug_logging">デバッグログ</string>
+    <string name="battery_optimization">バッテリー最適化</string>
+    <string name="battery_optimization_disabled">無効</string>
+    <string name="battery_optimization_enabled">有効（推奨）</string>
+    <string name="battery_optimization_description">信頼性の高いバックグラウンド同期のためにバッテリー最適化を無効にします</string>
+    <string name="permissions_status">権限の状態</string>
+    <string name="all_permissions_granted">すべての権限が付与されました</string>
+    <string name="some_permissions_missing">一部の権限が不足しています</string>
+    <string name="backup_database">データベースをバックアップ</string>
+    <string name="restore_database">データベースを復元</string>
+    
+    <!-- About Screen -->
+    <string name="version">バージョン %1$s</string>
+    <string name="app_description">DAVyは、Android向けのモダンなCalDAV、CardDAV、WebCal同期アプリです。すべてのデバイスでカレンダー、連絡先、タスクを同期します。</string>
+    <string name="technology_stack">技術スタック</string>
+    <string name="key_dependencies">主要な依存関係</string>
+    <string name="license">ライセンス：Apache 2.0</string>
+    
+    <!-- Tech Stack Items -->
+    <string name="tech_kotlin_compose">• Kotlin と Jetpack Compose</string>
+    <string name="tech_material3">• Material Design 3</string>
+    <string name="tech_hilt">• Hilt 依存性注入</string>
+    <string name="tech_room">• Room データベース</string>
+    <string name="tech_coroutines">• Coroutines と Flow</string>
+    <string name="tech_okhttp">• OkHttp と Retrofit</string>
+    <string name="tech_sardine">• Sardine WebDAV</string>
+    <string name="tech_compose">• AndroidX Compose</string>
+    <string name="tech_timber">• Timber ログ</string>
+    <string name="tech_ical4j">• iCal4j (RFC 5545)</string>
+    <string name="tech_ezvcard">• ez-vcard</string>
+    <string name="tech_workmanager">• WorkManager</string>
+    
+    <!-- FAQ Screen -->
+    <string name="faq">よくある質問</string>
+    <string name="faq_what_is_davy">DAVyとは何ですか？</string>
+    <string name="faq_what_is_davy_answer">DAVyは、カレンダー、連絡先、タスクをサーバーと同期するAndroid向けCalDAV/CardDAV同期クライアントです。</string>
+    <string name="faq_which_servers">どのサーバーがサポートされていますか？</string>
+    <string name="faq_which_servers_answer">DAVyは、Nextcloud、ownCloud、Radicale、Baïkalなど、CalDAV/CardDAV互換のすべてのサーバーで動作します。</string>
+    <string name="faq_sync_not_working">同期が機能しないのはなぜですか？</string>
+    <string name="faq_sync_not_working_answer">• サーバーURLが正しい（https://を含む）\n• ユーザー名とパスワードが有効\n• WiFiのみ同期が無効またはWiFiに接続済み\n• Android設定で自動同期が有効</string>
+    <string name="faq_enable_auto_sync">自動同期を有効にするには？</string>
+    <string name="faq_enable_auto_sync_answer">Android設定 → アカウント → DAVy → 「データを自動的に同期する」を有効にします</string>
+    <string name="faq_multiple_accounts">複数のアカウントを同期できますか？</string>
+    <string name="faq_multiple_accounts_answer">はい、複数のCalDAV/CardDAVアカウントを同時に追加して同期できます。</string>
+    
+    <!-- Guides Screen -->
+    <string name="guides">ガイド</string>
+    <string name="getting_started">はじめに</string>
+    <string name="setup_guides">セットアップガイド</string>
+    
+    <!-- Errors and Messages -->
+    <string name="error_generic">エラーが発生しました</string>
+    <string name="error_network">ネットワークエラー。接続を確認してください。</string>
+    <string name="error_authentication">認証に失敗しました。認証情報を確認してください。</string>
+    <string name="error_server">サーバーエラー。後でもう一度お試しください。</string>
+    <string name="success">成功</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_menu">メニュー</string>
+    <string name="content_description_sync">同期</string>
+    <string name="content_description_add">追加</string>
+    <string name="content_description_delete">削除</string>
+    <string name="content_description_edit">編集</string>
+    <string name="content_description_info">情報</string>
+    <string name="content_description_help">ヘルプ</string>
+    <string name="content_description_back">戻る</string>
+    <string name="content_description_settings">設定</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_accounts">アカウント</string>
+    <string name="nav_collections">コレクション</string>
+    <string name="nav_settings">設定</string>
+    <string name="nav_guides">ガイド</string>
+    <string name="nav_faq">よくある質問</string>
+    <string name="nav_about">について</string>
+    
+    <!-- Date/Time Formats -->
+    <string name="date_format_short">yyyy年M月d日</string>
+    <string name="datetime_format_long">yyyy年M月d日 hh:mm a</string>
+    
+    <!-- Plurals -->
+    <plurals name="number_of_events">
+        <item quantity="other">%d 件のイベント</item>
+    </plurals>
+    
+    <plurals name="number_of_contacts">
+        <item quantity="other">%d 件の連絡先</item>
+    </plurals>
+    
+    <plurals name="number_of_tasks">
+        <item quantity="other">%d 件のタスク</item>
+    </plurals>
+</resources>

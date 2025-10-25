@@ -53,6 +53,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -147,12 +148,12 @@ fun AccountListScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
                 TopAppBar(
-                    title = { Text("DAVy - Accounts") },
+                    title = { Text(stringResource(id = R.string.account_list_title)) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu"
+                                contentDescription = stringResource(id = R.string.content_description_menu)
                             )
                         }
                     },
@@ -166,7 +167,7 @@ fun AccountListScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Sync,
-                                contentDescription = "Sync all",
+                                contentDescription = stringResource(id = R.string.content_description_sync),
                                 modifier = if (isSyncing) {
                                     Modifier.rotate(rotation)
                                 } else {
@@ -207,13 +208,13 @@ fun AccountListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "No accounts yet",
+                            text = stringResource(id = R.string.no_accounts),
                             style = MaterialTheme.typography.headlineSmall,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tap + to add your first account",
+                            text = stringResource(id = R.string.no_accounts_description),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center
                         )
@@ -251,14 +252,14 @@ fun AccountListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Error: ${state.message}",
+                            text = stringResource(id = R.string.error) + ": ${state.message}",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = viewModel::refresh) {
-                            Text("Retry")
+                            Text(stringResource(id = R.string.retry))
                         }
                     }
                 }
@@ -303,13 +304,13 @@ fun AccountListScreen(
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Add account",
+                                contentDescription = stringResource(id = R.string.content_description_add),
                                 modifier = Modifier.size(22.dp)
                             )
                         },
                         text = { 
                             Text(
-                                "Add Account",
+                                stringResource(id = R.string.add_account),
                                 style = MaterialTheme.typography.labelLarge
                             ) 
                         },
@@ -336,7 +337,7 @@ fun AccountListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add account",
+                            contentDescription = stringResource(id = R.string.content_description_add),
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -349,8 +350,8 @@ fun AccountListScreen(
     accountToDelete?.let { account ->
         AlertDialog(
             onDismissRequest = { accountToDelete = null },
-            title = { Text("Delete Account?") },
-            text = { Text("Are you sure you want to delete ${account.accountName}?") },
+            title = { Text(stringResource(id = R.string.delete_account_question)) },
+            text = { Text(stringResource(id = R.string.delete_account_confirmation_named, account.accountName)) },
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -366,14 +367,14 @@ fun AccountListScreen(
                     ) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(id = R.string.content_description_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
                     
                     // Cancel button on the right
                     TextButton(onClick = { accountToDelete = null }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             },
@@ -578,18 +579,18 @@ private fun DrawerContent(
             ) {
                 Image(
                     painter = painterResource(id = com.davy.R.drawable.ic_app_logo),
-                    contentDescription = "DAVy Logo",
+                    contentDescription = stringResource(id = R.string.content_description_app_logo),
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "DAVy",
+                        text = stringResource(id = R.string.app_name),
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.Black
                     )
                     Text(
-                        text = "CalDAV • CardDAV • WebCal",
+                        text = stringResource(id = R.string.app_tagline),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Black.copy(alpha = 0.7f)
                     )
@@ -607,7 +608,7 @@ private fun DrawerContent(
                     contentDescription = null
                 )
             },
-            label = { Text("Settings") },
+            label = { Text(stringResource(id = R.string.settings)) },
             selected = false,
             onClick = {
                 onCloseDrawer()
@@ -624,7 +625,7 @@ private fun DrawerContent(
                     contentDescription = null
                 )
             },
-            label = { Text("Help") },
+            label = { Text(stringResource(id = R.string.help)) },
             selected = false,
             onClick = { helpExpanded = !helpExpanded },
             modifier = Modifier.padding(horizontal = 12.dp)
@@ -635,7 +636,7 @@ private fun DrawerContent(
             // Guides
             NavigationDrawerItem(
                 icon = { Spacer(modifier = Modifier.width(24.dp)) },
-                label = { Text("Guides", style = MaterialTheme.typography.bodyMedium) },
+                label = { Text(stringResource(id = R.string.guides), style = MaterialTheme.typography.bodyMedium) },
                 selected = false,
                 onClick = {
                     onCloseDrawer()
@@ -647,7 +648,7 @@ private fun DrawerContent(
             // FAQ
             NavigationDrawerItem(
                 icon = { Spacer(modifier = Modifier.width(24.dp)) },
-                label = { Text("FAQ", style = MaterialTheme.typography.bodyMedium) },
+                label = { Text(stringResource(id = R.string.faq), style = MaterialTheme.typography.bodyMedium) },
                 selected = false,
                 onClick = {
                     onCloseDrawer()
@@ -665,7 +666,7 @@ private fun DrawerContent(
                     contentDescription = null
                 )
             },
-            label = { Text("About") },
+            label = { Text(stringResource(id = R.string.about)) },
             selected = false,
             onClick = {
                 onCloseDrawer()
@@ -683,7 +684,7 @@ private fun DrawerContent(
                     contentDescription = null
                 )
             },
-            label = { Text("Contact") },
+            label = { Text(stringResource(id = R.string.contact)) },
             selected = false,
             onClick = {
                 onCloseDrawer()
@@ -691,7 +692,8 @@ private fun DrawerContent(
                     data = Uri.parse("mailto:admin@it-baer.net")
                 }
                 try {
-                    context.startActivity(Intent.createChooser(intent, "Send Email"))
+                    val chooser = Intent.createChooser(intent, context.getString(R.string.send_email))
+                    context.startActivity(chooser)
                 } catch (e: Exception) {
                     // Handle error silently
                 }
@@ -707,12 +709,12 @@ private fun DrawerContent(
             label = { 
                 Column {
                     Text(
-                        text = "License",
+                        text = stringResource(id = R.string.license_title),
                         style = MaterialTheme.typography.titleSmall
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "DAVy is open source software licensed under Apache 2.0",
+                        text = stringResource(id = R.string.license_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
