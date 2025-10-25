@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">集合</string>
     <string name="collections_title">DAVy - 集合</string>
+    <string name="calendar">日历</string>
     <string name="calendars">日历</string>
     <string name="contacts">联系人</string>
     <string name="tasks">任务</string>

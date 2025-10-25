@@ -570,28 +570,43 @@ class PrincipalDiscovery @Inject constructor(
                     vjournalNode != null
                 } ?: false
                 
-                // Parse write privilege from current-user-privilege-set (CalDAV ACL)
-                // Look for <privilege><write-content/></privilege>
-                // See reference implementation: Collection.privWriteContent determination
-                val privWriteContent = responseNode.let { node ->
-                    val writeContentNode = xpath.evaluate(
-                        "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='current-user-privilege-set']/*[local-name()='privilege']/*[local-name()='write-content']",
+                // Parse ACL privileges from current-user-privilege-set (CalDAV ACL spec)
+                // CRITICAL: Use optimistic defaults (true) if privilege-set not present (DAVx5 pattern)
+                // Only parse explicit privileges if server provides current-user-privilege-set
+                val privilegeSetNode = responseNode.let { node ->
+                    xpath.evaluate(
+                        "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='current-user-privilege-set']",
                         node,
                         XPathConstants.NODE
                     ) as? org.w3c.dom.Node
+                }
+                
+                // Parse write privilege from current-user-privilege-set (CalDAV ACL)
+                // Look for <privilege><write-content/></privilege>
+                // Default to true if privilege-set missing (optimistic - most servers allow write)
+                val privWriteContent = if (privilegeSetNode != null) {
+                    val writeContentNode = xpath.evaluate(
+                        "*[local-name()='privilege']/*[local-name()='write-content']",
+                        privilegeSetNode,
+                        XPathConstants.NODE
+                    ) as? org.w3c.dom.Node
                     writeContentNode != null
+                } else {
+                    true  // Optimistic default - assume writable if no privilege-set
                 }
                 
                 // Parse unbind (delete) privilege from current-user-privilege-set (CalDAV ACL)
                 // Look for <privilege><unbind/></privilege>
-                // See reference implementation: Collection.privUnbind determination
-                val privUnbind = responseNode.let { node ->
+                // Default to true if privilege-set missing (optimistic - DAVx5 pattern)
+                val privUnbind = if (privilegeSetNode != null) {
                     val unbindNode = xpath.evaluate(
-                        "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='current-user-privilege-set']/*[local-name()='privilege']/*[local-name()='unbind']",
-                        node,
+                        "*[local-name()='privilege']/*[local-name()='unbind']",
+                        privilegeSetNode,
                         XPathConstants.NODE
                     ) as? org.w3c.dom.Node
                     unbindNode != null
+                } else {
+                    true  // Optimistic default - assume deletable if no privilege-set (matches DAVx5)
                 }
                 
                 val calendarUrl = resolveUrl(baseUrl, href)

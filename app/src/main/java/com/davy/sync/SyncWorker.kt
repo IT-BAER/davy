@@ -47,7 +47,8 @@ class SyncWorker @AssistedInject constructor(
     private val webCalSyncService: WebCalSyncService,
     private val calendarContractSync: CalendarContractSync,
     private val principalDiscovery: com.davy.data.remote.caldav.PrincipalDiscovery,
-    private val credentialStore: com.davy.data.local.CredentialStore
+    private val credentialStore: com.davy.data.local.CredentialStore,
+    private val authenticationManager: com.davy.data.remote.AuthenticationManager
 ) : CoroutineWorker(appContext, workerParams) {
     
     companion object {
@@ -245,12 +246,31 @@ class SyncWorker @AssistedInject constructor(
                             if (password == null) {
                                 Timber.w("Cannot prune calendars: missing credentials for account ${account.id}")
                             } else {
-                                val caldavBaseUrl = "${account.serverUrl.trimEnd('/')}/remote.php/dav"
-                                val principalInfo = principalDiscovery.discoverPrincipal(
-                                    baseUrl = caldavBaseUrl,
-                                    username = account.username,
-                                    password = password
-                                )
+                                // Discover principal using full service discovery with fallback
+                                val principalInfo = try {
+                                    Timber.d("Attempting full service discovery for pruning")
+                                    val authResult = authenticationManager.authenticate(
+                                        serverUrl = account.serverUrl,
+                                        username = account.username,
+                                        password = password
+                                    )
+                                    
+                                    if (!authResult.hasCalDAV() || authResult.calDavPrincipal == null) {
+                                        throw com.davy.data.remote.caldav.PrincipalDiscoveryException("CalDAV service not available from authentication")
+                                    }
+                                    
+                                    Timber.d("Full discovery succeeded for pruning, using calendarHomeSet: ${authResult.calDavPrincipal.calendarHomeSet}")
+                                    authResult.calDavPrincipal
+                                } catch (e: Exception) {
+                                    // Fallback to direct principal discovery
+                                    Timber.w(e, "Full discovery failed for pruning, falling back to direct principal discovery")
+                                    principalDiscovery.discoverPrincipal(
+                                        baseUrl = account.serverUrl.trimEnd('/'),
+                                        username = account.username,
+                                        password = password
+                                    )
+                                }
+                                
                                 val discovered = principalDiscovery.discoverCalendars(
                                     calendarHomeSetUrl = principalInfo.calendarHomeSet,
                                     username = account.username,

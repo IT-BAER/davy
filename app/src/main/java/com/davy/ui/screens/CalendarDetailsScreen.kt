@@ -349,7 +349,7 @@ private fun CalendarDetailsContent(
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     ),
-                    modifier = Modifier.height(48.dp)
+                    modifier = Modifier.height(40.dp)
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = stringResource(id = com.davy.R.string.delete_calendar))
                 }
@@ -359,7 +359,7 @@ private fun CalendarDetailsContent(
                     onClick = { viewModel.syncNow(calendar) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
+                        .height(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
@@ -371,24 +371,6 @@ private fun CalendarDetailsContent(
                 }
             }
         }
-
-        // Status chips
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (calendar.isSyncedWithAndroid()) {
-                StatusChip(stringResource(id = com.davy.R.string.synced_with_android))
-            }
-            if (calendar.supportsVTODO) {
-                StatusChip(stringResource(id = com.davy.R.string.supports_tasks))
-            }
-            if (calendar.supportsVJOURNAL) {
-                StatusChip(stringResource(id = com.davy.R.string.supports_journal))
-            }
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }
 
     // Color picker dialog
@@ -462,21 +444,6 @@ private fun InfoRow(label: String, value: String) {
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(0.6f)
-        )
-    }
-}
-
-@Composable
-private fun StatusChip(text: String) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.secondaryContainer
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }

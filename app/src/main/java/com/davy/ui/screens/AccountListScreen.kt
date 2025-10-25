@@ -472,7 +472,7 @@ fun AccountItemCard(
                             modifier = Modifier.padding(0.dp)
                         ) {
                             Text(
-                                "Calendar",
+                                stringResource(id = R.string.calendar),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -486,7 +486,7 @@ fun AccountItemCard(
                             modifier = Modifier.padding(0.dp)
                         ) {
                             Text(
-                                "Contacts",
+                                stringResource(id = R.string.contacts),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -500,7 +500,7 @@ fun AccountItemCard(
                             modifier = Modifier.padding(0.dp)
                         ) {
                             Text(
-                                "Tasks",
+                                stringResource(id = R.string.tasks),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer

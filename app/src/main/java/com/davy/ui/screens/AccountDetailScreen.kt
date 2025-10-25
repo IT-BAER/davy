@@ -100,6 +100,7 @@ private val accountDetailTabs = listOf(
 @Composable
 private fun rememberGradientBorderBrush(baseColor: Color): Brush {
     val fallbackColor = MaterialTheme.colorScheme.outline
+    // Use fallback only if alpha is exactly 0f (should not happen after parseColor fix)
     val resolvedColor = if (baseColor.alpha == 0f) fallbackColor else baseColor
     return remember(resolvedColor) {
         Brush.horizontalGradient(
@@ -351,8 +352,20 @@ fun AccountDetailScreen(
     var showDeleteSelectedAddressBooksDialog by remember { mutableStateOf(false) }
     var showDeleteSelectedWebCalDialog by remember { mutableStateOf(false) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(accountId) {
         viewModel.loadAccount(accountId)
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearError()
+        }
     }
 
     val currentTab = accountDetailTabs[pagerState.currentPage]
@@ -370,7 +383,7 @@ fun AccountDetailScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(uiState.account?.accountName ?: stringResource(id = R.string.account)) },
@@ -1062,6 +1075,10 @@ private fun CalendarCard(
     // ElevatedCard provides subtle shadow for better depth perception and native feel
     val cardShape = MaterialTheme.shapes.medium
     val gradientBorder = rememberGradientBorderBrush(calendarColor)
+    
+    // Resolve icon tint color - use outline color if calendar color has zero alpha (should not happen after parseColor fix)
+    val iconTint = if (calendarColor.alpha == 0f) MaterialTheme.colorScheme.outline else calendarColor
+    
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -1090,12 +1107,12 @@ private fun CalendarCard(
                 Spacer(modifier = Modifier.width(8.dp))
             }
             
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = null,
-                tint = calendarColor,
-                modifier = Modifier.size(28.dp)
-            )
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = iconTint,
+                                modifier = Modifier.size(28.dp)
+                            )
             
             Spacer(modifier = Modifier.width(12.dp))
             
@@ -1759,6 +1776,9 @@ fun WebCalSubscriptionCard(
     val iconColor = androidx.compose.ui.graphics.Color(subscription.color)
     val haptics = LocalHapticFeedback.current
     
+    // Resolve icon tint - use outline color if subscription color has zero alpha (should not happen after parseColor fix)
+    val iconTint = if (iconColor.alpha == 0f) MaterialTheme.colorScheme.outline else iconColor
+    
     // PERFORMANCE: Use ElevatedCard (reference implementation pattern)
     val cardShape = MaterialTheme.shapes.medium
     val gradientBorder = rememberGradientBorderBrush(iconColor)
@@ -1793,7 +1813,7 @@ fun WebCalSubscriptionCard(
             Icon(
                 imageVector = Icons.Default.DateRange,
                 contentDescription = null,
-                tint = iconColor,
+                tint = iconTint,
                 modifier = Modifier.size(28.dp)
             )
             

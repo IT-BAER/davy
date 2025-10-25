@@ -73,6 +73,7 @@
     <!-- Collections -->
     <string name="collections">Collections</string>
     <string name="collections_title">DAVy - Collections</string>
+    <string name="calendar">Calendar</string>
     <string name="calendars">Calendars</string>
     <string name="contacts">Contacts</string>
     <string name="tasks">Tasks</string>

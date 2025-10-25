@@ -292,7 +292,7 @@ private fun AddressBookDetailsContent(
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     ),
-                    modifier = Modifier.height(48.dp)
+                    modifier = Modifier.height(40.dp)
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = stringResource(id = com.davy.R.string.delete_address_book))
                 }
@@ -302,7 +302,7 @@ private fun AddressBookDetailsContent(
                     onClick = { viewModel.syncNow(addressBook) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
+                        .height(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sync,
@@ -314,9 +314,6 @@ private fun AddressBookDetailsContent(
                 }
             }
         }
-
-        // Danger zone: Delete address book (remove the separate delete button)
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }
 
     // Delete confirmation dialog

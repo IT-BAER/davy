@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">المجموعات</string>
     <string name="collections_title">DAVy - المجموعات</string>
+    <string name="calendar">التقويم</string>
     <string name="calendars">التقويمات</string>
     <string name="contacts">جهات الاتصال</string>
     <string name="tasks">المهام</string>

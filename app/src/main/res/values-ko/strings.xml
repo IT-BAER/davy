@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">컬렉션</string>
     <string name="collections_title">DAVy - 컬렉션</string>
+    <string name="calendar">캘린더</string>
     <string name="calendars">캘린더</string>
     <string name="contacts">연락처</string>
     <string name="tasks">작업</string>

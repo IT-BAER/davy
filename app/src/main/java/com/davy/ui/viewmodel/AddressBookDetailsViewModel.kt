@@ -24,7 +24,8 @@ class AddressBookDetailsViewModel @Inject constructor(
     private val updateAddressBookUseCase: UpdateAddressBookUseCase,
     private val syncManager: SyncManager,
     private val credentialStore: CredentialStore,
-    private val androidAccountManager: AndroidAccountManager
+    private val androidAccountManager: AndroidAccountManager,
+    private val carddavClient: com.davy.data.remote.carddav.CardDAVClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AddressBookDetailsUiState>(AddressBookDetailsUiState.Loading)
@@ -129,19 +130,19 @@ class AddressBookDetailsViewModel @Inject constructor(
 
                 // Try server deletion first (best-effort) for non-demo accounts
                 if (account != null && !isDemoAccount && addressBook.url.isNotBlank() && password != null) {
-                    try {
-                        val request = okhttp3.Request.Builder()
-                            .url(addressBook.url)
-                            .delete()
-                            .header("Authorization", okhttp3.Credentials.basic(account.username, password))
-                            .build()
-                        val client = okhttp3.OkHttpClient()
-                        val response = client.newCall(request).execute()
-                        if (!response.isSuccessful && response.code !in listOf(204, 404, 410)) {
-                            Timber.w("Failed to delete address book on server: ${response.code} - ${response.message}")
-                        }
-                    } catch (e: Exception) {
-                        Timber.w(e, "Exception deleting address book on server (continuing with local removal)")
+                    Timber.d("Deleting address book from server: ${addressBook.url}")
+                    
+                    val response = carddavClient.deleteAddressBook(
+                        addressBookUrl = addressBook.url,
+                        username = account.username,
+                        password = password
+                    )
+                    
+                    if (!response.isSuccessful) {
+                        Timber.w("Failed to delete address book on server: ${response.statusCode} - ${response.error}")
+                        // Continue with local deletion even if server deletion failed (might be 404/410)
+                    } else {
+                        Timber.d("Address book deleted from server successfully")
                     }
                 } else if (isDemoAccount) {
                     Timber.d("Demo account: skipping server deletion for address book: ${addressBook.displayName}")

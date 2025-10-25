@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">Kolekcje</string>
     <string name="collections_title">DAVy - Kolekcje</string>
+    <string name="calendar">Kalendarz</string>
     <string name="calendars">Kalendarze</string>
     <string name="contacts">Kontakty</string>
     <string name="tasks">Zadania</string>

@@ -26,7 +26,8 @@ data class AccountDetailUiState(
     val isRefreshingCollections: Boolean = false,
     val accountDeleted: Boolean = false,
     val isTestingCredentials: Boolean = false,
-    val credentialTestResult: String? = null
+    val credentialTestResult: String? = null,
+    val errorMessage: String? = null
 ) {
     /**
      * Derived property using inline computation - no additional state tracking needed.

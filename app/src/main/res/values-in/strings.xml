@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">Koleksi</string>
     <string name="collections_title">DAVy - Koleksi</string>
+    <string name="calendar">Kalender</string>
     <string name="calendars">Kalender</string>
     <string name="contacts">Kontak</string>
     <string name="tasks">Tugas</string>

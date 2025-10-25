@@ -48,6 +48,7 @@ class AccountDetailViewModel @Inject constructor(
     private val webCalSubscriptionRepository: WebCalSubscriptionRepository,
     private val caldavPrincipalDiscovery: PrincipalDiscovery,
     private val caldavClient: CalDAVClient,
+    private val carddavClient: com.davy.data.remote.carddav.CardDAVClient,
     private val credentialStore: CredentialStore,
     private val syncManager: SyncManager,
     private val webCalSyncService: WebCalSyncService,
@@ -78,6 +79,7 @@ class AccountDetailViewModel @Inject constructor(
     private val _accountDeleted = MutableStateFlow(false)
     private val _isTestingCredentials = MutableStateFlow(false)
     private val _credentialTestResult = MutableStateFlow<String?>(null)
+    private val _errorMessage = MutableStateFlow<String?>(null)
     
     // Batch selection state for multi-select sync operations
     private val _isBatchSelectionMode = MutableStateFlow(false)
@@ -107,7 +109,8 @@ class AccountDetailViewModel @Inject constructor(
         _isRefreshingCollections,
         _accountDeleted,
         _isTestingCredentials,
-        _credentialTestResult
+        _credentialTestResult,
+        _errorMessage
     ) { flows: Array<Any?> ->
         AccountDetailUiState(
             account = flows[0] as Account?,
@@ -120,7 +123,8 @@ class AccountDetailViewModel @Inject constructor(
             isRefreshingCollections = flows[7] as Boolean,
             accountDeleted = flows[8] as Boolean,
             isTestingCredentials = flows[9] as Boolean,
-            credentialTestResult = flows[10] as String?
+            credentialTestResult = flows[10] as String?,
+            errorMessage = flows[11] as String?
         )
     }.stateIn(
         scope = viewModelScope,
@@ -316,30 +320,36 @@ class AccountDetailViewModel @Inject constructor(
         val acc = _account.value ?: return
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                timber.log.Timber.d("Starting account deletion for: ${acc.accountName}")
-                
-                // 1. Remove address book accounts first
-                val addressBookAccountsRemoved = androidAccountManager.removeAddressBookAccounts(acc.accountName)
-                if (addressBookAccountsRemoved) {
-                    timber.log.Timber.d("Successfully removed address book accounts")
-                } else {
-                    timber.log.Timber.w("Failed to remove some address book accounts")
+                try {
+                    timber.log.Timber.d("Starting account deletion for: ${acc.accountName}")
+                    
+                    // CRITICAL: Set deletion flag BEFORE deleting from DB
+                    // This ensures navigation triggers before account becomes null
+                    _accountDeleted.value = true
+                    
+                    // 1. Remove address book accounts first
+                    val addressBookAccountsRemoved = androidAccountManager.removeAddressBookAccounts(acc.accountName)
+                    if (addressBookAccountsRemoved) {
+                        timber.log.Timber.d("Successfully removed address book accounts")
+                    } else {
+                        timber.log.Timber.w("Failed to remove some address book accounts")
+                    }
+                    
+                    // 2. Remove main Android account (this also removes calendars)
+                    val androidRemoved = androidAccountManager.removeAccount(acc.accountName)
+                    if (androidRemoved) {
+                        timber.log.Timber.d("Successfully removed Android account")
+                    } else {
+                        timber.log.Timber.w("Failed to remove Android account")
+                    }
+                    
+                    // 3. Finally remove from database
+                    accountRepository.delete(acc)
+                    timber.log.Timber.d("Account deletion complete")
+                } catch (e: Exception) {
+                    timber.log.Timber.e(e, "Error during account deletion")
+                    // Even on error, flag is already set for navigation
                 }
-                
-                // 2. Remove main Android account (this also removes calendars)
-                val androidRemoved = androidAccountManager.removeAccount(acc.accountName)
-                if (androidRemoved) {
-                    timber.log.Timber.d("Successfully removed Android account")
-                } else {
-                    timber.log.Timber.w("Failed to remove Android account")
-                }
-                
-                // 3. Finally remove from database
-                accountRepository.delete(acc)
-                timber.log.Timber.d("Account deletion complete")
-                
-                // 4. Set deletion complete flag to trigger navigation
-                _accountDeleted.value = true
             }
         }
     }
@@ -414,7 +424,51 @@ class AccountDetailViewModel @Inject constructor(
                 val calendarUrl = if (isDemoAccount) {
                     buildDemoCalendarUrl(account.id, folderName)
                 } else {
-                    "${account.serverUrl.trimEnd('/')}/remote.php/dav/calendars/${account.username}/$folderName/"
+                    // Discover CalDAV endpoint and calendar-home-set from server
+                    val password = credentialStore.getPassword(account.id) ?: return@withContext
+                    
+                    Timber.tag("AccountDetailViewModel").d("Discovering CalDAV service endpoint for: %s", account.serverUrl)
+                    
+                    try {
+                        // Full service discovery to get proper CalDAV endpoint URL
+                        val authResult = authenticationManager.authenticate(
+                            serverUrl = account.serverUrl,
+                            username = account.username,
+                            password = password
+                        )
+                        
+                        if (!authResult.hasCalDAV() || authResult.calDavPrincipal == null) {
+                            _errorMessage.value = "CalDAV service not available on this server"
+                            return@withContext
+                        }
+                        
+                        val calendarHomeSet = authResult.calDavPrincipal.calendarHomeSet
+                        Timber.tag("AccountDetailViewModel").d("Discovered calendar-home-set: %s", calendarHomeSet)
+                        
+                        // Use discovered path (works with Radicale, Nextcloud, and other CalDAV servers)
+                        "${calendarHomeSet.trimEnd('/')}/$folderName/"
+                    } catch (e: Exception) {
+                        // Service discovery failed - fallback to using server URL directly
+                        Timber.tag("AccountDetailViewModel").w(e, "Service discovery failed, falling back to stored server URL")
+                        
+                        // Build URL using stored server URL (user already authenticated during account setup)
+                        // This assumes the stored serverUrl is already the CalDAV base (common for Radicale, Nextcloud)
+                        val normalizedUrl = account.serverUrl.trimEnd('/')
+                        
+                        // Try to discover principal directly from stored serverUrl
+                        try {
+                            val principalInfo = caldavPrincipalDiscovery.discoverPrincipal(
+                                baseUrl = normalizedUrl,
+                                username = account.username,
+                                password = password
+                            )
+                            "${principalInfo.calendarHomeSet.trimEnd('/')}/$folderName/"
+                        } catch (e2: Exception) {
+                            Timber.tag("AccountDetailViewModel").e(e2, "Principal discovery also failed")
+                            _errorMessage.value = "Failed to discover calendar path: ${e2.message}"
+                            return@withContext
+                        }
+                    }
                 }
 
                 if (!isDemoAccount) {
@@ -432,11 +486,18 @@ class AccountDetailViewModel @Inject constructor(
                     )
 
                     if (!response.isSuccessful) {
+                        val errorMsg = when (response.statusCode) {
+                            403 -> "Permission denied - Check server permissions"
+                            401 -> "Authentication failed - Check credentials"
+                            404 -> "Server path not found - Verify server URL"
+                            else -> "Failed to create calendar (HTTP ${response.statusCode})"
+                        }
                         Timber.tag("AccountDetailViewModel").e(
                             "Failed to create calendar on server: %s - %s",
                             response.statusCode,
                             response.error
                         )
+                        _errorMessage.value = errorMsg
                         return@withContext
                     }
 
@@ -451,7 +512,9 @@ class AccountDetailViewModel @Inject constructor(
                     accountId = accountId,
                     displayName = name,
                     calendarUrl = calendarUrl,
-                    color = color
+                    color = color,
+                    privWriteContent = true,  // User created = full write permission
+                    privUnbind = true         // User created = can delete
                 )
                 val newCalendarId = calendarRepository.insert(calendar)
 
@@ -546,7 +609,56 @@ class AccountDetailViewModel @Inject constructor(
                 val addressBookUrl = if (isDemoAccount) {
                     buildDemoAddressBookUrl(account.id, folderName)
                 } else {
-                    "${account.serverUrl.trimEnd('/')}/remote.php/dav/addressbooks/users/${account.username}/$folderName/"
+                    // Discover CardDAV endpoint and addressbook-home-set from server
+                    val password = credentialStore.getPassword(account.id) ?: return@withContext
+                    
+                    Timber.tag("AccountDetailViewModel").d("Discovering CardDAV service endpoint for: %s", account.serverUrl)
+                    
+                    try {
+                        // Full service discovery to get proper CardDAV endpoint URL
+                        val authResult = authenticationManager.authenticate(
+                            serverUrl = account.serverUrl,
+                            username = account.username,
+                            password = password
+                        )
+                        
+                        if (!authResult.hasCardDAV() || authResult.cardDavPrincipal == null) {
+                            _errorMessage.value = "CardDAV service not available on this server"
+                            return@withContext
+                        }
+                        
+                        val addressbookHomeSet = authResult.cardDavPrincipal.addressbookHomeSet
+                        Timber.tag("AccountDetailViewModel").d("Discovered addressbook-home-set: %s", addressbookHomeSet)
+                        
+                        // Use discovered path (works with Radicale, Nextcloud, and other CardDAV servers)
+                        "${addressbookHomeSet.trimEnd('/')}/$folderName/"
+                    } catch (e: Exception) {
+                        // Service discovery failed - fallback to using server URL directly
+                        Timber.tag("AccountDetailViewModel").w(e, "CardDAV discovery failed, falling back to stored server URL")
+                        
+                        // Try using CalDAV principal discovery as fallback (many servers share paths)
+                        val normalizedUrl = account.serverUrl.trimEnd('/')
+                        
+                        try {
+                            val principalInfo = caldavPrincipalDiscovery.discoverPrincipal(
+                                baseUrl = normalizedUrl,
+                                username = account.username,
+                                password = password
+                            )
+                            // Derive addressbook path from calendar path (common pattern)
+                            val calendarHomeSet = principalInfo.calendarHomeSet
+                            val addressBookBase = if (calendarHomeSet.contains("/calendars/")) {
+                                calendarHomeSet.replace("/calendars/", "/addressbooks/")
+                            } else {
+                                calendarHomeSet // Use same path as fallback
+                            }
+                            "${addressBookBase.trimEnd('/')}/$folderName/"
+                        } catch (e2: Exception) {
+                            Timber.tag("AccountDetailViewModel").e(e2, "Addressbook discovery also failed")
+                            _errorMessage.value = "Failed to discover addressbook path: ${e2.message}"
+                            return@withContext
+                        }
+                    }
                 }
 
                 if (!isDemoAccount) {
@@ -583,15 +695,23 @@ class AccountDetailViewModel @Inject constructor(
                         val response = client.newCall(request).execute()
 
                         if (!response.isSuccessful) {
+                            val errorMsg = when (response.code) {
+                                403 -> "Permission denied - Check server permissions"
+                                401 -> "Authentication failed - Check credentials"
+                                404 -> "Server path not found - Verify server URL"
+                                else -> "Failed to create address book (HTTP ${response.code})"
+                            }
                             Timber.tag("AccountDetailViewModel").e(
                                 "Failed to create address book on server: %s - %s",
                                 response.code,
                                 response.message
                             )
+                            _errorMessage.value = errorMsg
                             return@withContext
                         }
                     } catch (e: Exception) {
                         Timber.tag("AccountDetailViewModel").e(e, "Exception creating address book on server")
+                        _errorMessage.value = "Failed to create address book: ${e.message}"
                         return@withContext
                     }
                 } else {
@@ -605,7 +725,8 @@ class AccountDetailViewModel @Inject constructor(
                     displayName = name,
                     url = addressBookUrl,
                     syncEnabled = true,
-                    visible = true
+                    visible = true,
+                    privWriteContent = true  // User created = full write permission
                 )
                 val newId = addressBookRepository.insert(newAddressBook)
 
@@ -655,21 +776,19 @@ class AccountDetailViewModel @Inject constructor(
                     
                     // Delete from server (CardDAV) if URL is present and not a demo account
                     if (!isDemoAccount && addressBook.url.isNotBlank() && password != null) {
-                        try {
-                            val request = okhttp3.Request.Builder()
-                                .url(addressBook.url)
-                                .delete()
-                                .header("Authorization", okhttp3.Credentials.basic(account.username, password))
-                                .build()
-                            // short-lived client for this call
-                            val client = okhttp3.OkHttpClient()
-                            val response = client.newCall(request).execute()
-                            if (!response.isSuccessful && response.code !in listOf(204, 404, 410)) {
-                                Timber.tag("AccountDetailViewModel").w("Failed to delete address book on server: %s - %s", response.code, response.message)
-                            }
-                        } catch (e: Exception) {
-                            Timber.tag("AccountDetailViewModel").w(e, "Exception deleting address book on server")
-                            // Continue with local/provider deletion
+                        Timber.tag("AccountDetailViewModel").d("Deleting address book from server: %s", addressBook.url)
+                        
+                        val response = carddavClient.deleteAddressBook(
+                            addressBookUrl = addressBook.url,
+                            username = account.username,
+                            password = password
+                        )
+                        
+                        if (!response.isSuccessful) {
+                            Timber.tag("AccountDetailViewModel").e("Failed to delete address book from server: %s - %s", response.statusCode, response.error)
+                            // Continue with local deletion even if server deletion failed (might be 404/410)
+                        } else {
+                            Timber.tag("AccountDetailViewModel").d("Address book deleted from server successfully")
                         }
                     } else if (isDemoAccount) {
                         Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for address book: %s", addressBook.displayName)
@@ -711,19 +830,19 @@ class AccountDetailViewModel @Inject constructor(
                     try {
                         // Server deletion for non-demo accounts
                         if (!isDemoAccount && addressBook.url.isNotBlank() && password != null) {
-                            try {
-                                val request = okhttp3.Request.Builder()
-                                    .url(addressBook.url)
-                                    .delete()
-                                    .header("Authorization", okhttp3.Credentials.basic(account.username, password))
-                                    .build()
-                                val client = okhttp3.OkHttpClient()
-                                val response = client.newCall(request).execute()
-                                if (!response.isSuccessful && response.code !in listOf(204, 404, 410)) {
-                                    Timber.tag("AccountDetailViewModel").w("Failed to delete address book on server: %s - %s", response.code, response.message)
-                                }
-                            } catch (e: Exception) {
-                                Timber.tag("AccountDetailViewModel").w(e, "Exception deleting address book on server")
+                            Timber.tag("AccountDetailViewModel").d("Deleting address book from server: %s", addressBook.url)
+                            
+                            val response = carddavClient.deleteAddressBook(
+                                addressBookUrl = addressBook.url,
+                                username = account.username,
+                                password = password
+                            )
+                            
+                            if (!response.isSuccessful) {
+                                Timber.tag("AccountDetailViewModel").e("Failed to delete address book from server: %s - %s", response.statusCode, response.error)
+                                // Continue with local deletion even if server deletion failed
+                            } else {
+                                Timber.tag("AccountDetailViewModel").d("Address book deleted from server successfully")
                             }
                         } else if (isDemoAccount) {
                             Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for address book: %s", addressBook.displayName)
@@ -1249,19 +1368,31 @@ class AccountDetailViewModel @Inject constructor(
                     return@withContext
                 }
                 
-                // Construct proper CalDAV endpoint URL for Nextcloud
-                // The account serverUrl is like "https://ncl-test.it-baer.net"
-                // but CalDAV endpoint needs "/remote.php/dav"
-                val caldavBaseUrl = "${account.serverUrl.trimEnd('/')}/remote.php/dav"
-                
-                Timber.tag("AccountDetailViewModel").d("Using CalDAV base URL: %s", caldavBaseUrl)
-                
-                // Discover principal and calendar-home-set
-                val principalInfo = caldavPrincipalDiscovery.discoverPrincipal(
-                    baseUrl = caldavBaseUrl,
-                    username = account.username,
-                    password = password
-                )
+                // Discover principal and calendar-home-set using full service discovery
+                // Try full authenticate() first (works for fresh accounts), fallback to direct discovery for existing accounts
+                val principalInfo = try {
+                    Timber.tag("AccountDetailViewModel").d("Attempting full service discovery for refresh")
+                    val authResult = authenticationManager.authenticate(
+                        serverUrl = account.serverUrl,
+                        username = account.username,
+                        password = password
+                    )
+                    
+                    if (!authResult.hasCalDAV() || authResult.calDavPrincipal == null) {
+                        throw Exception("CalDAV service not available from authentication")
+                    }
+                    
+                    Timber.tag("AccountDetailViewModel").d("Full discovery succeeded, using calendarHomeSet: %s", authResult.calDavPrincipal.calendarHomeSet)
+                    authResult.calDavPrincipal
+                } catch (e: Exception) {
+                    // Fallback to direct principal discovery with stored serverUrl
+                    Timber.tag("AccountDetailViewModel").w(e, "Full discovery failed, falling back to direct principal discovery")
+                    caldavPrincipalDiscovery.discoverPrincipal(
+                        baseUrl = account.serverUrl.trimEnd('/'),
+                        username = account.username,
+                        password = password
+                    )
+                }
                 
                 Timber.tag("AccountDetailViewModel").d("Calendar home-set: %s", principalInfo.calendarHomeSet)
                 
@@ -1508,6 +1639,10 @@ class AccountDetailViewModel @Inject constructor(
         return withContext(Dispatchers.IO) {
             restoreBackupUseCase(backupJson, overwriteExisting)
         }
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 }
 

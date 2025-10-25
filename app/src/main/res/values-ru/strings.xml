@@ -60,6 +60,7 @@
     <!-- Collections -->
     <string name="collections">Коллекции</string>
     <string name="collections_title">DAVy - Коллекции</string>
+    <string name="calendar">Календарь</string>
     <string name="calendars">Календари</string>
     <string name="contacts">Контакты</string>
     <string name="tasks">Задачи</string>

@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">Verzamelingen</string>
     <string name="collections_title">DAVy - Verzamelingen</string>
+    <string name="calendar">Kalender</string>
     <string name="calendars">Kalenders</string>
     <string name="contacts">Contacten</string>
     <string name="tasks">Taken</string>

@@ -61,6 +61,7 @@
     <!-- Collections -->
     <string name="collections">Koleksiyonlar</string>
     <string name="collections_title">DAVy - Koleksiyonlar</string>
+    <string name="calendar">Takvim</string>
     <string name="calendars">Takvimler</string>
     <string name="contacts">Kişiler</string>
     <string name="tasks">Görevler</string>
