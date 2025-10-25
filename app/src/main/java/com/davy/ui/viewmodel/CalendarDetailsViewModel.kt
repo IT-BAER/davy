@@ -181,7 +181,7 @@ class CalendarDetailsViewModel @Inject constructor(
 
     /**
      * Delete a single calendar from both server and device.
-     * - Sends HTTP DELETE to CalDAV collection URL (if present)
+     * - Sends HTTP DELETE to CalDAV collection URL (if present and not demo account)
      * - Removes the calendar from Android Calendar Provider
      * - Deletes the calendar from local database
      */
@@ -200,13 +200,17 @@ class CalendarDetailsViewModel @Inject constructor(
                         Timber.e("Account not found for calendar: ${calendar.displayName}")
                         return@withContext
                     }
-                    val password = credentialStore.getPassword(account.id) ?: run {
-                        Timber.e("No password stored for account: ${account.accountName}")
-                        return@withContext
-                    }
+                    
+                    val isDemoAccount = account.serverUrl.equals("https://demo.local", ignoreCase = true)
+                    val password = if (!isDemoAccount) {
+                        credentialStore.getPassword(account.id) ?: run {
+                            Timber.e("No password stored for account: ${account.accountName}")
+                            return@withContext
+                        }
+                    } else null
 
-                    // Delete from server (CalDAV)
-                    if (calendar.calendarUrl.isNotBlank()) {
+                    // Delete from server (CalDAV) for non-demo accounts
+                    if (!isDemoAccount && calendar.calendarUrl.isNotBlank() && password != null) {
                         Timber.d("Deleting calendar on server: ${calendar.calendarUrl}")
                         val response = caldavClient.deleteCalendar(
                             calendarUrl = calendar.calendarUrl,
@@ -219,6 +223,8 @@ class CalendarDetailsViewModel @Inject constructor(
                         } else {
                             Timber.d("Calendar deleted on server successfully")
                         }
+                    } else if (isDemoAccount) {
+                        Timber.d("Demo account: skipping server deletion for calendar: ${calendar.displayName}")
                     }
 
                     // Delete from Android Calendar Provider

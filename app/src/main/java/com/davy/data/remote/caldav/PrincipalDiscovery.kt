@@ -598,11 +598,21 @@ class PrincipalDiscovery @Inject constructor(
                 val resolvedOwner = owner?.trim()?.takeIf { it.isNotEmpty() }?.let { resolveUrl(baseUrl, it) }
                 val resolvedSource = source?.trim()?.takeIf { it.isNotEmpty() }
                 
+                // For webcal subscriptions, if source is not provided but cs:subscribed is present,
+                // use the calendar URL itself as the source. This handles Nextcloud webcals that
+                // have cs:subscribed in resourcetype but don't populate cs:source immediately.
+                val finalSource = when {
+                    !resolvedSource.isNullOrBlank() -> resolvedSource
+                    isSubscribed -> calendarUrl  // Use calendar URL as source for subscribed calendars without explicit source
+                    else -> null
+                }
+                
                 // Log calendar discovery for debugging shared calendars and webcal subscriptions
                 Timber.tag("PrincipalDiscovery").d("Discovered calendar: %s", calendarUrl)
                 Timber.tag("PrincipalDiscovery").d("  - Display name: %s", displayName)
                 Timber.tag("PrincipalDiscovery").d("  - Owner: %s", resolvedOwner)
-                Timber.tag("PrincipalDiscovery").d("  - Source: %s", resolvedSource)
+                Timber.tag("PrincipalDiscovery").d("  - Source: %s", finalSource)
+                Timber.tag("PrincipalDiscovery").d("  - Is subscribed: %s", isSubscribed)
                 Timber.tag("PrincipalDiscovery").d("  - VEVENT: %s, VTODO: %s", supportsVEVENT, supportsVTODO)
                 Timber.tag("PrincipalDiscovery").d("  - Write privilege: %s", privWriteContent)
                 Timber.tag("PrincipalDiscovery").d("  - Unbind privilege: %s", privUnbind)
@@ -615,7 +625,7 @@ class PrincipalDiscovery @Inject constructor(
                         description = description?.trim()?.takeIf { it.isNotEmpty() },
                         color = color?.trim()?.takeIf { it.isNotEmpty() },
                         owner = resolvedOwner,
-                        source = resolvedSource,
+                        source = finalSource,
                         supportsVEVENT = supportsVEVENT,
                         supportsVTODO = supportsVTODO,
                         supportsVJOURNAL = supportsVJOURNAL,

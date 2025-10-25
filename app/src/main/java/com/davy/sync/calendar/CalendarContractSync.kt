@@ -385,6 +385,10 @@ class CalendarContractSync @Inject constructor(
                 put(CalendarContract.Calendars.OWNER_ACCOUNT, accountName)
                 put(CalendarContract.Calendars.VISIBLE, if (calendar.visible) 1 else 0)
                 put(CalendarContract.Calendars.SYNC_EVENTS, if (calendar.syncEnabled) 1 else 0)
+                
+                // Set calendar display property for newly created calendars
+                // CALENDAR_DISPLAY_NAME already set, VISIBLE controls display in app
+                
                 put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, calendar.timezone ?: "UTC")
             }
             
@@ -422,6 +426,9 @@ class CalendarContractSync @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Exception ensuring calendar exists")
             return null
+        } finally {
+            // Notify Calendar Provider that calendars have changed
+            context.contentResolver.notifyChange(CalendarContract.Calendars.CONTENT_URI, null, false)
         }
     }
     

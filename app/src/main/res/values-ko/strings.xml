@@ -192,4 +192,19 @@
     <plurals name="number_of_tasks">
         <item quantity="other">%d개의 작업</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">로그인 방법 선택</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Nextcloud 서버로 로그인</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Google 캘린더 및 연락처와 동기화</string>
+    <string name="other_server">다른 서버</string>
+    <string name="other_server_description">CalDAV/CardDAV 서버 구성</string>
+    <string name="nextcloud_server_url">Nextcloud 서버 URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Nextcloud로 로그인</string>
+    <string name="google_coming_soon">Google 캘린더 및 연락처 통합이 곧 제공됩니다!</string>
+    <string name="connecting">연결 중...</string>
 </resources>

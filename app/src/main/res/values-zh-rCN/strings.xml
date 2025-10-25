@@ -192,4 +192,19 @@
     <plurals name="number_of_tasks">
         <item quantity="other">%d 个任务</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">选择登录方式</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">使用您的 Nextcloud 服务器登录</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">与 Google 日历和联系人同步</string>
+    <string name="other_server">其他服务器</string>
+    <string name="other_server_description">CalDAV/CardDAV 服务器配置</string>
+    <string name="nextcloud_server_url">Nextcloud 服务器 URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">使用 Nextcloud 登录</string>
+    <string name="google_coming_soon">Google 日历和联系人集成即将推出！</string>
+    <string name="connecting">正在连接...</string>
 </resources>

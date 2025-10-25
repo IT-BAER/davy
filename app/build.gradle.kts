@@ -41,6 +41,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
+        // AppAuth redirect scheme for OAuth flows
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.davy"
+        
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -205,6 +208,10 @@ dependencies {
 
     // Security
     implementation(libs.androidx.security.crypto)
+
+    // OAuth
+    implementation(libs.appauth)
+    implementation(libs.androidx.browser)
 
     // Logging
     implementation(libs.timber)

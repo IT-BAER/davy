@@ -198,4 +198,19 @@
         <item quantity="one">1 zadanie</item>
         <item quantity="other">%d zadań</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">Wybierz metodę logowania</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Zaloguj się na serwer Nextcloud</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Synchronizuj z Kalendarzem Google i Kontaktami</string>
+    <string name="other_server">Inny serwer</string>
+    <string name="other_server_description">Konfiguracja serwera CalDAV/CardDAV</string>
+    <string name="nextcloud_server_url">URL serwera Nextcloud</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Zaloguj się przez Nextcloud</string>
+    <string name="google_coming_soon">Integracja z Kalendarzem Google i Kontaktami wkrótce!</string>
+    <string name="connecting">Łączenie...</string>
 </resources>

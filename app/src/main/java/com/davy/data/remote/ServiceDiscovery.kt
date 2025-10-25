@@ -45,15 +45,56 @@ class ServiceDiscovery @Inject constructor(
         private const val NS_CARDDAV = "urn:ietf:params:xml:ns:carddav"
 
         // Additional common DAV paths for broader compatibility
+        // Based on common implementations: Nextcloud, ownCloud, Radicale, Baikal, 
+        // SabreDAV, SOGo, Kerio, DAViCal, etc.
         private val COMMON_DAV_PATHS = listOf(
-            "dav.php",
-            "caldav.php",
-            "carddav.php",
+            // Generic DAV paths
             "dav",
+            "dav.php",
+            "server.php/dav",          // Alternative Nextcloud/ownCloud path
+            
+            // CalDAV-specific paths
             "caldav",
+            "caldav.php",
+            "cal.php/calendars",       // Baikal CalDAV
+            "calendars",
+            "calendar",
+            "calendar.php",
+            
+            // CardDAV-specific paths
             "carddav",
+            "carddav.php",
+            "card.php/addressbooks",   // Baikal CardDAV
+            "addressbooks",
+            "addressbook",
+            "contacts",
+            "card.php",
+            
+            // Radicale paths
+            "radicale",
+            "radicale.py",
+            
+            // SOGo paths
+            "SOGo/dav",
+            
+            // DAViCal paths
+            "davical/caldav.php",
+            "caldav.php/principals",
+            
+            // Kerio paths
+            "dav/Calendar",
+            "dav/Contacts",
+            
+            // SabreDAV paths
+            "server.php",
+            "calendarserver.php",
+            "addressbookserver.php",
+            
+            // Other common paths
             "principals",
-            "addressbooks"
+            "dav/principals",
+            ".well-known/caldav",      // Explicit fallback
+            ".well-known/carddav"      // Explicit fallback
         )
     }
 
@@ -120,17 +161,9 @@ class ServiceDiscovery @Inject constructor(
         }
         
         // Validate discovered endpoints with PROPFIND
-        // Skip strict validation for Nextcloud/ownCloud base paths since they're already verified
-        val validatedCalDav = if (isNextcloudPath) {
-            calDavUrl
-        } else {
-            calDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = true) }
-        }
-        val validatedCardDav = if (isNextcloudPath) {
-            cardDavUrl
-        } else {
-            cardDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = false) }
-        }
+        // Always validate to ensure it's actually a DAV server, not just any HTTP endpoint
+        val validatedCalDav = calDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = true) }
+        val validatedCardDav = cardDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = false) }
         
         if (validatedCalDav == null && validatedCardDav == null) {
             throw ServiceDiscoveryException("No CalDAV or CardDAV services found at $serverUrl")
@@ -210,9 +243,19 @@ class ServiceDiscovery @Inject constructor(
         return@withContext try {
             Timber.d("Checking if %s is Nextcloud/ownCloud", davUrl)
             
+            val propfindBody = """
+                <?xml version="1.0" encoding="utf-8" ?>
+                <d:propfind xmlns:d="DAV:">
+                    <d:prop>
+                        <d:resourcetype />
+                        <d:current-user-principal />
+                    </d:prop>
+                </d:propfind>
+            """.trimIndent()
+            
             val request = Request.Builder()
                 .url(davUrl)
-                .method(PROPFIND_METHOD, "".toRequestBody(CONTENT_TYPE_XML.toMediaType()))
+                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
                 .header("Authorization", createBasicAuthHeader(username, password))
                 .header(DEPTH_HEADER, "0")
                 .build()
@@ -222,15 +265,41 @@ class ServiceDiscovery @Inject constructor(
             
             Timber.d("Nextcloud check for %s returned code: %s", davUrl, responseCode)
             
-            // Nextcloud/ownCloud returns 207 Multi-Status for successful PROPFIND
-            // Also accept 200 OK (some servers)
-            // Accept 401 Unauthorized (endpoint exists and requires auth - this is good!)
-            // Accept 403 Forbidden (endpoint exists but might need different path)
-            // Accept 405 Method Not Allowed (endpoint exists but PROPFIND not allowed at root)
-            // Accept 429 Too Many Requests (endpoint exists but rate-limited)
+            // For Nextcloud/ownCloud, we require either:
+            // - 207 Multi-Status with valid XML response (actual DAV server)
+            // - 401 Unauthorized (server exists but needs auth - we'll validate later)
             when (responseCode) {
-                207, 200, 401, 403, 405, 429 -> {
-                    Timber.d("Endpoint confirmed at %s with code %s", davUrl, responseCode)
+                207 -> {
+                    // Validate it's actually a DAV response with multistatus
+                    val responseBody = response.body?.string()
+                    if (responseBody != null) {
+                        try {
+                            val factory = DocumentBuilderFactory.newInstance()
+                            factory.isNamespaceAware = true
+                            val builder = factory.newDocumentBuilder()
+                            val document: Document = builder.parse(org.xml.sax.InputSource(StringReader(responseBody)))
+                            val xpath = XPathFactory.newInstance().newXPath()
+                            val multistatus = xpath.evaluate("//*[local-name()='multistatus']", document, XPathConstants.NODE)
+                            
+                            if (multistatus != null) {
+                                Timber.d("Valid DAV multistatus response from %s", davUrl)
+                                true
+                            } else {
+                                Timber.w("Response code 207 but no multistatus element at %s", davUrl)
+                                false
+                            }
+                        } catch (e: Exception) {
+                            Timber.w(e, "Failed to parse 207 response from %s", davUrl)
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                }
+                401 -> {
+                    // 401 means endpoint exists and requires auth (which we provided, so it's validating)
+                    // This is acceptable as we'll do full validation later
+                    Timber.d("Endpoint exists but requires auth at %s", davUrl)
                     true
                 }
                 else -> {
@@ -246,8 +315,8 @@ class ServiceDiscovery @Inject constructor(
     }
 
     /**
-     * Generic DAV endpoint probe using PROPFIND. Accepts a broad set of response codes that
-     * indicate a DAV resource exists (even if authentication is required at this stage).
+     * Generic DAV endpoint probe using PROPFIND. Stricter validation to avoid false positives.
+     * Only accepts 207 Multi-Status or 401 Unauthorized as valid DAV indicators.
      */
     private suspend fun probeDavEndpoint(
         davUrl: String,
@@ -255,9 +324,18 @@ class ServiceDiscovery @Inject constructor(
         password: String
     ): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
+            val propfindBody = """
+                <?xml version="1.0" encoding="utf-8" ?>
+                <d:propfind xmlns:d="DAV:">
+                    <d:prop>
+                        <d:resourcetype />
+                    </d:prop>
+                </d:propfind>
+            """.trimIndent()
+            
             val request = Request.Builder()
                 .url(davUrl)
-                .method(PROPFIND_METHOD, "".toRequestBody(CONTENT_TYPE_XML.toMediaType()))
+                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
                 .header("Authorization", createBasicAuthHeader(username, password))
                 .header(DEPTH_HEADER, "0")
                 .build()
@@ -266,8 +344,29 @@ class ServiceDiscovery @Inject constructor(
             val responseCode = response.code
 
             when (responseCode) {
-                // 207 Multi-Status is the usual WebDAV success; also accept a few others that indicate the endpoint exists
-                207, 200, 401, 403, 405, 429 -> true
+                // 207 Multi-Status is the standard WebDAV success response
+                207 -> {
+                    // Validate it's actually a DAV response
+                    val responseBody = response.body?.string()
+                    if (responseBody != null) {
+                        try {
+                            val factory = DocumentBuilderFactory.newInstance()
+                            factory.isNamespaceAware = true
+                            val builder = factory.newDocumentBuilder()
+                            val document: Document = builder.parse(org.xml.sax.InputSource(StringReader(responseBody)))
+                            val xpath = XPathFactory.newInstance().newXPath()
+                            val multistatus = xpath.evaluate("//*[local-name()='multistatus']", document, XPathConstants.NODE)
+                            multistatus != null
+                        } catch (e: Exception) {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                }
+                // 401 means endpoint exists and requires auth (acceptable)
+                401 -> true
+                // All other codes rejected (including 403, 405, 429 which could be non-DAV servers)
                 else -> false
             }
         } catch (e: Exception) {
@@ -306,17 +405,23 @@ class ServiceDiscovery @Inject constructor(
             
             val response = httpClient.newCall(request).execute()
             
-            if (response.isSuccessful) {
+            // Only accept 207 Multi-Status as valid DAV response
+            // This ensures we're actually talking to a DAV server
+            if (response.code == 207) {
                 val responseBody = response.body?.string()
                 if (responseBody != null && validatePropfindResponse(responseBody, isCalDAV)) {
+                    Timber.d("Validated %s endpoint at: %s", if (isCalDAV) "CalDAV" else "CardDAV", endpointUrl)
                     endpointUrl
                 } else {
+                    Timber.w("Invalid DAV response from %s - missing required properties", endpointUrl)
                     null
                 }
             } else {
+                Timber.w("Non-DAV response code %d from %s", response.code, endpointUrl)
                 null
             }
         } catch (e: Exception) {
+            Timber.w(e, "Failed to validate endpoint: %s", endpointUrl)
             null
         }
     }

@@ -45,6 +45,10 @@ ezVcard = "0.11.3"
 # Security
 securityCrypto = "1.1.0"
 
+# OAuth
+appAuth = "0.11.1"
+browserCustomTabs = "1.8.0"
+
 # Testing
 junit = "5.10.2"
 junitVintage = "5.10.2"
@@ -127,6 +131,10 @@ ez-vcard = { module = "com.googlecode.ez-vcard:ez-vcard", version.ref = "ezVcard
 
 # Security
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+
+# OAuth
+appauth = { module = "net.openid:appauth", version.ref = "appAuth" }
+androidx-browser = { module = "androidx.browser:browser", version.ref = "browserCustomTabs" }
 
 # Logging
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }

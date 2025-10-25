@@ -122,10 +122,13 @@ class AddressBookDetailsViewModel @Inject constructor(
                 }
 
                 val account = accountRepository.getById(addressBook.accountId)
-                val password = account?.id?.let { credentialStore.getPassword(it) }
+                val isDemoAccount = account?.serverUrl?.equals("https://demo.local", ignoreCase = true) == true
+                val password = if (account != null && !isDemoAccount) {
+                    credentialStore.getPassword(account.id)
+                } else null
 
-                // Try server deletion first (best-effort)
-                if (account != null && addressBook.url.isNotBlank() && password != null) {
+                // Try server deletion first (best-effort) for non-demo accounts
+                if (account != null && !isDemoAccount && addressBook.url.isNotBlank() && password != null) {
                     try {
                         val request = okhttp3.Request.Builder()
                             .url(addressBook.url)
@@ -140,6 +143,8 @@ class AddressBookDetailsViewModel @Inject constructor(
                     } catch (e: Exception) {
                         Timber.w(e, "Exception deleting address book on server (continuing with local removal)")
                     }
+                } else if (isDemoAccount) {
+                    Timber.d("Demo account: skipping server deletion for address book: ${addressBook.displayName}")
                 }
 
                 // Remove the Android address book account (provider cleanup)

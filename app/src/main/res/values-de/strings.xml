@@ -452,6 +452,18 @@
     <string name="delete_address_book_warning">Dadurch wird das Adressbuch sowohl vom Server als auch von deinem Gerät gelöscht. Alle Kontakte in diesem Adressbuch werden dauerhaft entfernt.</string>
     
     <!-- Konto hinzufügen (neu) -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">Wähle Anmeldemethode</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Anmelden mit deinem Nextcloud-Server</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Synchronisieren mit Google Kalender &amp; Kontakten</string>
+    <string name="other_server">Anderer Server</string>
+    <string name="other_server_description">CalDAV/CardDAV-Server-Konfiguration</string>
+    <string name="nextcloud_server_url">Nextcloud-Server-URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Mit Nextcloud anmelden</string>
+    <string name="google_coming_soon">Google Kalender &amp; Kontakte Integration kommt bald!</string>
     <string name="protocol_label">Protokoll</string>
     <string name="account_name_placeholder">Mein Kalender</string>
     <string name="server_url_placeholder">nextcloud.example.com</string>

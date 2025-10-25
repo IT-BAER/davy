@@ -192,4 +192,19 @@
     <plurals name="number_of_tasks">
         <item quantity="other">%d 件のタスク</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">ログイン方法を選択</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Nextcloud サーバーでログイン</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Google カレンダーと連絡先と同期</string>
+    <string name="other_server">その他のサーバー</string>
+    <string name="other_server_description">CalDAV/CardDAV サーバー設定</string>
+    <string name="nextcloud_server_url">Nextcloud サーバー URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Nextcloud でログイン</string>
+    <string name="google_coming_soon">Google カレンダーと連絡先の統合は近日公開予定です!</string>
+    <string name="connecting">接続中...</string>
 </resources>

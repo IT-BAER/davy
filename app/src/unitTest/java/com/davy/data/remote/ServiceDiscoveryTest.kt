@@ -55,12 +55,22 @@ class ServiceDiscoveryTest {
   }
 
   @Test
-  fun `nextcloud owncloud path accepted when PROPFIND returns 401`() = runBlocking {
+  fun `nextcloud owncloud path accepted when PROPFIND returns 401 then validated`() = runBlocking {
     server.dispatcher = object : Dispatcher() {
       override fun dispatch(request: RecordedRequest): MockResponse {
         return when (request.path) {
           "/.well-known/caldav", "/.well-known/carddav" -> MockResponse().setResponseCode(404)
-          "/remote.php/dav" -> MockResponse().setResponseCode(401)
+          "/remote.php/dav" -> {
+            // First call checks if it's Nextcloud/ownCloud (returns 401)
+            // Subsequent calls are validation PROPFIND (return 207 with proper DAV response)
+            if (request.getHeader("Depth") == "0" && request.body.readUtf8().contains("resourcetype")) {
+              MockResponse()
+                .setResponseCode(207)
+                .setBody(multistatusWithHomeSets())
+            } else {
+              MockResponse().setResponseCode(401)
+            }
+          }
           else -> MockResponse().setResponseCode(404)
         }
       }
@@ -165,6 +175,55 @@ class ServiceDiscoveryTest {
     assertThat(result.hasAnyService()).isTrue()
     assertThat(result.calDavUrl).isEqualTo("$baseUrl/carddav.php")
     assertThat(result.cardDavUrl).isEqualTo("$baseUrl/carddav.php")
+  }
+
+  @Test
+  fun `non-DAV server returning 403 or 405 is rejected`() = runBlocking {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        return when (request.path) {
+          "/.well-known/caldav", "/.well-known/carddav" -> MockResponse().setResponseCode(404)
+          "/remote.php/dav" -> MockResponse().setResponseCode(403) // Non-DAV server returning 403
+          "/dav", "/caldav.php", "/carddav.php" -> MockResponse().setResponseCode(405) // Non-DAV returning 405
+          else -> MockResponse().setResponseCode(404)
+        }
+      }
+    }
+
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+    
+    try {
+      discovery.discoverServices(baseUrl, "user", "pass")
+      assert(false) { "Expected ServiceDiscoveryException to be thrown" }
+    } catch (e: ServiceDiscoveryException) {
+      // Expected - non-DAV servers should be rejected
+      assertThat(e.message).contains("No CalDAV or CardDAV services found")
+    }
+  }
+
+  @Test
+  fun `server returning non-DAV XML in 207 response is rejected`() = runBlocking {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse {
+        return when (request.path) {
+          "/.well-known/caldav", "/.well-known/carddav" -> MockResponse().setResponseCode(404)
+          "/remote.php/dav" -> MockResponse()
+            .setResponseCode(207)
+            .setBody("""<?xml version="1.0"?><notDAV><someOtherElement/></notDAV>""")
+          else -> MockResponse().setResponseCode(404)
+        }
+      }
+    }
+
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+    
+    try {
+      discovery.discoverServices(baseUrl, "user", "pass")
+      assert(false) { "Expected ServiceDiscoveryException to be thrown" }
+    } catch (e: ServiceDiscoveryException) {
+      // Expected - non-DAV XML should be rejected
+      assertThat(e.message).contains("No CalDAV or CardDAV services found")
+    }
   }
 
     private fun multistatusWithHomeSets(): String = """

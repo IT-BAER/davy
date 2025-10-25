@@ -198,4 +198,19 @@
         <item quantity="one">1 कार्य</item>
         <item quantity="other">%d कार्य</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">लॉगिन विधि चुनें</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">अपने Nextcloud सर्वर से लॉगिन करें</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Google कैलेंडर और संपर्क के साथ सिंक करें</string>
+    <string name="other_server">अन्य सर्वर</string>
+    <string name="other_server_description">CalDAV/CardDAV सर्वर कॉन्फ़िगरेशन</string>
+    <string name="nextcloud_server_url">Nextcloud सर्वर URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Nextcloud से लॉगिन करें</string>
+    <string name="google_coming_soon">Google कैलेंडर और संपर्क एकीकरण जल्द ही आ रहा है!</string>
+    <string name="connecting">कनेक्ट हो रहा है...</string>
 </resources>

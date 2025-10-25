@@ -192,4 +192,19 @@
     <plurals name="number_of_tasks">
         <item quantity="other">%d tugas</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">Pilih metode masuk</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Masuk dengan server Nextcloud Anda</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Sinkronkan dengan Google Calendar dan Kontak</string>
+    <string name="other_server">Server lain</string>
+    <string name="other_server_description">Konfigurasi server CalDAV/CardDAV</string>
+    <string name="nextcloud_server_url">URL server Nextcloud</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Masuk dengan Nextcloud</string>
+    <string name="google_coming_soon">Integrasi Google Calendar dan Kontak segera hadir!</string>
+    <string name="connecting">Menghubungkan...</string>
 </resources>

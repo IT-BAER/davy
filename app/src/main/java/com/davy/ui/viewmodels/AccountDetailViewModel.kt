@@ -356,7 +356,9 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id)
+                val isDemoAccount = account.isDemoAccount()
+                val password = if (!isDemoAccount) credentialStore.getPassword(account.id) else null
+                
                 calendarIds.forEach { id ->
                     val calendar = _calendars.value.find { it.id == id } ?: return@forEach
                     // Guard: do not delete calendars that cannot be deleted (read-only or unbind not permitted)
@@ -365,8 +367,8 @@ class AccountDetailViewModel @Inject constructor(
                         return@forEach
                     }
                     try {
-                        // Server deletion if URL present
-                        if (calendar.calendarUrl.isNotBlank() && password != null) {
+                        // Server deletion if URL present and not a demo account
+                        if (!isDemoAccount && calendar.calendarUrl.isNotBlank() && password != null) {
                             Timber.tag("AccountDetailViewModel").d("Deleting calendar from server: %s", calendar.calendarUrl)
                             val response = caldavClient.deleteCalendar(
                                 calendarUrl = calendar.calendarUrl,
@@ -376,6 +378,8 @@ class AccountDetailViewModel @Inject constructor(
                             if (!response.isSuccessful) {
                                 Timber.tag("AccountDetailViewModel").w("Failed to delete calendar from server: %s - %s", response.statusCode, response.error)
                             }
+                        } else if (isDemoAccount) {
+                            Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for calendar: %s", calendar.displayName)
                         }
 
                         // Provider deletion
@@ -479,15 +483,17 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id) ?: return@withContext
+                val isDemoAccount = account.isDemoAccount()
+                val password = if (!isDemoAccount) credentialStore.getPassword(account.id) else null
+                
                 // Guard: prevent deleting calendars that cannot be deleted
                 if (!calendar.canDelete()) {
                     Timber.tag("AccountDetailViewModel").w("Attempted to delete non-deletable calendar: %s", calendar.displayName)
                     return@withContext
                 }
                 
-                // Skip server deletion if calendar has no URL (was never created on server)
-                if (calendar.calendarUrl.isNotBlank()) {
+                // Skip server deletion for demo accounts or if calendar has no URL
+                if (!isDemoAccount && calendar.calendarUrl.isNotBlank() && password != null) {
                     Timber.tag("AccountDetailViewModel").d("Deleting calendar from server: %s", calendar.calendarUrl)
                     
                     // Delete from server first
@@ -503,6 +509,8 @@ class AccountDetailViewModel @Inject constructor(
                     } else {
                         Timber.tag("AccountDetailViewModel").d("Calendar deleted from server successfully")
                     }
+                } else if (isDemoAccount) {
+                    Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for calendar: %s", calendar.displayName)
                 }
                 
                 // Delete from Android Calendar Provider (system Calendar app)
@@ -627,7 +635,7 @@ class AccountDetailViewModel @Inject constructor(
 
     /**
      * Delete a single address book from both server and device.
-     * - Sends HTTP DELETE to CardDAV collection URL (if present)
+     * - Sends HTTP DELETE to CardDAV collection URL (if present and not demo account)
      * - Removes the per-address-book Android account (provider cleanup)
      * - Deletes the address book from local database
      */
@@ -635,15 +643,18 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id)
+                val isDemoAccount = account.isDemoAccount()
+                val password = if (!isDemoAccount) credentialStore.getPassword(account.id) else null
+                
                 try {
                     // Guard: prevent deleting read-only address books
                     if (addressBook.isReadOnly()) {
                         Timber.tag("AccountDetailViewModel").w("Attempted to delete read-only address book: %s", addressBook.displayName)
                         return@withContext
                     }
-                    // Delete from server (CardDAV) if URL is present
-                    if (addressBook.url.isNotBlank() && password != null) {
+                    
+                    // Delete from server (CardDAV) if URL is present and not a demo account
+                    if (!isDemoAccount && addressBook.url.isNotBlank() && password != null) {
                         try {
                             val request = okhttp3.Request.Builder()
                                 .url(addressBook.url)
@@ -660,6 +671,8 @@ class AccountDetailViewModel @Inject constructor(
                             Timber.tag("AccountDetailViewModel").w(e, "Exception deleting address book on server")
                             // Continue with local/provider deletion
                         }
+                    } else if (isDemoAccount) {
+                        Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for address book: %s", addressBook.displayName)
                     }
 
                     // Remove the Android address book account (also cleans provider data)
@@ -685,7 +698,9 @@ class AccountDetailViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val account = _account.value ?: return@withContext
-                val password = credentialStore.getPassword(account.id)
+                val isDemoAccount = account.isDemoAccount()
+                val password = if (!isDemoAccount) credentialStore.getPassword(account.id) else null
+                
                 addressBookIds.forEach { id ->
                     val addressBook = _addressBooks.value.find { it.id == id } ?: return@forEach
                     // Guard: skip read-only address books
@@ -694,8 +709,8 @@ class AccountDetailViewModel @Inject constructor(
                         return@forEach
                     }
                     try {
-                        // Server deletion
-                        if (addressBook.url.isNotBlank() && password != null) {
+                        // Server deletion for non-demo accounts
+                        if (!isDemoAccount && addressBook.url.isNotBlank() && password != null) {
                             try {
                                 val request = okhttp3.Request.Builder()
                                     .url(addressBook.url)
@@ -710,6 +725,8 @@ class AccountDetailViewModel @Inject constructor(
                             } catch (e: Exception) {
                                 Timber.tag("AccountDetailViewModel").w(e, "Exception deleting address book on server")
                             }
+                        } else if (isDemoAccount) {
+                            Timber.tag("AccountDetailViewModel").d("Demo account: skipping server deletion for address book: %s", addressBook.displayName)
                         }
 
                         // Provider/account deletion

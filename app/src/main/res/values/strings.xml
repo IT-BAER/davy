@@ -47,7 +47,16 @@
     <string name="server_url">Server URL</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="password_placeholder">••••••••</string>
     <string name="account_color">Account Color</string>
+    
+    <!-- Server URL Guidance -->
+    <string name="server_url_guidance_title">Server URL Tips</string>
+    <string name="server_url_guidance_autodiscovery">We will try to automatically discover your DAV endpoints. Just enter your server address (e.g., "nextcloud.example.com").</string>
+    <string name="server_url_guidance_manual">If autodiscovery fails, provide the full DAV path:</string>
+    <string name="server_url_example_nextcloud">• Nextcloud/ownCloud: example.com/remote.php/dav</string>
+    <string name="server_url_example_baikal">• Baikal: example.com/dav.php</string>
+    <string name="server_url_example_radicale">• Radicale: example.com:5232/user</string>
     
     <!-- Sync -->
     <string name="syncing">Syncing…</string>
@@ -381,6 +390,7 @@
     <string name="enter_certificate_alias">Enter certificate alias</string>
     <string name="no_certificate_selected">No certificate selected</string>
     <string name="install_certificate">Install Certificate</string>
+    <string name="optional_tap_to_select">Optional (tap to select)</string>
     <string name="done">Done</string>
 
     <!-- Backup/Restore descriptions (new) -->
@@ -452,6 +462,17 @@
     <string name="delete_address_book_warning">This will delete the address book from both the server and your device. All contacts in this address book will be permanently removed.</string>
     
     <!-- Add Account Screen (new) -->
+    <string name="choose_login_method">Choose login method</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">Login with your Nextcloud server</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Sync with Google Calendar &amp; Contacts</string>
+    <string name="other_server">Other Server</string>
+    <string name="other_server_description">CalDAV/CardDAV server configuration</string>
+    <string name="nextcloud_server_url">Nextcloud server URL</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">Login with Nextcloud</string>
+    <string name="google_coming_soon">Google Calendar &amp; Contacts integration is coming soon!</string>
     <string name="protocol_label">Protocol</string>
     <string name="account_name_placeholder">My Calendar</string>
     <string name="server_url_placeholder">nextcloud.example.com</string>

@@ -207,4 +207,19 @@
         <item quantity="many">%d مهمة</item>
         <item quantity="other">%d مهمة</item>
     </plurals>
+    
+    <!-- Add Account Screen -->
+    <string name="password_placeholder">••••••••</string>
+    <string name="choose_login_method">اختر طريقة تسجيل الدخول</string>
+    <string name="nextcloud">Nextcloud</string>
+    <string name="nextcloud_login_description">تسجيل الدخول باستخدام خادم Nextcloud الخاص بك</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">المزامنة مع تقويم Google وجهات الاتصال</string>
+    <string name="other_server">خادم آخر</string>
+    <string name="other_server_description">تكوين خادم CalDAV/CardDAV</string>
+    <string name="nextcloud_server_url">عنوان URL لخادم Nextcloud</string>
+    <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="login_with_nextcloud">تسجيل الدخول باستخدام Nextcloud</string>
+    <string name="google_coming_soon">تكامل تقويم Google وجهات الاتصال قادم قريباً!</string>
+    <string name="connecting">جارٍ الاتصال...</string>
 </resources>

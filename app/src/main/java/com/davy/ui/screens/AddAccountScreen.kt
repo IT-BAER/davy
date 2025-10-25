@@ -1,6 +1,8 @@
 package com.davy.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -8,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +28,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalAutofill
 import androidx.compose.ui.platform.LocalAutofillTree
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,12 +40,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.browser.customtabs.CustomTabsIntent
+import android.net.Uri
 import com.davy.R
+import android.app.Activity
 import android.content.Context
+import android.security.KeyChain
 import com.davy.data.remote.AuthenticationManager
 import com.davy.data.remote.AuthenticationResult
 import com.davy.data.remote.caldav.PrincipalDiscovery as CalDAVPrincipalDiscovery
 import com.davy.data.remote.carddav.PrincipalDiscovery as CardDAVPrincipalDiscovery
+import com.davy.data.remote.oauth.NextcloudLoginFlowV2
+import com.davy.data.remote.oauth.LoginFlowInitiation
 import com.davy.data.repository.AccountRepository
 import com.davy.data.repository.AddressBookRepository
 import com.davy.data.repository.CalendarRepository
@@ -60,6 +74,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -75,9 +90,70 @@ fun AddAccountScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showCertificateDialog by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Track when Custom Tab was opened for Nextcloud login
+    var nextcloudLoginStartTime by remember { mutableStateOf<Long?>(null) }
+    
+    // Cancel Nextcloud login polling when screen is disposed or user navigates away
+    DisposableEffect(Unit) {
+        onDispose {
+            if (uiState.isNextcloudLogin) {
+                viewModel.cancelNextcloudLogin()
+            }
+        }
+    }
+    
+    // Detect when user returns to app from Custom Tab without completing login
+    DisposableEffect(lifecycleOwner, uiState.isNextcloudLogin) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    // If Nextcloud login is in progress and user returned to app
+                    if (uiState.isNextcloudLogin && nextcloudLoginStartTime != null) {
+                        val timeSinceStart = System.currentTimeMillis() - nextcloudLoginStartTime!!
+                        // Wait a bit to give polling a chance to complete
+                        // If more than 3 seconds have passed since opening, check if still pending
+                        if (timeSinceStart > 3000) {
+                            scope.launch {
+                                // Give polling 2 more seconds to complete after user returns
+                                kotlinx.coroutines.delay(2000)
+                                // If still in Nextcloud login state, user likely didn't complete it
+                                if (uiState.isNextcloudLogin) {
+                                    Timber.d("Login flow still pending after user return, cancelling...")
+                                    viewModel.cancelNextcloudLogin()
+                                    nextcloudLoginStartTime = null
+                                    snackbarHostState.showSnackbar(
+                                        "Login cancelled",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Lifecycle.Event.ON_PAUSE -> {
+                    // Track when Custom Tab was opened
+                    if (uiState.isNextcloudLogin && nextcloudLoginStartTime == null) {
+                        nextcloudLoginStartTime = System.currentTimeMillis()
+                    }
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.add_account)) },
@@ -96,116 +172,585 @@ fun AddAccountScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Account type info
-            Card(
+            // Login method selection with animated expanding forms
+            Text(
+                text = stringResource(R.string.choose_login_method),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            // Nextcloud button
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.caldav_carddav_account_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                onClick = { 
+                    viewModel.onLoginMethodSelected(
+                        if (uiState.loginMethod == LoginMethod.NEXTCLOUD) null 
+                        else LoginMethod.NEXTCLOUD
                     )
-                    Text(
-                        text = stringResource(id = R.string.caldav_carddav_account_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(top = 4.dp)
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Cloud,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = Color(0xFF0082C9) // Nextcloud blue
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.nextcloud),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.nextcloud_login_description),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = if (uiState.loginMethod == LoginMethod.NEXTCLOUD) 
+                            Icons.Default.ExpandLess 
+                        else 
+                            Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
             
-            // Account name
-            OutlinedTextField(
-                value = uiState.accountName,
-                onValueChange = viewModel::onAccountNameChanged,
-                label = { Text(stringResource(id = R.string.account_name)) },
-                placeholder = { Text(stringResource(id = R.string.account_name_placeholder)) },
-                singleLine = true,
-                isError = uiState.accountNameError != null,
-                supportingText = uiState.accountNameError?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            // Server URL with Protocol Dropdown
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Top
+            // Animated Nextcloud form expansion
+            AnimatedVisibility(
+                visible = uiState.loginMethod == LoginMethod.NEXTCLOUD,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(durationMillis = 300))
             ) {
-                // Protocol field (HTTPS only)
-                OutlinedTextField(
-                    value = uiState.protocol,
-                    onValueChange = {},
-                    readOnly = true,
-                    singleLine = true,
-                    label = { Text(stringResource(id = R.string.protocol_label)) },
+                Card(
                     modifier = Modifier
-                        .width(130.dp)
-                )
-                
-                // Server URL field (without protocol)
-                OutlinedTextField(
-                    value = uiState.serverUrl,
-                    onValueChange = viewModel::onServerUrlChanged,
-                    label = { Text(stringResource(id = R.string.server_url)) },
-                    placeholder = { Text(stringResource(id = R.string.server_url_placeholder)) },
-                    singleLine = true,
-                    isError = uiState.serverUrlError != null,
-                    supportingText = uiState.serverUrlError?.let { { Text(it) } },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Uri,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Server URL field for Nextcloud
+                        OutlinedTextField(
+                            value = uiState.serverUrl,
+                            onValueChange = viewModel::onServerUrlChanged,
+                            label = { Text(stringResource(R.string.nextcloud_server_url)) },
+                            placeholder = { Text(stringResource(R.string.nextcloud_server_url_placeholder)) },
+                            leadingIcon = {
+                                Text(
+                                    text = uiState.protocol,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
+                            },
+                            singleLine = true,
+                            isError = uiState.serverUrlError != null,
+                            supportingText = uiState.serverUrlError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Uri,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { viewModel.onNextcloudLoginClicked() }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Login with Nextcloud button
+                        Button(
+                            onClick = viewModel::onNextcloudLoginClicked,
+                            enabled = !uiState.isLoading && !uiState.isNextcloudLogin,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            if (uiState.isLoading || uiState.isNextcloudLogin) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.connecting))
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Cloud,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.login_with_nextcloud))
+                            }
+                        }
+                    }
+                }
             }
             
-            // Username
-            UsernameTextFieldWithAutofill(
-                value = uiState.username,
-                onValueChange = viewModel::onUsernameChanged,
-                isError = uiState.usernameError != null,
-                supportingText = uiState.usernameError?.let { { Text(it) } },
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Spacer(modifier = Modifier.height(8.dp))
             
-            // Password
-            var passwordVisible by remember { mutableStateOf(false) }
-            PasswordTextFieldWithAutofill(
-                value = uiState.password,
-                onValueChange = viewModel::onPasswordChanged,
-                passwordVisible = passwordVisible,
-                onPasswordVisibilityChanged = { passwordVisible = it },
-                isError = uiState.passwordError != null,
-                supportingText = uiState.passwordError?.let { { Text(it) } },
-                onDone = {
-                    focusManager.clearFocus()
-                    viewModel.onAddAccountClicked()
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Google button
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { 
+                    viewModel.onLoginMethodSelected(
+                        if (uiState.loginMethod == LoginMethod.GOOGLE) null 
+                        else LoginMethod.GOOGLE
+                    )
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(R.drawable.google_g_logo),
+                            contentDescription = "Google",
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.google),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.google_login_description),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = if (uiState.loginMethod == LoginMethod.GOOGLE) 
+                            Icons.Default.ExpandLess 
+                        else 
+                            Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             
-            // Error message
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Other Server button
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { 
+                    viewModel.onLoginMethodSelected(
+                        if (uiState.loginMethod == LoginMethod.OTHER_SERVER) null 
+                        else LoginMethod.OTHER_SERVER
+                    )
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.other_server),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            )
+                            Text(
+                                text = stringResource(R.string.other_server_description),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = if (uiState.loginMethod == LoginMethod.OTHER_SERVER) 
+                            Icons.Default.ExpandLess 
+                        else 
+                            Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Animated Google form expansion (coming soon)
+            AnimatedVisibility(
+                visible = uiState.loginMethod == LoginMethod.GOOGLE,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.google_coming_soon),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            
+            // Animated Other Server form expansion
+            AnimatedVisibility(
+                visible = uiState.loginMethod == LoginMethod.OTHER_SERVER,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Account name
+                        OutlinedTextField(
+                            value = uiState.accountName,
+                            onValueChange = viewModel::onAccountNameChanged,
+                            label = { Text(stringResource(id = R.string.account_name)) },
+                            placeholder = { Text(stringResource(id = R.string.account_name_placeholder)) },
+                            singleLine = true,
+                            isError = uiState.accountNameError != null,
+                            supportingText = uiState.accountNameError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // Server URL with Protocol Prefix
+                        OutlinedTextField(
+                            value = uiState.serverUrl,
+                            onValueChange = viewModel::onServerUrlChanged,
+                            label = { Text(stringResource(id = R.string.server_url)) },
+                            placeholder = { Text(stringResource(id = R.string.server_url_placeholder)) },
+                            leadingIcon = {
+                                Text(
+                                    text = uiState.protocol,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
+                            },
+                            singleLine = true,
+                            isError = uiState.serverUrlError != null,
+                            supportingText = uiState.serverUrlError?.let { { Text(it) } },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Uri,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // URL guidance info card - only show if autodiscovery failed
+                        if (uiState.autodiscoveryFailed) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = stringResource(id = R.string.server_url_guidance_title),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = stringResource(id = R.string.server_url_guidance_autodiscovery),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = stringResource(id = R.string.server_url_guidance_manual),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                                            Text(
+                                                text = stringResource(id = R.string.server_url_example_nextcloud),
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                                ),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.server_url_example_baikal),
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                                ),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.server_url_example_radicale),
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                                ),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Username
+                        UsernameTextFieldWithAutofill(
+                            value = uiState.username,
+                            onValueChange = viewModel::onUsernameChanged,
+                            isError = uiState.usernameError != null,
+                            supportingText = uiState.usernameError?.let { { Text(it) } },
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // Password
+                        var passwordVisible by remember { mutableStateOf(false) }
+                        PasswordTextFieldWithAutofill(
+                            value = uiState.password,
+                            onValueChange = viewModel::onPasswordChanged,
+                            passwordVisible = passwordVisible,
+                            onPasswordVisibilityChanged = { passwordVisible = it },
+                            isError = uiState.passwordError != null,
+                            supportingText = uiState.passwordError?.let { { Text(it) } },
+                            onDone = {
+                                focusManager.clearFocus()
+                                viewModel.onAddAccountClicked()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // Client Certificate (optional)
+                        OutlinedCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { showCertificateDialog = true }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Security,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = stringResource(id = R.string.client_certificate),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                        )
+                                        Text(
+                                            text = if (uiState.certificateAlias.isNotBlank()) {
+                                                uiState.certificateAlias
+                                            } else {
+                                                stringResource(id = R.string.optional_tap_to_select)
+                                            },
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        // Buttons row - Test and Add side by side
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Test Credentials button
+                            OutlinedButton(
+                                onClick = viewModel::onTestCredentialsClicked,
+                                enabled = !uiState.isLoading && !uiState.isTestingCredentials,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                            ) {
+                                when {
+                                    uiState.isTestingCredentials -> {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(id = R.string.testing))
+                                    }
+                                    uiState.credentialTestResult?.startsWith("✓") == true -> {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = Color(0xFF4CAF50),
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .scale(
+                                                    animateFloatAsState(
+                                                        targetValue = 1.2f,
+                                                        animationSpec = spring(
+                                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                            stiffness = Spring.StiffnessLow
+                                                        ), label = "test_success_scale_row"
+                                                    ).value
+                                                )
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(id = R.string.valid))
+                                    }
+                                    uiState.credentialTestResult?.startsWith("✗") == true -> {
+                                        Icon(
+                                            imageVector = Icons.Default.Error,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(id = R.string.failed))
+                                    }
+                                    else -> {
+                                        Icon(
+                                            imageVector = Icons.Default.Security,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(id = R.string.test))
+                                    }
+                                }
+                            }
+                            
+                            // Add account button with + icon
+                            Button(
+                                onClick = viewModel::onAddAccountClicked,
+                                enabled = !uiState.isLoading,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                            ) {
+                                if (uiState.isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(id = R.string.connecting))
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(id = R.string.add_account))
+                                }
+                            }
+                        }
+                        
+                        // Help text
+                        Text(
+                            text = stringResource(id = R.string.auto_discover_services_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            // Error message display
             if (uiState.errorMessage != null) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -222,180 +767,199 @@ fun AddAccountScreen(
                 }
             }
             
-            // Buttons row - Test and Add side by side with increased height
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Test Credentials button
-                OutlinedButton(
-                    onClick = viewModel::onTestCredentialsClicked,
-                    enabled = !uiState.isLoading && !uiState.isTestingCredentials,
+            // Demo mode hint (only show on main selection screen)
+            if (uiState.loginMethod == null) {
+                Card(
                     modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                ) {
-                    when {
-                        uiState.isTestingCredentials -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(id = R.string.testing))
-                        }
-                        uiState.credentialTestResult?.startsWith("✓") == true -> {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = Color(0xFF4CAF50),
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .scale(
-                                        animateFloatAsState(
-                                            targetValue = 1.2f,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessLow
-                                            ), label = "test_success_scale_row"
-                                        ).value
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(id = R.string.valid))
-                        }
-                        uiState.credentialTestResult?.startsWith("✗") == true -> {
-                            Icon(
-                                imageVector = Icons.Default.Error,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(id = R.string.failed))
-                        }
-                        else -> {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(id = R.string.test))
-                        }
-                    }
-                }
-                
-                // Add account button with + icon
-                Button(
-                    onClick = viewModel::onAddAccountClicked,
-                    enabled = !uiState.isLoading,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.connecting))
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.add_account))
-                    }
-                }
-            }
-            
-            // Help text
-            Text(
-                text = stringResource(id = R.string.auto_discover_services_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            
-            // Demo mode hint
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.demo_explore_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Text(
-                        text = stringResource(id = R.string.demo_credentials_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     )
-                    
-                    Spacer(modifier = Modifier.height(4.dp))
-                    
+                ) {
                     Column(
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(16.dp)
                     ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.demo_explore_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
                         Text(
-                            text = stringResource(id = R.string.bullet_server, "demo.local"),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                            ),
+                            text = stringResource(id = R.string.demo_credentials_hint),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
-                        Text(
-                            text = stringResource(id = R.string.bullet_username, "demo"),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.bullet_password, "demo"),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Column(
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.bullet_server, "demo.local"),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.bullet_username, "demo"),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.bullet_password, "demo"),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
             }
         }
     }
     
+    // Certificate selection dialog
+    if (showCertificateDialog) {
+        var tempCertificateAlias by remember { mutableStateOf(uiState.certificateAlias) }
+        
+        AlertDialog(
+            onDismissRequest = { showCertificateDialog = false },
+            title = { Text(stringResource(id = R.string.client_certificate_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(id = R.string.select_client_certificate_for_auth))
+                    
+                    // Option 1: Choose from Android KeyChain
+                    OutlinedButton(
+                        onClick = {
+                            val activity = context as Activity
+                            showCertificateDialog = false
+                            KeyChain.choosePrivateKeyAlias(
+                                activity,
+                                { alias ->
+                                    // Update certificate alias with selected alias
+                                    if (alias != null) {
+                                        viewModel.onCertificateAliasChanged(alias)
+                                    } else {
+                                        // Show snackbar when no certificate selected (or none installed)
+                                        scope.launch {
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = context.getString(R.string.no_certificate_selected),
+                                                actionLabel = context.getString(R.string.install_certificate),
+                                                duration = SnackbarDuration.Long
+                                            )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                // Open Android certificate installer
+                                                val intent = KeyChain.createInstallIntent()
+                                                if (intent.resolveActivity(context.packageManager) != null) {
+                                                    context.startActivity(intent)
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                null, // keyTypes (null = all types)
+                                null, // issuers (null = all issuers)
+                                null, // host
+                                -1,   // port
+                                uiState.certificateAlias.ifBlank { null } // alias to preselect
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(id = R.string.choose_from_system_certificates))
+                    }
+                    
+                    HorizontalDivider()
+                    
+                    // Option 2: Manual entry
+                    Text(
+                        stringResource(id = R.string.enter_certificate_alias_manually),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = tempCertificateAlias,
+                        onValueChange = { tempCertificateAlias = it },
+                        singleLine = true,
+                        label = { Text(stringResource(id = R.string.certificate_alias)) },
+                        placeholder = { Text(stringResource(id = R.string.enter_certificate_alias)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onCertificateAliasChanged(tempCertificateAlias)
+                    showCertificateDialog = false
+                }) {
+                    Text(stringResource(id = R.string.done))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.onCertificateAliasChanged("")
+                    showCertificateDialog = false
+                }) {
+                    Text(stringResource(id = R.string.remove))
+                }
+            }
+        )
+    }
+    
     // Success navigation
     LaunchedEffect(uiState.accountCreated) {
         if (uiState.accountCreated) {
             onAccountCreated()
+        }
+    }
+    
+    // Nextcloud Login Flow: Open Custom Tab when login URL is available
+    LaunchedEffect(uiState.nextcloudLoginUrl) {
+        uiState.nextcloudLoginUrl?.let { loginUrl ->
+            try {
+                val customTabsIntent = CustomTabsIntent.Builder()
+                    .setShowTitle(true)
+                    .build()
+                
+                customTabsIntent.launchUrl(context, Uri.parse(loginUrl))
+                
+                // Start polling after opening Custom Tab
+                viewModel.startNextcloudLoginPolling()
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to open Nextcloud login in Custom Tab")
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        "Failed to open browser: ${e.message}",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                viewModel.cancelNextcloudLogin()
+            }
         }
     }
 }
@@ -481,6 +1045,7 @@ fun PasswordTextFieldWithAutofill(
         value = value,
         onValueChange = onValueChange,
         label = { Text(stringResource(id = R.string.password)) },
+        placeholder = { Text(stringResource(id = R.string.password_placeholder)) },
         singleLine = true,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         isError = isError,
@@ -517,11 +1082,13 @@ fun PasswordTextFieldWithAutofill(
 }
 
 data class AddAccountUiState(
+    val loginMethod: LoginMethod? = null, // null = showing method selection, non-null = method selected
     val accountName: String = "",
     val protocol: String = HTTPS_PREFIX,
     val serverUrl: String = "",
     val username: String = "",
     val password: String = "",
+    val certificateAlias: String = "",
     val accountNameError: String? = null,
     val serverUrlError: String? = null,
     val usernameError: String? = null,
@@ -530,8 +1097,17 @@ data class AddAccountUiState(
     val isLoading: Boolean = false,
     val accountCreated: Boolean = false,
     val isTestingCredentials: Boolean = false,
-    val credentialTestResult: String? = null
+    val credentialTestResult: String? = null,
+    val isNextcloudLogin: Boolean = false,
+    val nextcloudLoginUrl: String? = null,
+    val autodiscoveryFailed: Boolean = false
 )
+
+enum class LoginMethod {
+    NEXTCLOUD,
+    GOOGLE,
+    OTHER_SERVER
+}
 
 @HiltViewModel
 class AddAccountViewModel @Inject constructor(
@@ -546,11 +1122,15 @@ class AddAccountViewModel @Inject constructor(
     private val credentialStore: CredentialStore,
     private val androidAccountManager: AndroidAccountManager,
     private val calendarContractSync: CalendarContractSync,
+    private val nextcloudLoginFlow: NextcloudLoginFlowV2,
     @ApplicationContext private val appContext: Context
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AddAccountUiState())
     val uiState: StateFlow<AddAccountUiState> = _uiState.asStateFlow()
+    
+    private var loginFlowInitiation: LoginFlowInitiation? = null
+    private var pollingJob: kotlinx.coroutines.Job? = null
     
     fun onAccountNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(
@@ -567,8 +1147,42 @@ class AddAccountViewModel @Inject constructor(
         
         _uiState.value = _uiState.value.copy(
             serverUrl = cleanUrl,
-            serverUrlError = null
+            serverUrlError = null,
+            autodiscoveryFailed = false
         )
+    }
+    
+    fun onLoginMethodSelected(method: LoginMethod?) {
+        _uiState.value = _uiState.value.copy(
+            loginMethod = method,
+            errorMessage = null
+        )
+        
+        // If Google selected, start OAuth flow immediately (placeholder for future implementation)
+        if (method == LoginMethod.GOOGLE) {
+            _uiState.value = _uiState.value.copy(
+                errorMessage = "Google login not yet implemented"
+            )
+        }
+    }
+    
+    fun onBackToMethodSelection() {
+        _uiState.value = _uiState.value.copy(
+            loginMethod = null,
+            serverUrl = "",
+            accountName = "",
+            username = "",
+            password = "",
+            serverUrlError = null,
+            accountNameError = null,
+            usernameError = null,
+            passwordError = null,
+            errorMessage = null,
+            autodiscoveryFailed = false,
+            isNextcloudLogin = false,
+            nextcloudLoginUrl = null
+        )
+        cancelNextcloudLogin()
     }
     
     fun onUsernameChanged(username: String) {
@@ -582,6 +1196,12 @@ class AddAccountViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             password = password,
             passwordError = null
+        )
+    }
+    
+    fun onCertificateAliasChanged(alias: String) {
+        _uiState.value = _uiState.value.copy(
+            certificateAlias = alias
         )
     }
     
@@ -686,7 +1306,8 @@ class AddAccountViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
-                errorMessage = null
+                errorMessage = null,
+                autodiscoveryFailed = false
             )
             
             try {
@@ -725,7 +1346,7 @@ class AddAccountViewModel @Inject constructor(
                     createdAt = System.currentTimeMillis(),
                     lastAuthenticatedAt = System.currentTimeMillis(),
                     authType = AuthType.BASIC,
-                    certificateFingerprint = null
+                    certificateFingerprint = state.certificateAlias.ifBlank { null }
                 )
                 
                 val accountId = accountRepository.insert(account)
@@ -891,6 +1512,7 @@ class AddAccountViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
+                    autodiscoveryFailed = true,
                     errorMessage = appContext.getString(R.string.failed_to_add_account, e.message ?: appContext.getString(R.string.unknown))
                 )
             }
@@ -1125,6 +1747,265 @@ class AddAccountViewModel @Inject constructor(
                     errorMessage = appContext.getString(R.string.failed_to_create_demo_account, e.message ?: appContext.getString(R.string.unknown))
                 )
             }
+        }
+    }
+    
+    /**
+     * Start Nextcloud Login Flow v2.
+     * Initiates the login flow and returns the login URL to open in browser.
+     */
+    fun onNextcloudLoginClicked() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null
+            )
+            
+            try {
+                val state = _uiState.value
+                val fullUrl = state.protocol + state.serverUrl
+                
+                // Initiate login flow
+                val initiation = nextcloudLoginFlow.initiateLogin(fullUrl)
+                loginFlowInitiation = initiation
+                
+                Timber.d("Nextcloud login flow initiated, URL: ${initiation.loginUrl}")
+                
+                // Update UI with login URL (will trigger Custom Tab)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isNextcloudLogin = true,
+                    nextcloudLoginUrl = initiation.loginUrl
+                )
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to initiate Nextcloud login flow")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to start Nextcloud login: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Start polling for Nextcloud login completion.
+     * Should be called after Custom Tab is opened.
+     */
+    fun startNextcloudLoginPolling() {
+        val initiation = loginFlowInitiation ?: run {
+            Timber.e("No login flow initiation found")
+            return
+        }
+        
+        // Cancel any existing polling job
+        pollingJob?.cancel()
+        
+        pollingJob = viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null
+            )
+            
+            try {
+                Timber.d("Starting to poll for Nextcloud login completion...")
+                
+                // Poll for credentials with timeout
+                val credentials = withTimeout(5 * 60 * 1000L) { // 5 minutes timeout
+                    nextcloudLoginFlow.pollForCredentials(initiation)
+                }
+                
+                Timber.d("Nextcloud login successful! User: ${credentials.loginName}")
+                
+                // Create account with received credentials
+                createNextcloudAccount(
+                    serverUrl = credentials.serverUrl,
+                    username = credentials.loginName,
+                    appPassword = credentials.appPassword
+                )
+                
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                Timber.w("Nextcloud login flow timed out")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isNextcloudLogin = false,
+                    nextcloudLoginUrl = null,
+                    errorMessage = "Login timed out. Please try again."
+                )
+                loginFlowInitiation = null
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                Timber.d("Nextcloud login flow was cancelled")
+                // Don't update UI state - cancellation is intentional
+            } catch (e: Exception) {
+                Timber.e(e, "Nextcloud login flow failed")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isNextcloudLogin = false,
+                    nextcloudLoginUrl = null,
+                    errorMessage = "Nextcloud login failed: ${e.message}"
+                )
+                loginFlowInitiation = null
+            }
+        }
+    }
+    
+    /**
+     * Cancel Nextcloud login flow.
+     */
+    fun cancelNextcloudLogin() {
+        pollingJob?.cancel()
+        pollingJob = null
+        loginFlowInitiation = null
+        _uiState.value = _uiState.value.copy(
+            isNextcloudLogin = false,
+            nextcloudLoginUrl = null,
+            isLoading = false
+        )
+    }
+    
+    /**
+     * Create account with Nextcloud app password from login flow.
+     */
+    private suspend fun createNextcloudAccount(
+        serverUrl: String,
+        username: String,
+        appPassword: String
+    ) {
+        try {
+            val state = _uiState.value
+            val accountName = state.accountName.ifBlank { "$username@${serverUrl.substringAfter("://").substringBefore("/")}" }
+            
+            // Normalize server URL
+            val normalizedUrl = serverUrl.trimEnd('/')
+            
+            // Check for duplicate account
+            val existingAccount = accountRepository.findByServerAndUsername(normalizedUrl, username)
+            if (existingAccount != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isNextcloudLogin = false,
+                    nextcloudLoginUrl = null,
+                    errorMessage = appContext.getString(R.string.account_exists_message, existingAccount.accountName)
+                )
+                return
+            }
+            
+            // Authenticate and discover services
+            val authResult = authenticationManager.authenticate(
+                serverUrl = normalizedUrl,
+                username = username,
+                password = appPassword
+            )
+            
+            // Create account
+            val account = Account(
+                id = 0,
+                accountName = accountName,
+                serverUrl = normalizedUrl,
+                username = username,
+                displayName = accountName,
+                email = if (username.contains("@")) username else null,
+                calendarEnabled = authResult.hasCalDAV(),
+                contactsEnabled = authResult.hasCardDAV(),
+                tasksEnabled = authResult.hasCalDAV(),
+                createdAt = System.currentTimeMillis(),
+                lastAuthenticatedAt = System.currentTimeMillis(),
+                authType = AuthType.APP_PASSWORD, // Nextcloud app password
+                certificateFingerprint = null
+            )
+            
+            val accountId = accountRepository.insert(account)
+            credentialStore.storePassword(accountId, appPassword)
+            
+            // Create Android account
+            androidAccountManager.createOrUpdateAccount(account.accountName, appPassword)
+            
+            // Discover and create calendars
+            if (authResult.hasCalDAV() && authResult.calDavPrincipal != null) {
+                try {
+                    val calendars = caldavPrincipalDiscovery.discoverCalendars(
+                        calendarHomeSetUrl = authResult.calDavPrincipal.calendarHomeSet,
+                        username = username,
+                        password = appPassword
+                    )
+                    
+                    calendars.forEach { calendarInfo ->
+                        val calendar = com.davy.domain.model.Calendar(
+                            id = 0,
+                            accountId = accountId,
+                            calendarUrl = calendarInfo.url,
+                            displayName = calendarInfo.displayName,
+                            description = calendarInfo.description,
+                            color = parseColor(calendarInfo.color),
+                            supportsVTODO = calendarInfo.supportsVTODO,
+                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                            syncEnabled = true,
+                            visible = true,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis(),
+                            lastSyncedAt = null
+                        )
+                        calendarRepository.insert(calendar)
+                    }
+                    
+                    calendarContractSync.syncToCalendarProvider(accountId)
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover/sync calendars")
+                }
+            }
+            
+            // Discover and create address books
+            if (authResult.hasCardDAV() && authResult.cardDavPrincipal != null) {
+                try {
+                    val addressBooks = carddavPrincipalDiscovery.discoverAddressbooks(
+                        addressbookHomeSetUrl = authResult.cardDavPrincipal.addressbookHomeSet,
+                        username = username,
+                        password = appPassword
+                    )
+                    
+                    addressBooks.forEach { addressBookInfo ->
+                        val addressBook = com.davy.domain.model.AddressBook(
+                            id = 0,
+                            accountId = accountId,
+                            url = addressBookInfo.url,
+                            displayName = addressBookInfo.displayName,
+                            description = addressBookInfo.description,
+                            owner = addressBookInfo.owner,
+                            privWriteContent = addressBookInfo.privWriteContent,
+                            syncEnabled = true,
+                            visible = true,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        val addressBookId = addressBookRepository.insert(addressBook)
+                        
+                        androidAccountManager.createAddressBookAccount(
+                            mainAccountName = account.accountName,
+                            addressBookName = addressBook.displayName,
+                            addressBookId = addressBookId,
+                            addressBookUrl = addressBook.url
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to discover address books")
+                }
+            }
+            
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                isNextcloudLogin = false,
+                nextcloudLoginUrl = null,
+                accountCreated = true
+            )
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to create Nextcloud account")
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                isNextcloudLogin = false,
+                nextcloudLoginUrl = null,
+                errorMessage = "Failed to create account: ${e.message}"
+            )
         }
     }
 }
