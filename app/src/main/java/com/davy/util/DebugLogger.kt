@@ -17,7 +17,13 @@ object DebugLogger {
      */
     fun init(context: Context) {
         val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-        val enabled = prefs.getBoolean("debug_logging", false)
+        // If user explicitly set the preference, honor it. Otherwise default to enabled in debug builds.
+        val enabled = if (prefs.contains("debug_logging")) {
+            prefs.getBoolean("debug_logging", false)
+        } else {
+            // Enable verbose logging by default in debug builds to aid troubleshooting
+            com.davy.BuildConfig.DEBUG
+        }
         setDebugLoggingEnabled(enabled)
     }
     

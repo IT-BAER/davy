@@ -1,5 +1,7 @@
 package com.davy.ui
 
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -98,6 +100,7 @@ class MainActivity : AppCompatActivity() {
 fun DavyApp(startDestination: String? = null) {
     val context = LocalContext.current
     var hasPermissions by remember { mutableStateOf(hasAllPermissions(context)) }
+    var showBatteryOptDialog by remember { mutableStateOf(false) }
     
     // Observe theme preference reactively
     val prefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
@@ -128,6 +131,17 @@ fun DavyApp(startDestination: String? = null) {
         Surface(
             modifier = Modifier.fillMaxSize()
         ) {
+            // Battery optimization dialog (shown after permissions granted on first launch)
+            if (showBatteryOptDialog) {
+                com.davy.ui.screens.BatteryOptimizationDialog(
+                    onDismiss = {
+                        showBatteryOptDialog = false
+                        // Mark as shown so we don't ask again
+                        prefs.edit().putBoolean("battery_optimization_prompt_shown", true).apply()
+                    }
+                )
+            }
+            
             if (hasPermissions) {
                 // Permissions granted - show main app
                 val navController = rememberNavController()
@@ -156,6 +170,19 @@ fun DavyApp(startDestination: String? = null) {
                     onPermissionsGranted = {
                         hasPermissions = true
                         Timber.d("All permissions granted")
+                        
+                        // Check if we need to show battery optimization dialog
+                        val hasShownBatteryPrompt = prefs.getBoolean("battery_optimization_prompt_shown", false)
+                        if (!hasShownBatteryPrompt && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+                            val isOptimized = powerManager?.let { 
+                                !it.isIgnoringBatteryOptimizations(context.packageName) 
+                            } ?: false
+                            
+                            if (isOptimized) {
+                                showBatteryOptDialog = true
+                            }
+                        }
                     }
                 )
             }

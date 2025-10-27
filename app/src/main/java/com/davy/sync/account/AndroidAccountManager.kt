@@ -68,16 +68,16 @@ class AndroidAccountManager @Inject constructor(
                 }
             }
             
-            // Configure calendar sync (syncable and automatic sync enabled by default)
-            // Enabling here ensures the Calendar app shows the account as syncing without extra user steps
+            // Configure calendar sync (syncable but DO NOT enable automatic sync by default)
+            // This aligns behavior with CardDAV/WebCal and avoids immediate background sync on account creation
             ContentResolver.setIsSyncable(account, CALENDAR_AUTHORITY, 1)
-            ContentResolver.setSyncAutomatically(account, CALENDAR_AUTHORITY, true)
+            ContentResolver.setSyncAutomatically(account, CALENDAR_AUTHORITY, false)
 
             // Configure contacts sync (keep automatic sync disabled unless explicitly enabled later)
             ContentResolver.setIsSyncable(account, CONTACTS_AUTHORITY, 1)
             ContentResolver.setSyncAutomatically(account, CONTACTS_AUTHORITY, false)
             
-            Timber.d("Configured calendar (auto-sync ON) and contacts (auto-sync OFF) for Android account: $accountName")
+            Timber.d("Configured calendar (auto-sync OFF) and contacts (auto-sync OFF) for Android account: $accountName")
             return true
             
         } catch (e: Exception) {
@@ -135,6 +135,12 @@ class AndroidAccountManager @Inject constructor(
                 return false
             }
             
+            // Preserve existing sync settings prior to rename
+            val calWasSyncable = ContentResolver.getIsSyncable(oldAccount, CALENDAR_AUTHORITY)
+            val calAutoSync = ContentResolver.getSyncAutomatically(oldAccount, CALENDAR_AUTHORITY)
+            val contactsWasSyncable = ContentResolver.getIsSyncable(oldAccount, CONTACTS_AUTHORITY)
+            val contactsAutoSync = ContentResolver.getSyncAutomatically(oldAccount, CONTACTS_AUTHORITY)
+
             // Android's renameAccount properly migrates all calendar and contact data
             val future = accountManager.renameAccount(oldAccount, newName, null, null)
             val renamedAccount = future.result
@@ -142,11 +148,11 @@ class AndroidAccountManager @Inject constructor(
             if (renamedAccount != null && renamedAccount.name == newName) {
                 Timber.d("Successfully renamed Android account from '$oldName' to '$newName'")
                 
-                // Verify sync settings are maintained
-                ContentResolver.setIsSyncable(renamedAccount, CALENDAR_AUTHORITY, 1)
-                ContentResolver.setSyncAutomatically(renamedAccount, CALENDAR_AUTHORITY, true)
-                ContentResolver.setIsSyncable(renamedAccount, CONTACTS_AUTHORITY, 1)
-                ContentResolver.setSyncAutomatically(renamedAccount, CONTACTS_AUTHORITY, true)
+                // Re-apply previous sync settings to the renamed account (preserve user choices)
+                ContentResolver.setIsSyncable(renamedAccount, CALENDAR_AUTHORITY, calWasSyncable)
+                ContentResolver.setSyncAutomatically(renamedAccount, CALENDAR_AUTHORITY, calAutoSync)
+                ContentResolver.setIsSyncable(renamedAccount, CONTACTS_AUTHORITY, contactsWasSyncable)
+                ContentResolver.setSyncAutomatically(renamedAccount, CONTACTS_AUTHORITY, contactsAutoSync)
                 
                 return true
             } else {

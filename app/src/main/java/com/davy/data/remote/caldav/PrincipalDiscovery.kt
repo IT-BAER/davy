@@ -4,6 +4,7 @@ import android.content.Context
 import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -217,7 +218,7 @@ class PrincipalDiscovery @Inject constructor(
         principalUrl: String,
         username: String,
         password: String
-    ): String? {
+    ): String? = withContext(Dispatchers.IO) {
         val propfindBody = """
             <?xml version="1.0" encoding="utf-8" ?>
             <d:propfind xmlns:d="DAV:">
@@ -227,7 +228,7 @@ class PrincipalDiscovery @Inject constructor(
             </d:propfind>
         """.trimIndent()
         
-        return try {
+        return@withContext try {
             val request = Request.Builder()
                 .url(principalUrl)
                 .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
@@ -416,9 +417,46 @@ class PrincipalDiscovery @Inject constructor(
                 Timber.tag("PrincipalDiscovery").d("Calendar discovery response body:\n%s", responseBody)
                 
                 if (responseBody != null) {
-                    val calendars = parseCalendarCollections(responseBody, calendarHomeSetUrl)
-                    Timber.tag("PrincipalDiscovery").d("Discovered %s calendars: %s", calendars.size, calendars.map { it.displayName })
-                    calendars
+                    val initialCalendars = parseCalendarCollections(responseBody, calendarHomeSetUrl)
+                    Timber.tag("PrincipalDiscovery").d("Discovered %s calendars: %s", initialCalendars.size, initialCalendars.map { it.displayName })
+
+                    // Hydrate each calendar with a Depth:0 PROPFIND to ensure cs:source and ACL are present.
+                    val hydrated = mutableListOf<CalendarCollectionInfo>()
+                    for (cal in initialCalendars) {
+                        val enriched = fetchCalendarCollection(cal.url, username, password)
+                        if (enriched != null) {
+                            hydrated += mergeCalendarInfo(cal, enriched)
+                        } else {
+                            hydrated += cal
+                        }
+                    }
+
+                    // Retry up to 3 times (total ~6s) for WebCal subscriptions missing cs:source
+                    // Some servers (e.g., Nextcloud) fill cs:source shortly after the collection appears.
+                    val needsSource = hydrated.filter { it.isSubscribed && it.source.isNullOrBlank() }
+                    if (needsSource.isNotEmpty()) {
+                        Timber.tag("PrincipalDiscovery").d("%s subscribed calendars missing cs:source, retrying to hydrate...", needsSource.size)
+                    }
+                    var attempt = 0
+                    var current: List<CalendarCollectionInfo> = hydrated
+                    while (attempt < 3) {
+                        val pending = current.filter { it.isSubscribed && it.source.isNullOrBlank() }
+                        if (pending.isEmpty()) break
+                        attempt++
+                        Timber.tag("PrincipalDiscovery").d("Hydration retry #%s for %s subscribed collections", attempt, pending.size)
+                        delay(1500L)
+                        val updated = current.map { info ->
+                            if (info.isSubscribed && info.source.isNullOrBlank()) {
+                                val enrichedAgain = fetchCalendarCollection(info.url, username, password)
+                                if (enrichedAgain != null) mergeCalendarInfo(info, enrichedAgain) else info
+                            } else {
+                                info
+                            }
+                        }
+                        current = updated
+                    }
+
+                    current
                 } else {
                     emptyList()
                 }
@@ -439,6 +477,210 @@ class PrincipalDiscovery @Inject constructor(
             Timber.tag("PrincipalDiscovery").e(e, "Error discovering calendars")
             e.printStackTrace()
             throw PrincipalDiscoveryException("Calendar discovery failed: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Fetch full properties for a single calendar collection using Depth:0.
+     * Ensures we obtain cs:source (for WebCal) and DAV:current-user-privilege-set (ACL).
+     */
+    private suspend fun fetchCalendarCollection(
+        collectionUrl: String,
+        username: String,
+        password: String
+    ): CalendarCollectionInfo? = withContext(Dispatchers.IO) {
+        val propfindBody = """
+            <?xml version="1.0" encoding="utf-8" ?>
+            <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:cs="http://calendarserver.org/ns/" xmlns:apple="http://apple.com/ns/ical/">
+                <d:prop>
+                    <d:resourcetype />
+                    <d:displayname />
+                    <d:owner />
+                    <c:calendar-description />
+                    <apple:calendar-color />
+                    <c:supported-calendar-component-set />
+                    <d:current-user-privilege-set />
+                    <cs:source />
+                </d:prop>
+            </d:propfind>
+        """.trimIndent()
+
+        return@withContext try {
+            val request = Request.Builder()
+                .url(collectionUrl)
+                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
+                .header("Authorization", createBasicAuthHeader(username, password))
+                .header(DEPTH_HEADER, "0")
+                .build()
+
+            Timber.tag("PrincipalDiscovery").d("Hydrating collection (Depth:0): %s", collectionUrl)
+            val response = httpClient.newCall(request).execute()
+            if (response.code == 207 || response.code == 200) {
+                val body = response.body?.string()
+                body?.let { parseSingleCalendarCollection(it, collectionUrl) }
+            } else {
+                Timber.tag("PrincipalDiscovery").w("Failed to hydrate %s: %s", collectionUrl, response.code)
+                null
+            }
+        } catch (e: Exception) {
+            Timber.tag("PrincipalDiscovery").w(e, "Hydration error for %s", collectionUrl)
+            null
+        }
+    }
+
+    /**
+     * Merge fields, preferring enriched values when present.
+     */
+    private fun mergeCalendarInfo(base: CalendarCollectionInfo, enriched: CalendarCollectionInfo): CalendarCollectionInfo {
+        return base.copy(
+            displayName = enriched.displayName.ifBlank { base.displayName },
+            description = enriched.description ?: base.description,
+            color = enriched.color ?: base.color,
+            owner = enriched.owner ?: base.owner,
+            source = enriched.source ?: base.source,
+            supportsVEVENT = enriched.supportsVEVENT,
+            supportsVTODO = enriched.supportsVTODO,
+            supportsVJOURNAL = enriched.supportsVJOURNAL,
+            privWriteContent = enriched.privWriteContent,
+            privUnbind = enriched.privUnbind,
+            isSubscribed = enriched.isSubscribed || base.isSubscribed
+        )
+    }
+
+    /**
+     * Parse a single collection PROPFIND response (Depth:0).
+     */
+    private fun parseSingleCalendarCollection(responseXml: String, requestUrl: String): CalendarCollectionInfo? {
+        return try {
+            val document = parseXmlDocument(responseXml)
+            val xpath = XPathFactory.newInstance().newXPath()
+            val responseNode = xpath.evaluate(
+                "//*[local-name()='response']",
+                document,
+                XPathConstants.NODE
+            ) as? org.w3c.dom.Node ?: return null
+
+            val href = xpath.evaluate(
+                "*[local-name()='href']",
+                responseNode,
+                XPathConstants.STRING
+            ) as String
+            val calendarUrl = resolveUrl(requestUrl, href)
+
+            val isCalendar = xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='resourcetype']/*[local-name()='calendar']",
+                responseNode,
+                XPathConstants.NODE
+            ) as? org.w3c.dom.Node != null
+
+            val isSubscribed = xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='resourcetype']/*[local-name()='subscribed']",
+                responseNode,
+                XPathConstants.NODE
+            ) as? org.w3c.dom.Node != null
+
+            if (!isCalendar && !isSubscribed) return null
+
+            val displayName = (xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='displayname']",
+                responseNode,
+                XPathConstants.STRING
+            ) as? String)?.trim()
+
+            val description = (xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='calendar-description']",
+                responseNode,
+                XPathConstants.STRING
+            ) as? String)?.trim()?.takeIf { it.isNotEmpty() }
+
+            val color = (xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='calendar-color']",
+                responseNode,
+                XPathConstants.STRING
+            ) as? String)?.trim()?.takeIf { it.isNotEmpty() }
+
+            val owner = (xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='owner']/*[local-name()='href']",
+                responseNode,
+                XPathConstants.STRING
+            ) as? String)?.let { hrefOwner -> resolveUrl(requestUrl, hrefOwner) }
+
+            val source = (xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='source']/*[local-name()='href']",
+                responseNode,
+                XPathConstants.STRING
+            ) as? String)?.trim()?.takeIf { it.isNotEmpty() }
+
+            val componentSetNode = xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='supported-calendar-component-set']",
+                responseNode,
+                XPathConstants.NODE
+            ) as? org.w3c.dom.Node
+
+            val supportsVEVENT = componentSetNode?.let { node ->
+                xpath.evaluate(
+                    "*[local-name()='comp'][@name='VEVENT']",
+                    node,
+                    XPathConstants.NODE
+                ) as? org.w3c.dom.Node
+            } != null
+
+            val supportsVTODO = componentSetNode?.let { node ->
+                xpath.evaluate(
+                    "*[local-name()='comp'][@name='VTODO']",
+                    node,
+                    XPathConstants.NODE
+                ) as? org.w3c.dom.Node
+            } != null
+
+            val supportsVJOURNAL = componentSetNode?.let { node ->
+                xpath.evaluate(
+                    "*[local-name()='comp'][@name='VJOURNAL']",
+                    node,
+                    XPathConstants.NODE
+                ) as? org.w3c.dom.Node
+            } != null
+
+            val privilegeSetNode = xpath.evaluate(
+                "*[local-name()='propstat']/*[local-name()='prop']/*[local-name()='current-user-privilege-set']",
+                responseNode,
+                XPathConstants.NODE
+            ) as? org.w3c.dom.Node
+
+            val privWriteContent = privilegeSetNode?.let { node ->
+                xpath.evaluate(
+                    "*[local-name()='privilege']/*[local-name()='write-content']",
+                    node,
+                    XPathConstants.NODE
+                ) as? org.w3c.dom.Node
+            } != null
+
+            val privUnbind = privilegeSetNode?.let { node ->
+                xpath.evaluate(
+                    "*[local-name()='privilege']/*[local-name()='unbind']",
+                    node,
+                    XPathConstants.NODE
+                ) as? org.w3c.dom.Node
+            } != null
+
+            CalendarCollectionInfo(
+                url = calendarUrl,
+                displayName = displayName?.takeIf { it.isNotEmpty() }
+                    ?: calendarUrl.substringAfterLast('/').removeSuffix("/"),
+                description = description,
+                color = color,
+                owner = owner,
+                source = source,
+                supportsVEVENT = supportsVEVENT,
+                supportsVTODO = supportsVTODO,
+                supportsVJOURNAL = supportsVJOURNAL,
+                privWriteContent = privWriteContent,
+                privUnbind = privUnbind,
+                isSubscribed = isSubscribed
+            )
+        } catch (e: Exception) {
+            Timber.tag("PrincipalDiscovery").e(e, "Error parsing single calendar collection")
+            null
         }
     }
 
@@ -583,7 +825,9 @@ class PrincipalDiscovery @Inject constructor(
                 
                 // Parse write privilege from current-user-privilege-set (CalDAV ACL)
                 // Look for <privilege><write-content/></privilege>
-                // Default to true if privilege-set missing (optimistic - most servers allow write)
+                // CONSERVATIVE DEFAULT: Assume read-only if privilege-set missing
+                // This prevents calendars from appearing writable on initial fetch when
+                // the server hasn't sent complete privilege information yet
                 val privWriteContent = if (privilegeSetNode != null) {
                     val writeContentNode = xpath.evaluate(
                         "*[local-name()='privilege']/*[local-name()='write-content']",
@@ -592,12 +836,12 @@ class PrincipalDiscovery @Inject constructor(
                     ) as? org.w3c.dom.Node
                     writeContentNode != null
                 } else {
-                    true  // Optimistic default - assume writable if no privilege-set
+                    false  // Conservative default - assume read-only until server confirms write access
                 }
                 
                 // Parse unbind (delete) privilege from current-user-privilege-set (CalDAV ACL)
                 // Look for <privilege><unbind/></privilege>
-                // Default to true if privilege-set missing (optimistic - DAVx5 pattern)
+                // CONSERVATIVE DEFAULT: Assume can't delete if privilege-set missing
                 val privUnbind = if (privilegeSetNode != null) {
                     val unbindNode = xpath.evaluate(
                         "*[local-name()='privilege']/*[local-name()='unbind']",
@@ -606,21 +850,16 @@ class PrincipalDiscovery @Inject constructor(
                     ) as? org.w3c.dom.Node
                     unbindNode != null
                 } else {
-                    true  // Optimistic default - assume deletable if no privilege-set (matches DAVx5)
+                    false  // Conservative default - assume can't delete until server confirms unbind permission
                 }
                 
                 val calendarUrl = resolveUrl(baseUrl, href)
                 val resolvedOwner = owner?.trim()?.takeIf { it.isNotEmpty() }?.let { resolveUrl(baseUrl, it) }
                 val resolvedSource = source?.trim()?.takeIf { it.isNotEmpty() }
                 
-                // For webcal subscriptions, if source is not provided but cs:subscribed is present,
-                // use the calendar URL itself as the source. This handles Nextcloud webcals that
-                // have cs:subscribed in resourcetype but don't populate cs:source immediately.
-                val finalSource = when {
-                    !resolvedSource.isNullOrBlank() -> resolvedSource
-                    isSubscribed -> calendarUrl  // Use calendar URL as source for subscribed calendars without explicit source
-                    else -> null
-                }
+                // Only use cs:source when explicitly provided by the server.
+                // Do NOT fallback to the calendar collection URL; that is not the external WebCal feed URL.
+                val finalSource = resolvedSource
                 
                 // Log calendar discovery for debugging shared calendars and webcal subscriptions
                 Timber.tag("PrincipalDiscovery").d("Discovered calendar: %s", calendarUrl)
@@ -645,7 +884,8 @@ class PrincipalDiscovery @Inject constructor(
                         supportsVTODO = supportsVTODO,
                         supportsVJOURNAL = supportsVJOURNAL,
                         privWriteContent = privWriteContent,
-                        privUnbind = privUnbind
+                        privUnbind = privUnbind,
+                        isSubscribed = isSubscribed
                     )
                 )
             }
@@ -681,8 +921,9 @@ data class CalendarCollectionInfo(
     val supportsVEVENT: Boolean = true,  // Events
     val supportsVTODO: Boolean = false,   // Tasks/Todos
     val supportsVJOURNAL: Boolean = false, // Journal entries
-    val privWriteContent: Boolean = true,  // Write permission from DAV:current-user-privilege-set
-    val privUnbind: Boolean = true        // Delete/unbind permission from DAV:current-user-privilege-set
+    val privWriteContent: Boolean = false, // Write permission from DAV:current-user-privilege-set (conservative default)
+    val privUnbind: Boolean = false,      // Delete/unbind permission from DAV:current-user-privilege-set (conservative default)
+    val isSubscribed: Boolean = false      // Whether resourcetype contains cs:subscribed (WebCal)
 )
 
 /**

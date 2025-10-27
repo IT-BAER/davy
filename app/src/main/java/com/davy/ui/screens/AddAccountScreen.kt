@@ -77,6 +77,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -1538,6 +1540,7 @@ class AddAccountViewModel @Inject constructor(
     private val authenticationManager: AuthenticationManager,
     private val caldavPrincipalDiscovery: CalDAVPrincipalDiscovery,
     private val carddavPrincipalDiscovery: CardDAVPrincipalDiscovery,
+    private val cardDAVSyncService: com.davy.data.sync.CardDAVSyncService,
     private val serverUrlValidator: ServerUrlValidator,
     private val credentialStore: CredentialStore,
     private val androidAccountManager: AndroidAccountManager,
@@ -1843,8 +1846,122 @@ class AddAccountViewModel @Inject constructor(
                         
                         Timber.d("Discovered and saved %s calendars", calendars.size)
                         
-                        // IMPORTANT: Immediately sync calendars to Calendar Provider
-                        // This ensures calendars appear in the system calendar app right away
+                        // IMPORTANT: Re-fetch calendar properties after initial save
+                        // Nextcloud/servers may not return complete metadata (source, ACL, subscribed flag) 
+                        // on first discovery - webcal subscriptions need time to populate from external feeds
+                        // This second fetch ensures calendars have correct read-only status and webcal source URLs
+                        try {
+                            android.util.Log.e("DAVy-AddAccount", "========================================")
+                            android.util.Log.e("DAVy-AddAccount", "RE-FETCHING CALENDAR PROPERTIES")
+                            android.util.Log.e("DAVy-AddAccount", "Waiting 2 seconds for server to populate WebCal metadata...")
+                            Timber.d("========================================")
+                            Timber.d("RE-FETCHING CALENDAR PROPERTIES")
+                            Timber.d("Waiting 2 seconds for server to populate WebCal metadata...")
+                            kotlinx.coroutines.delay(2000) // Increased delay for WebCal feed population
+                            android.util.Log.e("DAVy-AddAccount", "Starting second PROPFIND request...")
+                            Timber.d("Starting second PROPFIND request...")
+                            
+                            val updatedCalendars = caldavPrincipalDiscovery.discoverCalendars(
+                                calendarHomeSetUrl = authResult.calDavPrincipal.calendarHomeSet,
+                                username = state.username,
+                                password = state.password
+                            )
+                            
+                            android.util.Log.e("DAVy-AddAccount", "Second PROPFIND returned ${updatedCalendars.size} calendars")
+                            Timber.d("Second PROPFIND returned %s calendars:", updatedCalendars.size)
+                            updatedCalendars.forEach { cal ->
+                                android.util.Log.e("DAVy-AddAccount", "  - ${cal.displayName}: source=${cal.source}, privWriteContent=${cal.privWriteContent}")
+                                Timber.d("  - %s: source=%s, privWriteContent=%s, privUnbind=%s", 
+                                    cal.displayName, cal.source, cal.privWriteContent, cal.privUnbind)
+                            }
+                            
+                            // Update existing calendars with complete properties
+                            var webcalsFixed = 0
+                            var aclsUpdated = 0
+                            updatedCalendars.forEach { calendarInfo ->
+                                if (calendarInfo.source != null) {
+                                    // This is a webcal subscription - check if we saved it as regular calendar by mistake
+                                    val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                    Timber.d("  Processing WebCal '%s':", calendarInfo.displayName)
+                                    Timber.d("    Server source: %s", calendarInfo.source)
+                                    Timber.d("    Existing calendar: %s", if (existingCalendar != null) "found (source=${existingCalendar.source})" else "not found")
+                                    
+                                    if (existingCalendar != null && existingCalendar.source == null) {
+                                        // Delete incorrect calendar entry
+                                        calendarRepository.delete(existingCalendar)
+                                        Timber.d("    ✓ Deleted incorrectly saved calendar")
+                                        
+                                        // Create proper webcal subscription
+                                        val subscription = WebCalSubscription(
+                                            id = 0,
+                                            accountId = accountId,
+                                            subscriptionUrl = calendarInfo.source,
+                                            displayName = calendarInfo.displayName,
+                                            description = calendarInfo.description,
+                                            color = parseColor(calendarInfo.color),
+                                            syncEnabled = true
+                                        )
+                                        val subId = webCalSubscriptionRepository.insert(subscription)
+                                        Timber.d("    ✓ Created WebCalSubscription (ID: %s) from %s", subId, calendarInfo.source)
+                                        webcalsFixed++
+                                    } else if (existingCalendar != null) {
+                                        Timber.d("    Already saved correctly as calendar with source URL")
+                                    } else {
+                                        // Check if already exists as WebCal
+                                        val existingWebCal = webCalSubscriptionRepository.getByUrl(calendarInfo.source)
+                                        if (existingWebCal != null) {
+                                            Timber.d("    WebCal already exists (ID: %s)", existingWebCal.id)
+                                        } else {
+                                            Timber.d("    Creating new WebCalSubscription")
+                                            val subscription = WebCalSubscription(
+                                                id = 0,
+                                                accountId = accountId,
+                                                subscriptionUrl = calendarInfo.source,
+                                                displayName = calendarInfo.displayName,
+                                                description = calendarInfo.description,
+                                                color = parseColor(calendarInfo.color),
+                                                syncEnabled = true
+                                            )
+                                            val subId = webCalSubscriptionRepository.insert(subscription)
+                                            Timber.d("    ✓ Created new WebCalSubscription (ID: %s)", subId)
+                                            webcalsFixed++
+                                        }
+                                    }
+                                } else {
+                                    // Regular calendar - update ACL properties
+                                    val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                    Timber.d("  Processing calendar '%s':", calendarInfo.displayName)
+                                    Timber.d("    privWriteContent: %s, privUnbind: %s", calendarInfo.privWriteContent, calendarInfo.privUnbind)
+                                    
+                                    if (existingCalendar != null) {
+                                        val updated = existingCalendar.copy(
+                                            privWriteContent = calendarInfo.privWriteContent,
+                                            privUnbind = calendarInfo.privUnbind,
+                                            supportsVTODO = calendarInfo.supportsVTODO,
+                                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                            owner = calendarInfo.owner,
+                                            updatedAt = System.currentTimeMillis()
+                                        )
+                                        calendarRepository.update(updated)
+                                        Timber.d("    ✓ Updated calendar properties (isReadOnly will be: %s)", updated.isReadOnly())
+                                        aclsUpdated++
+                                    } else {
+                                        Timber.w("    Calendar not found in DB!")
+                                    }
+                                }
+                            }
+                            android.util.Log.e("DAVy-AddAccount", "Re-fetch complete: $webcalsFixed WebCals fixed, $aclsUpdated ACLs updated")
+                            Timber.d("Re-fetch complete: %s WebCals fixed, %s ACLs updated", webcalsFixed, aclsUpdated)
+                            Timber.d("========================================")
+                        } catch (e: Exception) {
+                            android.util.Log.e("DAVy-AddAccount", "FAILED TO RE-FETCH: ${e.message}", e)
+                            Timber.e(e, "FAILED TO RE-FETCH: %s", e.message)
+                            Timber.e("Stack trace:")
+                            e.printStackTrace()
+                        }
+                        
+                        // IMPORTANT: Sync calendars to Calendar Provider after properties are updated
+                        // This ensures calendars appear in the system calendar app with correct settings
                         if (androidAccountCreated) {
                             Timber.d("Syncing calendars to Calendar Provider...")
                             try {
@@ -1908,6 +2025,33 @@ class AddAccountViewModel @Inject constructor(
                         }
                         
                         Timber.d("Discovered and saved %s address book(s)", addressbooks.size)
+                        
+                        // IMPORTANT: Perform initial contact sync for all address books
+                        // This downloads contacts from server and syncs them to Android Contacts Provider
+                        if (addressbooks.isNotEmpty()) {
+                            try {
+                                android.util.Log.e("DAVy-AddAccount", "========================================")
+                                android.util.Log.e("DAVy-AddAccount", "PERFORMING INITIAL CONTACT SYNC")
+                                android.util.Log.e("DAVy-AddAccount", "Syncing ${addressbooks.size} address book(s)...")
+                                Timber.d("========================================")
+                                Timber.d("PERFORMING INITIAL CONTACT SYNC")
+                                Timber.d("Syncing %s address book(s)...", addressbooks.size)
+                                
+                                val syncResult = cardDAVSyncService.syncAccount(account)
+                                
+                                android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
+                                Timber.d("Initial contact sync complete:")
+                                Timber.d("  Downloaded: %s contacts", syncResult.contactsDownloaded)
+                                Timber.d("  Uploaded: %s contacts", syncResult.contactsUploaded)
+                                Timber.d("  Deleted: %s contacts", syncResult.contactsDeleted)
+                                Timber.d("  Errors: %s", syncResult.errors)
+                                Timber.d("========================================")
+                            } catch (e: Exception) {
+                                android.util.Log.e("DAVy-AddAccount", "Failed initial contact sync: ${e.message}", e)
+                                Timber.e(e, "Failed to perform initial contact sync: %s", e.message)
+                                // Don't fail the whole flow if initial contact sync fails
+                            }
+                        }
                     } catch (e: Exception) {
                         Timber.e(e, "Failed to discover addressbooks")
                         // Don't fail the whole flow if addressbook discovery fails
@@ -2243,13 +2387,27 @@ class AddAccountViewModel @Inject constructor(
                 }
                 
                 Timber.d("Nextcloud login successful! User: ${credentials.loginName}")
-                
-                // Create account with received credentials
-                createNextcloudAccount(
-                    serverUrl = credentials.serverUrl,
-                    username = credentials.loginName,
-                    appPassword = credentials.appPassword
+
+                // Mark login flow as finished BEFORE continuing to avoid lifecycle-based cancellation
+                _uiState.value = _uiState.value.copy(
+                    isNextcloudLogin = false,
+                    nextcloudLoginUrl = null,
+                    isLoading = true
                 )
+
+                // Decouple account creation from the polling job so cancelNextcloudLogin() won't cancel it
+                viewModelScope.launch {
+                    try {
+                        createNextcloudAccount(
+                            serverUrl = credentials.serverUrl,
+                            username = credentials.loginName,
+                            appPassword = credentials.appPassword
+                        )
+                    } finally {
+                        // Clear initiation to fully end the flow
+                        loginFlowInitiation = null
+                    }
+                }
                 
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
                 Timber.w("Nextcloud login flow timed out")
@@ -2480,25 +2638,120 @@ class AddAccountViewModel @Inject constructor(
                         password = password
                     )
                     
+                    // Classify WebCal vs regular calendars on first pass
                     calendars.forEach { calendarInfo ->
-                        val calendar = com.davy.domain.model.Calendar(
-                            id = 0,
-                            accountId = accountId,
-                            calendarUrl = calendarInfo.url,
-                            displayName = calendarInfo.displayName,
-                            description = calendarInfo.description,
-                            color = parseColor(calendarInfo.color),
-                            supportsVTODO = calendarInfo.supportsVTODO,
-                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
-                            syncEnabled = true,
-                            visible = true,
-                            createdAt = System.currentTimeMillis(),
-                            updatedAt = System.currentTimeMillis(),
-                            lastSyncedAt = null
-                        )
-                        calendarRepository.insert(calendar)
+                        if (calendarInfo.source != null) {
+                            val subscription = WebCalSubscription(
+                                id = 0,
+                                accountId = accountId,
+                                subscriptionUrl = calendarInfo.source,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                syncEnabled = true
+                            )
+                            webCalSubscriptionRepository.insert(subscription)
+                            Timber.d("Saved webcal subscription: %s from %s", calendarInfo.displayName, calendarInfo.source)
+                        } else {
+                            val calendar = com.davy.domain.model.Calendar(
+                                id = 0,
+                                accountId = accountId,
+                                calendarUrl = calendarInfo.url,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                supportsVTODO = calendarInfo.supportsVTODO,
+                                supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                syncEnabled = true,
+                                visible = true,
+                                owner = calendarInfo.owner,
+                                privWriteContent = calendarInfo.privWriteContent,
+                                privUnbind = calendarInfo.privUnbind,
+                                source = calendarInfo.source,
+                                createdAt = System.currentTimeMillis(),
+                                updatedAt = System.currentTimeMillis(),
+                                lastSyncedAt = null
+                            )
+                            calendarRepository.insert(calendar)
+                            Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                        }
                     }
-                    
+
+                    // Post-discovery re-fetch to repair any missing properties (WebCal source, ACL)
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "RE-FETCHING CALENDAR PROPERTIES (Provider Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Waiting 2 seconds for server to populate WebCal metadata...")
+                        Timber.d("========================================")
+                        Timber.d("RE-FETCHING CALENDAR PROPERTIES (Provider Flow)")
+                        Timber.d("Waiting 2 seconds for server to populate WebCal metadata...")
+                        kotlinx.coroutines.delay(2000)
+                        android.util.Log.e("DAVy-AddAccount", "Starting second PROPFIND request...")
+                        Timber.d("Starting second PROPFIND request...")
+
+                        val updatedCalendars = caldavPrincipalDiscovery.discoverCalendars(
+                            calendarHomeSetUrl = calDavPrincipal.calendarHomeSet,
+                            username = email,
+                            password = password
+                        )
+
+                        var webcalsFixed = 0
+                        var aclsUpdated = 0
+                        updatedCalendars.forEach { calendarInfo ->
+                            if (calendarInfo.source != null) {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null && existingCalendar.source == null) {
+                                    calendarRepository.delete(existingCalendar)
+                                    val subscription = WebCalSubscription(
+                                        id = 0,
+                                        accountId = accountId,
+                                        subscriptionUrl = calendarInfo.source,
+                                        displayName = calendarInfo.displayName,
+                                        description = calendarInfo.description,
+                                        color = parseColor(calendarInfo.color),
+                                        syncEnabled = true
+                                    )
+                                    webCalSubscriptionRepository.insert(subscription)
+                                    webcalsFixed++
+                                } else if (existingCalendar == null) {
+                                    val existingWebCal = webCalSubscriptionRepository.getByUrl(calendarInfo.source)
+                                    if (existingWebCal == null) {
+                                        val subscription = WebCalSubscription(
+                                            id = 0,
+                                            accountId = accountId,
+                                            subscriptionUrl = calendarInfo.source,
+                                            displayName = calendarInfo.displayName,
+                                            description = calendarInfo.description,
+                                            color = parseColor(calendarInfo.color),
+                                            syncEnabled = true
+                                        )
+                                        webCalSubscriptionRepository.insert(subscription)
+                                        webcalsFixed++
+                                    }
+                                }
+                            } else {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null) {
+                                    val updated = existingCalendar.copy(
+                                        privWriteContent = calendarInfo.privWriteContent,
+                                        privUnbind = calendarInfo.privUnbind,
+                                        supportsVTODO = calendarInfo.supportsVTODO,
+                                        supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                        owner = calendarInfo.owner,
+                                        updatedAt = System.currentTimeMillis()
+                                    )
+                                    calendarRepository.update(updated)
+                                    aclsUpdated++
+                                }
+                            }
+                        }
+                        android.util.Log.e("DAVy-AddAccount", "Re-fetch complete: $webcalsFixed WebCals fixed, $aclsUpdated ACLs updated")
+                        Timber.d("Re-fetch complete: %s WebCals fixed, %s ACLs updated", webcalsFixed, aclsUpdated)
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "FAILED TO RE-FETCH (Provider Flow): ${e.message}", e)
+                        Timber.e(e, "FAILED TO RE-FETCH (Provider Flow): %s", e.message)
+                    }
+
                     calendarContractSync.syncToCalendarProvider(accountId)
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover/sync calendars for $providerName")
@@ -2543,6 +2796,25 @@ class AddAccountViewModel @Inject constructor(
                             addressBookId = addressBookId,
                             addressBookUrl = addressBookInfo.url
                         )
+                    }
+
+                    // Perform an initial contacts sync to populate the Contacts Provider right away
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "PERFORMING INITIAL CONTACT SYNC (Provider Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Syncing ${addressBooks.size} address book(s)...")
+                        Timber.d("========================================")
+                        Timber.d("PERFORMING INITIAL CONTACT SYNC (Provider Flow)")
+                        Timber.d("Syncing %s address book(s)...", addressBooks.size)
+
+                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
+                        Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
+                            syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)
+                        Timber.d("========================================")
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "Failed initial contact sync (Provider Flow): ${e.message}", e)
+                        Timber.e(e, "Failed to perform initial contact sync (Provider Flow): %s", e.message)
                     }
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover address books for $providerName")
@@ -2623,25 +2895,120 @@ class AddAccountViewModel @Inject constructor(
                         password = password
                     )
                     
+                    // Classify WebCal vs regular calendars on first pass
                     calendars.forEach { calendarInfo ->
-                        val calendar = com.davy.domain.model.Calendar(
-                            id = 0,
-                            accountId = accountId,
-                            calendarUrl = calendarInfo.url,
-                            displayName = calendarInfo.displayName,
-                            description = calendarInfo.description,
-                            color = parseColor(calendarInfo.color),
-                            supportsVTODO = calendarInfo.supportsVTODO,
-                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
-                            syncEnabled = true,
-                            visible = true,
-                            createdAt = System.currentTimeMillis(),
-                            updatedAt = System.currentTimeMillis(),
-                            lastSyncedAt = null
-                        )
-                        calendarRepository.insert(calendar)
+                        if (calendarInfo.source != null) {
+                            val subscription = WebCalSubscription(
+                                id = 0,
+                                accountId = accountId,
+                                subscriptionUrl = calendarInfo.source,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                syncEnabled = true
+                            )
+                            webCalSubscriptionRepository.insert(subscription)
+                            Timber.d("Saved webcal subscription: %s from %s", calendarInfo.displayName, calendarInfo.source)
+                        } else {
+                            val calendar = com.davy.domain.model.Calendar(
+                                id = 0,
+                                accountId = accountId,
+                                calendarUrl = calendarInfo.url,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                supportsVTODO = calendarInfo.supportsVTODO,
+                                supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                syncEnabled = true,
+                                visible = true,
+                                owner = calendarInfo.owner,
+                                privWriteContent = calendarInfo.privWriteContent,
+                                privUnbind = calendarInfo.privUnbind,
+                                source = calendarInfo.source,
+                                createdAt = System.currentTimeMillis(),
+                                updatedAt = System.currentTimeMillis(),
+                                lastSyncedAt = null
+                            )
+                            calendarRepository.insert(calendar)
+                            Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                        }
                     }
-                    
+
+                    // Post-discovery re-fetch to repair any missing properties (WebCal source, ACL)
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "RE-FETCHING CALENDAR PROPERTIES (Provider-Auth Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Waiting 2 seconds for server to populate WebCal metadata...")
+                        Timber.d("========================================")
+                        Timber.d("RE-FETCHING CALENDAR PROPERTIES (Provider-Auth Flow)")
+                        Timber.d("Waiting 2 seconds for server to populate WebCal metadata...")
+                        kotlinx.coroutines.delay(2000)
+                        android.util.Log.e("DAVy-AddAccount", "Starting second PROPFIND request...")
+                        Timber.d("Starting second PROPFIND request...")
+
+                        val updatedCalendars = caldavPrincipalDiscovery.discoverCalendars(
+                            calendarHomeSetUrl = authResult.calDavPrincipal.calendarHomeSet,
+                            username = email,
+                            password = password
+                        )
+
+                        var webcalsFixed = 0
+                        var aclsUpdated = 0
+                        updatedCalendars.forEach { calendarInfo ->
+                            if (calendarInfo.source != null) {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null && existingCalendar.source == null) {
+                                    calendarRepository.delete(existingCalendar)
+                                    val subscription = WebCalSubscription(
+                                        id = 0,
+                                        accountId = accountId,
+                                        subscriptionUrl = calendarInfo.source,
+                                        displayName = calendarInfo.displayName,
+                                        description = calendarInfo.description,
+                                        color = parseColor(calendarInfo.color),
+                                        syncEnabled = true
+                                    )
+                                    webCalSubscriptionRepository.insert(subscription)
+                                    webcalsFixed++
+                                } else if (existingCalendar == null) {
+                                    val existingWebCal = webCalSubscriptionRepository.getByUrl(calendarInfo.source)
+                                    if (existingWebCal == null) {
+                                        val subscription = WebCalSubscription(
+                                            id = 0,
+                                            accountId = accountId,
+                                            subscriptionUrl = calendarInfo.source,
+                                            displayName = calendarInfo.displayName,
+                                            description = calendarInfo.description,
+                                            color = parseColor(calendarInfo.color),
+                                            syncEnabled = true
+                                        )
+                                        webCalSubscriptionRepository.insert(subscription)
+                                        webcalsFixed++
+                                    }
+                                }
+                            } else {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null) {
+                                    val updated = existingCalendar.copy(
+                                        privWriteContent = calendarInfo.privWriteContent,
+                                        privUnbind = calendarInfo.privUnbind,
+                                        supportsVTODO = calendarInfo.supportsVTODO,
+                                        supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                        owner = calendarInfo.owner,
+                                        updatedAt = System.currentTimeMillis()
+                                    )
+                                    calendarRepository.update(updated)
+                                    aclsUpdated++
+                                }
+                            }
+                        }
+                        android.util.Log.e("DAVy-AddAccount", "Re-fetch complete: $webcalsFixed WebCals fixed, $aclsUpdated ACLs updated")
+                        Timber.d("Re-fetch complete: %s WebCals fixed, %s ACLs updated", webcalsFixed, aclsUpdated)
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "FAILED TO RE-FETCH (Provider-Auth Flow): ${e.message}", e)
+                        Timber.e(e, "FAILED TO RE-FETCH (Provider-Auth Flow): %s", e.message)
+                    }
+
                     calendarContractSync.syncToCalendarProvider(accountId)
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover/sync calendars for $providerName")
@@ -2686,6 +3053,25 @@ class AddAccountViewModel @Inject constructor(
                             addressBookId = addressBookId,
                             addressBookUrl = addressBookInfo.url
                         )
+                    }
+
+                    // Perform an initial contacts sync to populate the Contacts Provider right away
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "PERFORMING INITIAL CONTACT SYNC (Provider-Auth Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Syncing ${addressBooks.size} address book(s)...")
+                        Timber.d("========================================")
+                        Timber.d("PERFORMING INITIAL CONTACT SYNC (Provider-Auth Flow)")
+                        Timber.d("Syncing %s address book(s)...", addressBooks.size)
+
+                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
+                        Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
+                            syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)
+                        Timber.d("========================================")
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "Failed initial contact sync (Provider-Auth Flow): ${e.message}", e)
+                        Timber.e(e, "Failed to perform initial contact sync (Provider-Auth Flow): %s", e.message)
                     }
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover address books for $providerName")
@@ -2758,7 +3144,10 @@ class AddAccountViewModel @Inject constructor(
             )
             
             val accountId = accountRepository.insert(account)
-            credentialStore.storePassword(accountId, appPassword)
+            // Store sensitive data off the main thread to satisfy StrictMode in debug builds
+            withContext(Dispatchers.IO) {
+                credentialStore.storePassword(accountId, appPassword)
+            }
             
             // Create Android account
             androidAccountManager.createOrUpdateAccount(account.accountName, appPassword)
@@ -2772,25 +3161,120 @@ class AddAccountViewModel @Inject constructor(
                         password = appPassword
                     )
                     
+                    // Classify WebCal vs regular calendars on first pass
                     calendars.forEach { calendarInfo ->
-                        val calendar = com.davy.domain.model.Calendar(
-                            id = 0,
-                            accountId = accountId,
-                            calendarUrl = calendarInfo.url,
-                            displayName = calendarInfo.displayName,
-                            description = calendarInfo.description,
-                            color = parseColor(calendarInfo.color),
-                            supportsVTODO = calendarInfo.supportsVTODO,
-                            supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
-                            syncEnabled = true,
-                            visible = true,
-                            createdAt = System.currentTimeMillis(),
-                            updatedAt = System.currentTimeMillis(),
-                            lastSyncedAt = null
-                        )
-                        calendarRepository.insert(calendar)
+                        if (calendarInfo.source != null) {
+                            val subscription = WebCalSubscription(
+                                id = 0,
+                                accountId = accountId,
+                                subscriptionUrl = calendarInfo.source,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                syncEnabled = true
+                            )
+                            webCalSubscriptionRepository.insert(subscription)
+                            Timber.d("Saved webcal subscription: %s from %s", calendarInfo.displayName, calendarInfo.source)
+                        } else {
+                            val calendar = com.davy.domain.model.Calendar(
+                                id = 0,
+                                accountId = accountId,
+                                calendarUrl = calendarInfo.url,
+                                displayName = calendarInfo.displayName,
+                                description = calendarInfo.description,
+                                color = parseColor(calendarInfo.color),
+                                supportsVTODO = calendarInfo.supportsVTODO,
+                                supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                syncEnabled = true,
+                                visible = true,
+                                owner = calendarInfo.owner,
+                                privWriteContent = calendarInfo.privWriteContent,
+                                privUnbind = calendarInfo.privUnbind,
+                                source = calendarInfo.source,
+                                createdAt = System.currentTimeMillis(),
+                                updatedAt = System.currentTimeMillis(),
+                                lastSyncedAt = null
+                            )
+                            calendarRepository.insert(calendar)
+                            Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                        }
                     }
-                    
+
+                    // Post-discovery re-fetch to repair any missing properties (WebCal source, ACL)
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "RE-FETCHING CALENDAR PROPERTIES (Nextcloud Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Waiting 2 seconds for server to populate WebCal metadata...")
+                        Timber.d("========================================")
+                        Timber.d("RE-FETCHING CALENDAR PROPERTIES (Nextcloud Flow)")
+                        Timber.d("Waiting 2 seconds for server to populate WebCal metadata...")
+                        kotlinx.coroutines.delay(2000)
+                        android.util.Log.e("DAVy-AddAccount", "Starting second PROPFIND request...")
+                        Timber.d("Starting second PROPFIND request...")
+
+                        val updatedCalendars = caldavPrincipalDiscovery.discoverCalendars(
+                            calendarHomeSetUrl = authResult.calDavPrincipal.calendarHomeSet,
+                            username = username,
+                            password = appPassword
+                        )
+
+                        var webcalsFixed = 0
+                        var aclsUpdated = 0
+                        updatedCalendars.forEach { calendarInfo ->
+                            if (calendarInfo.source != null) {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null && existingCalendar.source == null) {
+                                    calendarRepository.delete(existingCalendar)
+                                    val subscription = WebCalSubscription(
+                                        id = 0,
+                                        accountId = accountId,
+                                        subscriptionUrl = calendarInfo.source,
+                                        displayName = calendarInfo.displayName,
+                                        description = calendarInfo.description,
+                                        color = parseColor(calendarInfo.color),
+                                        syncEnabled = true
+                                    )
+                                    webCalSubscriptionRepository.insert(subscription)
+                                    webcalsFixed++
+                                } else if (existingCalendar == null) {
+                                    val existingWebCal = webCalSubscriptionRepository.getByUrl(calendarInfo.source)
+                                    if (existingWebCal == null) {
+                                        val subscription = WebCalSubscription(
+                                            id = 0,
+                                            accountId = accountId,
+                                            subscriptionUrl = calendarInfo.source,
+                                            displayName = calendarInfo.displayName,
+                                            description = calendarInfo.description,
+                                            color = parseColor(calendarInfo.color),
+                                            syncEnabled = true
+                                        )
+                                        webCalSubscriptionRepository.insert(subscription)
+                                        webcalsFixed++
+                                    }
+                                }
+                            } else {
+                                val existingCalendar = calendarRepository.getByUrl(calendarInfo.url)
+                                if (existingCalendar != null) {
+                                    val updated = existingCalendar.copy(
+                                        privWriteContent = calendarInfo.privWriteContent,
+                                        privUnbind = calendarInfo.privUnbind,
+                                        supportsVTODO = calendarInfo.supportsVTODO,
+                                        supportsVJOURNAL = calendarInfo.supportsVJOURNAL,
+                                        owner = calendarInfo.owner,
+                                        updatedAt = System.currentTimeMillis()
+                                    )
+                                    calendarRepository.update(updated)
+                                    aclsUpdated++
+                                }
+                            }
+                        }
+                        android.util.Log.e("DAVy-AddAccount", "Re-fetch complete: $webcalsFixed WebCals fixed, $aclsUpdated ACLs updated")
+                        Timber.d("Re-fetch complete: %s WebCals fixed, %s ACLs updated", webcalsFixed, aclsUpdated)
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "FAILED TO RE-FETCH (Nextcloud Flow): ${e.message}", e)
+                        Timber.e(e, "FAILED TO RE-FETCH (Nextcloud Flow): %s", e.message)
+                    }
+
                     calendarContractSync.syncToCalendarProvider(accountId)
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover/sync calendars")
@@ -2828,6 +3312,25 @@ class AddAccountViewModel @Inject constructor(
                             addressBookId = addressBookId,
                             addressBookUrl = addressBook.url
                         )
+                    }
+
+                    // Perform an initial contacts sync to populate the Contacts Provider right away
+                    try {
+                        android.util.Log.e("DAVy-AddAccount", "========================================")
+                        android.util.Log.e("DAVy-AddAccount", "PERFORMING INITIAL CONTACT SYNC (Nextcloud Flow)")
+                        android.util.Log.e("DAVy-AddAccount", "Syncing ${addressBooks.size} address book(s)...")
+                        Timber.d("========================================")
+                        Timber.d("PERFORMING INITIAL CONTACT SYNC (Nextcloud Flow)")
+                        Timber.d("Syncing %s address book(s)...", addressBooks.size)
+
+                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
+                        Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
+                            syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)
+                        Timber.d("========================================")
+                    } catch (e: Exception) {
+                        android.util.Log.e("DAVy-AddAccount", "Failed initial contact sync (Nextcloud Flow): ${e.message}", e)
+                        Timber.e(e, "Failed to perform initial contact sync (Nextcloud Flow): %s", e.message)
                     }
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to discover address books")

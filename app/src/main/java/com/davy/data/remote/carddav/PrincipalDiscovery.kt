@@ -217,7 +217,7 @@ class PrincipalDiscovery @Inject constructor(
         principalUrl: String,
         username: String,
         password: String
-    ): String? {
+    ): String? = withContext(Dispatchers.IO) {
         val propfindBody = """
             <?xml version="1.0" encoding="utf-8" ?>
             <d:propfind xmlns:d="DAV:">
@@ -227,7 +227,7 @@ class PrincipalDiscovery @Inject constructor(
             </d:propfind>
         """.trimIndent()
         
-        return try {
+        return@withContext try {
             val request = Request.Builder()
                 .url(principalUrl)
                 .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
@@ -395,42 +395,56 @@ class PrincipalDiscovery @Inject constructor(
         """.trimIndent()
         
         return@withContext try {
-            val request = Request.Builder()
-                .url(addressbookHomeSetUrl)
-                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
-                .header("Authorization", createBasicAuthHeader(username, password))
-                .header(DEPTH_HEADER, "1") // CRITICAL: Depth 1 lists children (the actual addressbooks)
-                .build()
-            
-            Timber.tag("CardDAVPrincipalDiscovery").d("Sending PROPFIND Depth: 1 for addressbooks")
-            val response = httpClient.newCall(request).execute()
-            
-            Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response code: %s", response.code)
-            
-            if (response.code == 207 || response.code == 200) {
-                val responseBody = response.body?.string()
-                Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response body:\n%s", responseBody)
-                
-                if (responseBody != null) {
-                    val addressbooks = parseAddressbookCollections(responseBody, addressbookHomeSetUrl)
-                    Timber.tag("CardDAVPrincipalDiscovery").d("Discovered %s addressbooks: %s", addressbooks.size, addressbooks.map { it.displayName })
-                    addressbooks
-                } else {
-                    emptyList()
-                }
+            fun executePropfind(): Pair<Int, String?> {
+                val request = Request.Builder()
+                    .url(addressbookHomeSetUrl)
+                    .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
+                    .header("Authorization", createBasicAuthHeader(username, password))
+                    .header(DEPTH_HEADER, "1") // CRITICAL: Depth 1 lists children (the actual addressbooks)
+                    .build()
+
+                Timber.tag("CardDAVPrincipalDiscovery").d("Sending PROPFIND Depth: 1 for addressbooks")
+                val response = httpClient.newCall(request).execute()
+                Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response code: %s", response.code)
+                val body = response.body?.string()
+                Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response body:\n%s", body)
+                return response.code to body
+            }
+
+            // First attempt
+            var (status, body) = executePropfind()
+            var addressbooks: List<AddressbookCollectionInfo> = emptyList()
+
+            if (status == 207 || status == 200) {
+                addressbooks = body?.let { parseAddressbookCollections(it, addressbookHomeSetUrl) } ?: emptyList()
             } else {
-                Timber.tag("CardDAVPrincipalDiscovery").w("Failed to discover addressbooks: %s - %s", response.code, response.body?.string())
-                
-                // Show notification for auth errors
-                if (response.code == 401 || response.code == 403) {
+                Timber.tag("CardDAVPrincipalDiscovery").w("Failed to discover addressbooks: %s - %s", status, body)
+                if (status == 401 || status == 403) {
                     NotificationHelper.showHttpErrorNotification(
                         context,
-                        response.code
+                        status
                     )
                 }
-                
-                throw PrincipalDiscoveryException("Failed to discover addressbooks: HTTP ${response.code}")
+                throw PrincipalDiscoveryException("Failed to discover addressbooks: HTTP ${status}")
             }
+
+            // Some servers (e.g., Nextcloud) can delay address book provisioning or metadata on first access.
+            // If we received an empty list, wait briefly and retry once.
+            if (addressbooks.isEmpty()) {
+                Timber.tag("CardDAVPrincipalDiscovery").w("No addressbooks found on first attempt. Retrying after short delay...")
+                kotlinx.coroutines.delay(1500)
+                val retry = executePropfind()
+                status = retry.first
+                body = retry.second
+                if (status == 207 || status == 200) {
+                    addressbooks = body?.let { parseAddressbookCollections(it, addressbookHomeSetUrl) } ?: emptyList()
+                } else {
+                    Timber.tag("CardDAVPrincipalDiscovery").w("Retry failed to discover addressbooks: %s - %s", status, body)
+                }
+            }
+
+            Timber.tag("CardDAVPrincipalDiscovery").d("Discovered %s addressbooks: %s", addressbooks.size, addressbooks.map { it.displayName })
+            addressbooks
         } catch (e: Exception) {
             Timber.tag("CardDAVPrincipalDiscovery").e(e, "Error discovering addressbooks")
             e.printStackTrace()
