@@ -145,11 +145,29 @@
     <string name="faq_enable_auto_sync_answer">前往 Android 设置 → 账户 → DAVy → 启用"自动同步数据"</string>
     <string name="faq_multiple_accounts">我可以同步多个账户吗？</string>
     <string name="faq_multiple_accounts_answer">是的，您可以同时添加和同步多个 CalDAV/CardDAV 账户。</string>
+    <string name="faq_what_is_webcal">什么是WebCal订阅？</string>
+    <string name="faq_what_is_webcal_answer">WebCal订阅是只读日历源（webcal:// URL），DAVy会定期获取并同步到您的设备。非常适合公共日历、体育赛程、节假日等。在账户详情的WebCal标签中查找。</string>
+    <string name="faq_permissions_needed">为什么DAVy需要权限？</string>
+    <string name="faq_permissions_needed_answer">• 日历：读/写以同步事件到您的设备\n• 联系人：读/写以同步联系人到您的设备\n• 通知（Android 13+）：显示同步状态和错误\nDAVy仅访问同步所需的数据 - 没有跟踪或分析。</string>
+    <string name="faq_battery_optimization">为什么要禁用电池优化？</string>
+    <string name="faq_battery_optimization_answer">Android的电池优化可能会阻止后台同步。禁用它可以确保DAVy能够按计划可靠地同步。在账户设置中会提示您禁用它。DAVy专为最小电池使用而设计。</string>
+    <string name="faq_batch_operations">批量操作如何工作？</string>
+    <string name="faq_batch_operations_answer">长按任何日历、地址簿或WebCal订阅以进入批量选择模式。选择多个项目，然后使用菜单中的删除按钮一次性删除所有项目。点击外部或使用返回手势退出批量模式。</string>
     
     <!-- Guides Screen -->
     <string name="guides">指南</string>
     <string name="getting_started">入门</string>
     <string name="setup_guides">设置指南</string>
+    <string name="guides_getting_started_title">入门</string>
+    <string name="guides_getting_started_body">1. 在提示时授予日历和联系人权限\n2. 点击+按钮添加账户\n3. 选择您的提供商（Nextcloud、Fastmail、iCloud）或使用手动设置\n4. 输入您的服务器URL、用户名和密码\n5. DAVy将自动发现可用的日历、地址簿和WebCal订阅</string>
+    <string name="guides_calendars_title">管理日历和WebCal订阅</string>
+    <string name="guides_calendars_body">• 点击账户查看其日历和订阅\n• 使用标签在CalDAV日历、地址簿和WebCal订阅之间切换\n• "刷新列表"从服务器更新可用集合\n• 使用菜单中的+按钮创建新日历\n• 通过WebCal标签订阅只读WebCal源（webcal://）\n• 使用开关启用/禁用每个日历的同步\n• 长按批量选择日历，然后一次删除多个\n• 使用"同步"按钮进行单独或批量同步</string>
+    <string name="guides_contacts_title">管理联系人</string>
+    <string name="guides_contacts_body">• 切换到账户详情中的"地址簿"标签\n• 地址簿根据您的设置自动同步\n• 使用开关启用/禁用每个地址簿的同步\n• 使用菜单中的+按钮创建新地址簿\n• 长按批量选择和删除地址簿\n• 所有同步的联系人都会出现在Android联系人应用中</string>
+    <string name="guides_account_settings_title">账户设置</string>
+    <string name="guides_account_settings_body">• 通过账户详情中的菜单图标访问设置\n• 更新服务器URL和身份验证凭据\n• 启用"仅WiFi同步"以节省移动数据\n• 为新日历设置默认日历颜色\n• 配置联系人分组方法（类别或组）\n• 跳过旧事件以减少初始同步时间\n• 禁用电池优化以实现可靠的后台同步\n• 配置自动同步间隔（每小时、每天等）</string>
+    <string name="guides_sync_title">同步</string>
+    <string name="guides_sync_body">• 主屏幕上的"全部同步"按钮同步所有账户\n• 账户详情中提供每个账户的同步\n• 日历、联系人和WebCal订阅的单独同步按钮\n• 可以在账户设置中配置自动同步\n• 仅WiFi选项可防止移动数据使用\n• 后台同步根据您的间隔自动运行\n• 通过同步按钮始终可以手动同步\n• 同步的数据显示在Android日历和联系人应用中</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">发生错误</string>

@@ -201,6 +201,14 @@
     <string name="faq_what_is_wifi_only_answer">Aktiviere dies in den Kontoeinstellungen, damit nur bei bestehender WLAN-Verbindung synchronisiert wird. Das spart mobile Daten.</string>
     <string name="faq_rename_account">Was passiert, wenn ich ein Konto umbenenne?</string>
     <string name="faq_rename_account_answer">Das Umbenennen eines Kontos kann dazu führen, dass es in der Android-Kalender-App deaktiviert wird, da Android den Kontonamen als Kennung verwendet. Sie können das Konto in Ihrer Kalender-App wieder aktivieren.</string>
+    <string name="faq_what_is_webcal">Was sind WebCal-Abonnements?</string>
+    <string name="faq_what_is_webcal_answer">WebCal-Abonnements sind schreibgeschützte Kalender-Feeds (webcal://-URLs), die DAVy regelmäßig abruft und auf dein Gerät synchronisiert. Perfekt für öffentliche Kalender, Spielpläne, Feiertage usw. Du findest sie im WebCal-Tab der Kontodetails.</string>
+    <string name="faq_permissions_needed">Warum benötigt DAVy Berechtigungen?</string>
+    <string name="faq_permissions_needed_answer">• Kalender: Lesen/Schreiben zum Synchronisieren von Ereignissen mit deinem Gerät\n• Kontakte: Lesen/Schreiben zum Synchronisieren von Kontakten mit deinem Gerät\n• Benachrichtigungen (Android 13+): Synchronisierungsstatus und Fehler anzeigen\nDAVy greift nur auf Daten zu, die für die Synchronisierung erforderlich sind – kein Tracking oder Analyse.</string>
+    <string name="faq_battery_optimization">Warum sollte ich die Batterieoptimierung deaktivieren?</string>
+    <string name="faq_battery_optimization_answer">Androids Batterieoptimierung kann die Hintergrundsynchronisierung verhindern. Wenn du sie deaktivierst, kann DAVy zuverlässig nach Zeitplan synchronisieren. Du wirst in den Kontoeinstellungen dazu aufgefordert. DAVy ist auf minimalen Batterieverbrauch ausgelegt.</string>
+    <string name="faq_batch_operations">Wie funktionieren Stapeloperationen?</string>
+    <string name="faq_batch_operations_answer">Halte einen beliebigen Kalender, ein Adressbuch oder ein WebCal-Abonnement lange gedrückt, um den Stapelauswahlmodus zu aktivieren. Wähle mehrere Elemente aus und verwende dann die Löschen-Schaltfläche im Menü, um sie alle auf einmal zu entfernen. Tippe außerhalb oder verwende die Zurück-Geste, um den Stapelmodus zu verlassen.</string>
     
     <!-- Guides Screen -->
     <string name="guides">Anleitungen</string>

@@ -145,11 +145,29 @@
     <string name="faq_enable_auto_sync_answer">Android 설정 → 계정 → DAVy → \'데이터 자동 동기화\' 활성화</string>
     <string name="faq_multiple_accounts">여러 계정을 동기화할 수 있나요?</string>
     <string name="faq_multiple_accounts_answer">예, 여러 CalDAV/CardDAV 계정을 동시에 추가하고 동기화할 수 있습니다.</string>
+    <string name="faq_what_is_webcal">WebCal 구독이란 무엇인가요?</string>
+    <string name="faq_what_is_webcal_answer">WebCal 구독은 DAVy가 주기적으로 가져와서 장치와 동기화하는 읽기 전용 캘린더 피드(webcal:// URL)입니다. 공개 캘린더, 스포츠 일정, 휴일 등에 완벽합니다. 계정 세부정보의 WebCal 탭에서 찾아보세요.</string>
+    <string name="faq_permissions_needed">DAVy에 권한이 필요한 이유는?</string>
+    <string name="faq_permissions_needed_answer">• 캘린더: 장치와 이벤트를 동기화하기 위한 읽기/쓰기\n• 연락처: 장치와 연락처를 동기화하기 위한 읽기/쓰기\n• 알림(Android 13 이상): 동기화 상태 및 오류 표시\nDAVy는 동기화에 필요한 데이터에만 액세스합니다 - 추적이나 분석이 없습니다.</string>
+    <string name="faq_battery_optimization">배터리 최적화를 비활성화하는 이유는?</string>
+    <string name="faq_battery_optimization_answer">Android의 배터리 최적화는 백그라운드 동기화를 방해할 수 있습니다. 비활성화하면 DAVy가 일정에 따라 안정적으로 동기화할 수 있습니다. 계정 설정에서 비활성화하라는 메시지가 표시됩니다. DAVy는 최소한의 배터리 사용을 위해 설계되었습니다.</string>
+    <string name="faq_batch_operations">일괄 작업은 어떻게 작동하나요?</string>
+    <string name="faq_batch_operations_answer">캘린더, 주소록 또는 WebCal 구독을 길게 눌러 일괄 선택 모드로 들어갑니다. 여러 항목을 선택한 다음 메뉴의 삭제 버튼을 사용하여 한 번에 모두 삭제합니다. 외부를 탭하거나 뒤로 제스처를 사용하여 일괄 모드를 종료합니다.</string>
     
     <!-- Guides Screen -->
     <string name="guides">가이드</string>
     <string name="getting_started">시작하기</string>
     <string name="setup_guides">설정 가이드</string>
+    <string name="guides_getting_started_title">시작하기</string>
+    <string name="guides_getting_started_body">1. 메시지가 표시되면 캘린더 및 연락처 권한을 부여합니다\n2. + 버튼을 눌러 계정을 추가합니다\n3. 제공업체를 선택(Nextcloud, Fastmail, iCloud)하거나 수동 설정을 사용합니다\n4. 서버 URL, 사용자 이름 및 비밀번호를 입력합니다\n5. DAVy는 사용 가능한 캘린더, 주소록 및 WebCal 구독을 자동으로 검색합니다</string>
+    <string name="guides_calendars_title">캘린더 및 WebCal 구독 관리</string>
+    <string name="guides_calendars_body">• 계정을 눌러 캘린더 및 구독을 확인합니다\n• CalDAV 캘린더, 주소록 및 WebCal 구독 간에 전환하려면 탭을 사용합니다\n• \"목록 새로고침\"은 서버에서 사용 가능한 컬렉션을 업데이트합니다\n• 메뉴의 + 버튼으로 새 캘린더를 만듭니다\n• WebCal 탭을 통해 읽기 전용 WebCal 피드(webcal://)를 구독합니다\n• 스위치를 사용하여 캘린더별 동기화를 활성화/비활성화합니다\n• 캘린더를 길게 눌러 일괄 선택한 다음 한 번에 여러 개를 삭제합니다\n• \"동기화\" 버튼을 사용하여 개별 또는 일괄 동기화합니다</string>
+    <string name="guides_contacts_title">연락처 관리</string>
+    <string name="guides_contacts_body">• 계정 세부정보의 \"주소록\" 탭으로 전환합니다\n• 주소록은 설정에 따라 자동으로 동기화됩니다\n• 스위치를 사용하여 주소록별 동기화를 활성화/비활성화합니다\n• 메뉴의 + 버튼으로 새 주소록을 만듭니다\n• 길게 눌러 일괄 주소록 선택 및 삭제\n• 동기화된 모든 연락처는 Android 연락처 앱에 나타납니다</string>
+    <string name="guides_account_settings_title">계정 설정</string>
+    <string name="guides_account_settings_body">• 계정 세부정보의 메뉴 아이콘을 통해 설정에 액세스합니다\n• 서버 URL 및 인증 자격 증명을 업데이트합니다\n• 모바일 데이터를 절약하려면 \"WiFi만 동기화\"를 활성화합니다\n• 새 캘린더의 기본 캘린더 색상을 설정합니다\n• 연락처 그룹 방법을 구성합니다(카테고리 또는 그룹)\n• 초기 동기화 시간을 줄이기 위해 이전 이벤트를 건너뜁니다\n• 안정적인 백그라운드 동기화를 위해 배터리 최적화를 비활성화합니다\n• 자동 동기화 간격을 구성합니다(매시간, 매일 등)</string>
+    <string name="guides_sync_title">동기화</string>
+    <string name="guides_sync_body">• 메인 화면의 \"모두 동기화\" 버튼은 모든 계정을 동기화합니다\n• 계정 세부정보에서 계정별 동기화를 사용할 수 있습니다\n• 캘린더, 연락처 및 WebCal 구독에 대한 개별 동기화 버튼\n• 자동 동기화는 계정 설정에서 구성할 수 있습니다\n• WiFi만 옵션은 모바일 데이터 사용을 방지합니다\n• 백그라운드 동기화는 간격에 따라 자동으로 실행됩니다\n• 동기화 버튼을 통해 언제든지 수동 동기화를 사용할 수 있습니다\n• 동기화된 데이터는 Android 캘린더 및 연락처 앱에 표시됩니다</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">오류가 발생했습니다</string>

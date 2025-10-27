@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.derivedStateOf
@@ -635,7 +636,12 @@ private fun DrawerContent(
         if (helpExpanded) {
             // Guides
             NavigationDrawerItem(
-                icon = { Spacer(modifier = Modifier.width(24.dp)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = null
+                    )
+                },
                 label = { Text(stringResource(id = R.string.guides), style = MaterialTheme.typography.bodyMedium) },
                 selected = false,
                 onClick = {
@@ -647,7 +653,12 @@ private fun DrawerContent(
             
             // FAQ
             NavigationDrawerItem(
-                icon = { Spacer(modifier = Modifier.width(24.dp)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Help,
+                        contentDescription = null
+                    )
+                },
                 label = { Text(stringResource(id = R.string.faq), style = MaterialTheme.typography.bodyMedium) },
                 selected = false,
                 onClick = {

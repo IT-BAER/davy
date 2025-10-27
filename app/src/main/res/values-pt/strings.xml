@@ -144,11 +144,29 @@
     <string name="faq_enable_auto_sync_answer">Vá para Configurações do Android → Contas → DAVy → Ative \'Sincronizar dados automaticamente\'</string>
     <string name="faq_multiple_accounts">Posso sincronizar várias contas?</string>
     <string name="faq_multiple_accounts_answer">Sim, você pode adicionar e sincronizar várias contas CalDAV/CardDAV simultaneamente.</string>
+    <string name="faq_what_is_webcal">O que são assinaturas WebCal?</string>
+    <string name="faq_what_is_webcal_answer">Assinaturas WebCal são feeds de calendário somente leitura (URLs webcal://) que o DAVy busca periodicamente e sincroniza no seu dispositivo. Perfeito para calendários públicos, programações esportivas, feriados, etc. Encontre-os na aba WebCal dos detalhes da conta.</string>
+    <string name="faq_permissions_needed">Por que o DAVy precisa de permissões?</string>
+    <string name="faq_permissions_needed_answer">• Calendário: Leitura/escrita para sincronizar eventos com seu dispositivo\n• Contatos: Leitura/escrita para sincronizar contatos com seu dispositivo\n• Notificações (Android 13+): Mostrar status de sincronização e erros\nO DAVy só acessa dados necessários para sincronização - sem rastreamento ou análises.</string>
+    <string name="faq_battery_optimization">Por que desativar a otimização de bateria?</string>
+    <string name="faq_battery_optimization_answer">A otimização de bateria do Android pode impedir a sincronização em segundo plano. Desativá-la garante que o DAVy possa sincronizar de forma confiável conforme programado. Você será solicitado a desativá-la nas configurações da conta. O DAVy é projetado para uso mínimo de bateria.</string>
+    <string name="faq_batch_operations">Como funcionam as operações em lote?</string>
+    <string name="faq_batch_operations_answer">Pressione e segure qualquer calendário, catálogo de endereços ou assinatura WebCal para entrar no modo de seleção em lote. Selecione vários itens e use o botão excluir no menu para removê-los todos de uma vez. Toque fora ou use o gesto de voltar para sair do modo em lote.</string>
     
     <!-- Guides Screen -->
     <string name="guides">Guias</string>
     <string name="getting_started">Primeiros passos</string>
     <string name="setup_guides">Guias de configuração</string>
+    <string name="guides_getting_started_title">Primeiros passos</string>
+    <string name="guides_getting_started_body">1. Conceda permissões de calendário e contatos quando solicitado\n2. Adicione uma conta tocando no botão +\n3. Escolha seu provedor (Nextcloud, Fastmail, iCloud) ou use Configuração manual\n4. Digite a URL do servidor, nome de usuário e senha\n5. O DAVy descobrirá automaticamente calendários, catálogos de endereços e assinaturas WebCal disponíveis</string>
+    <string name="guides_calendars_title">Gerenciar calendários e assinaturas WebCal</string>
+    <string name="guides_calendars_body">• Toque em uma conta para ver seus calendários e assinaturas\n• Use abas para alternar entre calendários CalDAV, Catálogos de endereços e assinaturas WebCal\n• "Atualizar lista" atualiza as coleções disponíveis do servidor\n• Crie novos calendários com o botão + no menu\n• Inscreva-se em feeds WebCal somente leitura (webcal://) pela aba WebCal\n• Ative/desative sincronização por calendário usando os interruptores\n• Seleção em lote de calendários com pressão longa, depois exclua vários de uma vez\n• Sincronização individual ou em lote usando botões "Sincronizar"</string>
+    <string name="guides_contacts_title">Gerenciar contatos</string>
+    <string name="guides_contacts_body">• Mude para a aba "Catálogos de endereços" nos detalhes da conta\n• Os catálogos de endereços sincronizam automaticamente com base em suas configurações\n• Ative/desative sincronização por catálogo usando os interruptores\n• Crie novos catálogos com o botão + no menu\n• Seleção em lote e exclusão de catálogos com pressão longa\n• Todos os contatos sincronizados aparecem no app Contatos do Android</string>
+    <string name="guides_account_settings_title">Configurações da conta</string>
+    <string name="guides_account_settings_body">• Acesse configurações pelo ícone de menu nos detalhes da conta\n• Atualize URL do servidor e credenciais de autenticação\n• Ative "Sincronização apenas WiFi" para economizar dados móveis\n• Defina cor de calendário padrão para novos calendários\n• Configure método de grupo de contatos (Categorias ou Grupos)\n• Pule eventos antigos para reduzir o tempo de sincronização inicial\n• Desative otimização de bateria para sincronização em segundo plano confiável\n• Configure intervalo de sincronização automática (por hora, diária, etc.)</string>
+    <string name="guides_sync_title">Sincronização</string>
+    <string name="guides_sync_body">• O botão "Sincronizar tudo" na tela principal sincroniza todas as contas\n• Sincronização por conta disponível nos detalhes da conta\n• Botões de sincronização individuais para calendários, contatos e assinaturas WebCal\n• Sincronização automática configurável nas configurações da conta\n• Opção apenas WiFi evita uso de dados móveis\n• Sincronização em segundo plano executa automaticamente com base no seu intervalo\n• Sincronização manual sempre disponível pelos botões de sincronização\n• Dados sincronizados aparecem nos apps Calendário e Contatos do Android</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">Ocorreu um erro</string>

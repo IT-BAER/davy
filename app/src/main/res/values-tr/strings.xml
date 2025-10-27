@@ -145,11 +145,29 @@
     <string name="faq_enable_auto_sync_answer">Android Ayarları → Hesaplar → DAVy → \'Verileri otomatik olarak senkronize et\' seçeneğini etkinleştirin</string>
     <string name="faq_multiple_accounts">Birden fazla hesabı senkronize edebilir miyim?</string>
     <string name="faq_multiple_accounts_answer">Evet, aynı anda birden fazla CalDAV/CardDAV hesabı ekleyebilir ve senkronize edebilirsiniz.</string>
+    <string name="faq_what_is_webcal">WebCal abonelikleri nedir?</string>
+    <string name="faq_what_is_webcal_answer">WebCal abonelikleri, DAVy\'nin periyodik olarak aldığı ve cihazınıza senkronize ettiği salt okunur takvim akışlarıdır (webcal:// URL\'leri). Genel takvimler, spor programları, tatiller vb. için mükemmeldir. Hesap ayrıntılarının WebCal sekmesinde bulun.</string>
+    <string name="faq_permissions_needed">DAVy neden izinlere ihtiyaç duyuyor?</string>
+    <string name="faq_permissions_needed_answer">• Takvim: Etkinlikleri cihazınızla senkronize etmek için okuma/yazma\n• Kişiler: Kişileri cihazınızla senkronize etmek için okuma/yazma\n• Bildirimler (Android 13+): Senkronizasyon durumunu ve hataları göster\nDAVy yalnızca senkronizasyon için gerekli verilere erişir - izleme veya analiz yok.</string>
+    <string name="faq_battery_optimization">Pil optimizasyonu neden devre dışı bırakılmalı?</string>
+    <string name="faq_battery_optimization_answer">Android\'in pil optimizasyonu arka plan senkronizasyonunu engelleyebilir. Devre dışı bırakmak, DAVy\'nin programlı olarak güvenilir şekilde senkronize olmasını sağlar. Hesap ayarlarında devre dışı bırakmanız istenecektir. DAVy minimal pil kullanımı için tasarlanmıştır.</string>
+    <string name="faq_batch_operations">Toplu işlemler nasıl çalışır?</string>
+    <string name="faq_batch_operations_answer">Toplu seçim moduna girmek için herhangi bir takvime, adres defterine veya WebCal aboneliğine uzun basın. Birden fazla öğe seçin, ardından hepsini bir kerede kaldırmak için menüdeki sil düğmesini kullanın. Toplu moddan çıkmak için dışarıya dokunun veya geri hareketini kullanın.</string>
     
     <!-- Guides Screen -->
     <string name="guides">Kılavuzlar</string>
     <string name="getting_started">Başlarken</string>
     <string name="setup_guides">Kurulum kılavuzları</string>
+    <string name="guides_getting_started_title">Başlarken</string>
+    <string name="guides_getting_started_body">1. İstendiğinde takvim ve kişiler izinlerini verin\n2. + düğmesine dokunarak bir hesap ekleyin\n3. Sağlayıcınızı seçin (Nextcloud, Fastmail, iCloud) veya Manuel Kurulum kullanın\n4. Sunucu URL\'nizi, kullanıcı adınızı ve şifrenizi girin\n5. DAVy mevcut takvimleri, adres defterlerini ve WebCal aboneliklerini otomatik olarak keşfedecektir</string>
+    <string name="guides_calendars_title">Takvimleri ve WebCal aboneliklerini yönetme</string>
+    <string name="guides_calendars_body">• Takvimlerini ve aboneliklerini görmek için bir hesaba dokunun\n• CalDAV takvimleri, Adres defterleri ve WebCal abonelikleri arasında geçiş yapmak için sekmeleri kullanın\n• "Listeyi yenile" sunucudan mevcut koleksiyonları günceller\n• Menüdeki + düğmesi ile yeni takvimler oluşturun\n• WebCal sekmesi aracılığıyla salt okunur WebCal akışlarına (webcal://) abone olun\n• Anahtarları kullanarak takvim başına senkronizasyonu etkinleştirin/devre dışı bırakın\n• Uzun basarak takvimlerin toplu seçimini yapın, ardından birden fazlasını bir kerede silin\n• "Senkronize et" düğmelerini kullanarak bireysel veya toplu senkronizasyon</string>
+    <string name="guides_contacts_title">Kişileri yönetme</string>
+    <string name="guides_contacts_body">• Hesap ayrıntılarındaki "Adres defterleri" sekmesine geçin\n• Adres defterleri ayarlarınıza göre otomatik olarak senkronize edilir\n• Anahtarları kullanarak adres defteri başına senkronizasyonu etkinleştirin/devre dışı bırakın\n• Menüdeki + düğmesi ile yeni adres defterleri oluşturun\n• Uzun basarak adres defterlerinin toplu seçimi ve silme\n• Tüm senkronize edilmiş kişiler Android Kişiler uygulamasında görünür</string>
+    <string name="guides_account_settings_title">Hesap ayarları</string>
+    <string name="guides_account_settings_body">• Hesap ayrıntılarındaki menü simgesi aracılığıyla ayarlara erişin\n• Sunucu URL\'sini ve kimlik doğrulama bilgilerini güncelleyin\n• Mobil veri tasarrufu için "Yalnızca WiFi senkronizasyonu" etkinleştirin\n• Yeni takvimler için varsayılan takvim rengini ayarlayın\n• Kişi grubu yöntemini yapılandırın (Kategoriler veya Gruplar)\n• İlk senkronizasyon süresini azaltmak için eski etkinlikleri atlayın\n• Güvenilir arka plan senkronizasyonu için pil optimizasyonunu devre dışı bırakın\n• Otomatik senkronizasyon aralığını yapılandırın (saatlik, günlük, vb.)</string>
+    <string name="guides_sync_title">Senkronizasyon</string>
+    <string name="guides_sync_body">• Ana ekrandaki "Tümünü senkronize et" düğmesi tüm hesapları senkronize eder\n• Hesap başına senkronizasyon hesap ayrıntılarında mevcuttur\n• Takvimler, kişiler ve WebCal abonelikleri için bireysel senkronizasyon düğmeleri\n• Otomatik senkronizasyon hesap ayarlarında yapılandırılabilir\n• Yalnızca WiFi seçeneği mobil veri kullanımını önler\n• Arka plan senkronizasyonu aralığınıza göre otomatik olarak çalışır\n• Manuel senkronizasyon her zaman senkronizasyon düğmeleri aracılığıyla kullanılabilir\n• Senkronize edilmiş veriler Android Takvim ve Kişiler uygulamalarında görünür</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">Bir hata oluştu</string>

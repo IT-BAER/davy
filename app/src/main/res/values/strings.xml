@@ -193,23 +193,31 @@
     <!-- FAQ Screen -->
     <string name="faq">FAQ</string>
     <string name="faq_what_is_davy">What is DAVy?</string>
-    <string name="faq_what_is_davy_answer">DAVy is a CalDAV/CardDAV sync client for Android that synchronizes calendars, contacts, and tasks with your server.</string>
+    <string name="faq_what_is_davy_answer">DAVy is a privacy-focused CalDAV/CardDAV/WebCal sync client for Android that synchronizes calendars, contacts, and read-only calendar subscriptions with your server. All data stays local - no cloud services or tracking.</string>
     <string name="faq_which_servers">Which servers are supported?</string>
-    <string name="faq_which_servers_answer">DAVy works with any CalDAV/CardDAV compliant server including Nextcloud, ownCloud, Radicale, Baïkal, and more.</string>
+    <string name="faq_which_servers_answer">DAVy works with any CalDAV/CardDAV compliant server including Nextcloud, ownCloud, Radicale, Baïkal, Fastmail, iCloud, and more. It also supports WebCal (webcal://) subscriptions for read-only calendar feeds.</string>
     <string name="faq_sync_not_working">Why is my sync not working?</string>
-    <string name="faq_sync_not_working_answer">• Server URL is correct (including https://)\n• Username and password are valid\n• WiFi-only sync is disabled or WiFi is connected\n• Auto-sync is enabled in Android Settings</string>
+    <string name="faq_sync_not_working_answer">Check these common issues:\n• Server URL is correct (including https://)\n• Username and password are valid\n• Calendar/address book sync is enabled (toggle switches)\n• WiFi-only sync is disabled or WiFi is connected\n• Auto-sync is enabled in Android Settings\n• Battery optimization is disabled for DAVy\n• App has calendar and contacts permissions</string>
     <string name="faq_enable_auto_sync">How do I enable auto-sync?</string>
-    <string name="faq_enable_auto_sync_answer">Go to Android Settings → Accounts → DAVy → Enable “Automatically sync data”</string>
+    <string name="faq_enable_auto_sync_answer">1. Configure sync interval in account settings\n2. Go to Android Settings → Accounts → DAVy → Enable "Automatically sync data"\n3. Disable battery optimization for DAVy (prompted in-app)\n4. Enable individual calendar/contact sync using toggle switches</string>
     <string name="faq_multiple_accounts">Can I sync multiple accounts?</string>
-    <string name="faq_multiple_accounts_answer">Yes, you can add and sync multiple CalDAV/CardDAV accounts simultaneously.</string>
+    <string name="faq_multiple_accounts_answer">Yes! You can add and sync multiple CalDAV/CardDAV accounts simultaneously. Each account can have different sync settings, intervals, and WiFi-only preferences.</string>
     <string name="faq_where_are_my_data">Where are my synced events/contacts?</string>
-    <string name="faq_where_are_my_data_answer">Calendar events appear in Android’s Calendar app. Contacts appear in Android’s Contacts app. DAVy handles the sync, your default apps display the data.</string>
-    <string name="faq_how_delete_account">How do I delete an account?</string>
-    <string name="faq_how_delete_account_answer">Long-press an account card on the main screen and confirm deletion. This removes the account and stops syncing.</string>
+    <string name="faq_where_are_my_data_answer">Calendar events appear in Android\'s Calendar app. Contacts appear in Android\'s Contacts app. DAVy handles the sync behind the scenes, while your default apps display the data.</string>
+    <string name="faq_how_delete_account">How do I delete an account or collections?</string>
+    <string name="faq_how_delete_account_answer">• Account: Long-press an account card on the main screen and confirm deletion\n• Single item: Long-press a calendar/address book/WebCal subscription\n• Multiple items: Long-press to enter batch mode, select items, then tap delete\n• Deleting an account removes all associated calendars, contacts, and subscriptions</string>
     <string name="faq_what_is_wifi_only">What is WiFi-only sync?</string>
-    <string name="faq_what_is_wifi_only_answer">Enable this in account settings to only sync when connected to WiFi, saving mobile data.</string>
+    <string name="faq_what_is_wifi_only_answer">Enable this in account settings to only sync when connected to WiFi, saving mobile data. Useful for large calendars or limited data plans.</string>
     <string name="faq_rename_account">What happens if I rename an account?</string>
-    <string name="faq_rename_account_answer">Renaming an account can cause it to become disabled in the Android Calendar because Android uses the account name as an identifier. You can re-enable the account inside your Calendar app.</string>
+    <string name="faq_rename_account_answer">Renaming an account can cause it to become disabled in the Android Calendar app because Android uses the account name as an identifier. You can re-enable the account in your Calendar app settings.</string>
+    <string name="faq_what_is_webcal">What are WebCal subscriptions?</string>
+    <string name="faq_what_is_webcal_answer">WebCal subscriptions are read-only calendar feeds (webcal:// URLs) that DAVy periodically fetches and syncs to your device. Perfect for public calendars, sports schedules, holidays, etc. Find them in the WebCal tab of account details.</string>
+    <string name="faq_permissions_needed">Why does DAVy need permissions?</string>
+    <string name="faq_permissions_needed_answer">• Calendar: Read/write to sync events with your device\n• Contacts: Read/write to sync contacts with your device\n• Notifications (Android 13+): Show sync status and errors\nDAVy only accesses data necessary for sync - no tracking or analytics.</string>
+    <string name="faq_battery_optimization">Why disable battery optimization?</string>
+    <string name="faq_battery_optimization_answer">Android\'s battery optimization can prevent background sync. Disabling it ensures DAVy can sync reliably on schedule. You\'ll be prompted to disable it in account settings. DAVy is designed for minimal battery usage.</string>
+    <string name="faq_batch_operations">How do batch operations work?</string>
+    <string name="faq_batch_operations_answer">Long-press any calendar, address book, or WebCal subscription to enter batch selection mode. Select multiple items, then use the delete button in the menu to remove them all at once. Tap outside or use back gesture to exit batch mode.</string>
     
     <!-- Guides Screen -->
     <string name="guides">Guides</string>
@@ -612,32 +620,15 @@
 
     <!-- Guides Page (new) -->
     <string name="guides_getting_started_title">Getting Started</string>
-    <string name="guides_getting_started_body">1. Add an account by tapping the + button
-2. Enter your CalDAV/CardDAV server URL
-3. Provide your username and password
-4. DAVy will discover available calendars and contacts</string>
-    <string name="guides_calendars_title">Managing Calendars</string>
-    <string name="guides_calendars_body">• Tap on an account to view calendars
-• Tap "Refresh list" to update available calendars
-• Sync individual calendars or use "Sync All"
-• Create new calendars with the + button
-• Long-press calendars to delete them</string>
+    <string name="guides_getting_started_body">1. Grant calendar and contacts permissions when prompted\n2. Add an account by tapping the + button\n3. Choose your provider (Nextcloud, Fastmail, iCloud) or use Manual Setup\n4. Enter your server URL, username, and password\n5. DAVy will automatically discover available calendars, address books, and WebCal subscriptions</string>
+    <string name="guides_calendars_title">Managing Calendars &amp; WebCal Subscriptions</string>
+    <string name="guides_calendars_body">• Tap an account to view its calendars and subscriptions\n• Use tabs to switch between CalDAV calendars, Address Books, and WebCal subscriptions\n• "Refresh list" updates available collections from server\n• Create new calendars with the + button in the menu\n• Subscribe to read-only WebCal feeds (webcal://) via the WebCal tab\n• Enable/disable sync per calendar using the toggle switches\n• Batch select calendars by long-pressing, then delete multiple at once\n• Individual or batch sync using "Sync" buttons</string>
     <string name="guides_contacts_title">Managing Contacts</string>
-    <string name="guides_contacts_body">• Switch to the Contacts tab to view address books
-• Contacts sync automatically based on settings
-• All synced contacts appear in Android Contacts</string>
+    <string name="guides_contacts_body">• Switch to the "Address Books" tab in account details\n• Address books sync automatically based on your settings\n• Enable/disable sync per address book using toggle switches\n• Create new address books with the + button in the menu\n• Batch select and delete address books with long-press\n• All synced contacts appear in the Android Contacts app</string>
     <string name="guides_account_settings_title">Account Settings</string>
-    <string name="guides_account_settings_body">• Tap the settings icon on account details
-• Configure authentication credentials
-• Enable WiFi-only sync
-• Set calendar color preferences
-• Choose contact group method
-• Skip old calendar events</string>
+    <string name="guides_account_settings_body">• Access settings via the menu icon in account details\n• Update server URL and authentication credentials\n• Enable "WiFi-only sync" to save mobile data\n• Set default calendar color for new calendars\n• Configure contact group method (Categories or Groups)\n• Skip old events to reduce initial sync time\n• Disable battery optimization for reliable background sync\n• Configure auto-sync interval (hourly, daily, etc.)</string>
     <string name="guides_sync_title">Syncing</string>
-    <string name="guides_sync_body">• "Sync All" syncs calendars, contacts, and tasks
-• Individual sync buttons for each resource type
-• Auto-sync can be enabled in Android Settings
-• WiFi-only option available in account settings</string>
+    <string name="guides_sync_body">• "Sync All" button on main screen syncs all accounts\n• Per-account sync available in account details\n• Individual sync buttons for calendars, contacts, and WebCal subscriptions\n• Auto-sync configurable in account settings\n• WiFi-only option prevents mobile data usage\n• Background sync runs automatically based on your interval\n• Manual sync always available via sync buttons\n• Synced data appears in Android Calendar and Contacts apps</string>
 
     <!-- Interval labels (new) -->
     <string name="every_duration">Every %1$s</string>

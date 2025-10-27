@@ -176,6 +176,70 @@ fun FaqScreen(
                 text = stringResource(id = R.string.faq_rename_account_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q10
+            Text(
+                text = stringResource(id = R.string.faq_what_is_webcal),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = R.string.faq_what_is_webcal_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q11
+            Text(
+                text = stringResource(id = R.string.faq_permissions_needed),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = R.string.faq_permissions_needed_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q12
+            Text(
+                text = stringResource(id = R.string.faq_battery_optimization),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = R.string.faq_battery_optimization_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q13
+            Text(
+                text = stringResource(id = R.string.faq_batch_operations),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = R.string.faq_batch_operations_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

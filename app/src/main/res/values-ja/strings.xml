@@ -145,11 +145,29 @@
     <string name="faq_enable_auto_sync_answer">Android設定 → アカウント → DAVy → 「データを自動的に同期する」を有効にします</string>
     <string name="faq_multiple_accounts">複数のアカウントを同期できますか？</string>
     <string name="faq_multiple_accounts_answer">はい、複数のCalDAV/CardDAVアカウントを同時に追加して同期できます。</string>
+    <string name="faq_what_is_webcal">WebCal購読とは何ですか？</string>
+    <string name="faq_what_is_webcal_answer">WebCal購読は、DAVyが定期的に取得してデバイスに同期する読み取り専用カレンダーフィード（webcal:// URL）です。公開カレンダー、スポーツスケジュール、祝日などに最適です。アカウント詳細のWebCalタブで検索してください。</string>
+    <string name="faq_permissions_needed">DAVyに権限が必要な理由は？</string>
+    <string name="faq_permissions_needed_answer">• カレンダー：デバイスとイベントを同期するための読み取り/書き込み\n• 連絡先：デバイスと連絡先を同期するための読み取り/書き込み\n• 通知（Android 13以降）：同期ステータスとエラーを表示\nDAVyは同期に必要なデータのみにアクセスします - トラッキングや分析はありません。</string>
+    <string name="faq_battery_optimization">バッテリー最適化を無効にする理由は？</string>
+    <string name="faq_battery_optimization_answer">Androidのバッテリー最適化により、バックグラウンド同期が妨げられる可能性があります。無効にすることで、DAVyがスケジュールに従って確実に同期できるようになります。アカウント設定で無効にするよう求められます。DAVyは最小限のバッテリー使用のために設計されています。</string>
+    <string name="faq_batch_operations">バッチ操作はどのように機能しますか？</string>
+    <string name="faq_batch_operations_answer">任意のカレンダー、アドレス帳、またはWebCal購読を長押しして、バッチ選択モードに入ります。複数のアイテムを選択し、メニューの削除ボタンを使用して一度に削除します。外側をタップするか、戻るジェスチャーを使用してバッチモードを終了します。</string>
     
     <!-- Guides Screen -->
     <string name="guides">ガイド</string>
     <string name="getting_started">はじめに</string>
     <string name="setup_guides">セットアップガイド</string>
+    <string name="guides_getting_started_title">はじめに</string>
+    <string name="guides_getting_started_body">1. プロンプトが表示されたらカレンダーと連絡先の権限を付与します\n2. +ボタンをタップしてアカウントを追加します\n3. プロバイダーを選択（Nextcloud、Fastmail、iCloud）するか、手動設定を使用します\n4. サーバーURL、ユーザー名、パスワードを入力します\n5. DAVyは利用可能なカレンダー、アドレス帳、WebCal購読を自動的に検出します</string>
+    <string name="guides_calendars_title">カレンダーとWebCal購読の管理</string>
+    <string name="guides_calendars_body">• アカウントをタップしてカレンダーと購読を表示します\n• CalDAVカレンダー、アドレス帳、WebCal購読を切り替えるにはタブを使用します\n• 「リストを更新」はサーバーから利用可能なコレクションを更新します\n• メニューの+ボタンで新しいカレンダーを作成します\n• WebCalタブから読み取り専用WebCalフィード（webcal://）を購読します\n• スイッチを使用してカレンダーごとの同期を有効/無効にします\n• カレンダーを長押ししてバッチ選択、その後複数を一度に削除します\n• 「同期」ボタンを使用して個別またはバッチで同期します</string>
+    <string name="guides_contacts_title">連絡先の管理</string>
+    <string name="guides_contacts_body">• アカウント詳細の「アドレス帳」タブに切り替えます\n• アドレス帳は設定に基づいて自動的に同期されます\n• スイッチを使用してアドレス帳ごとの同期を有効/無効にします\n• メニューの+ボタンで新しいアドレス帳を作成します\n• 長押ししてバッチでアドレス帳を選択および削除します\n• 同期されたすべての連絡先はAndroid連絡先アプリに表示されます</string>
+    <string name="guides_account_settings_title">アカウント設定</string>
+    <string name="guides_account_settings_body">• アカウント詳細のメニューアイコンから設定にアクセスします\n• サーバーURLと認証資格情報を更新します\n• モバイルデータを節約するために「WiFiのみ同期」を有効にします\n• 新しいカレンダーのデフォルトカレンダー色を設定します\n• 連絡先グループ方法を設定（カテゴリまたはグループ）\n• 初期同期時間を短縮するために古いイベントをスキップします\n• 信頼性の高いバックグラウンド同期のためにバッテリー最適化を無効にします\n• 自動同期間隔を設定（毎時、毎日など）</string>
+    <string name="guides_sync_title">同期</string>
+    <string name="guides_sync_body">• メイン画面の「すべて同期」ボタンはすべてのアカウントを同期します\n• アカウント詳細でアカウントごとの同期が利用可能です\n• カレンダー、連絡先、WebCal購読の個別同期ボタン\n• 自動同期はアカウント設定で設定できます\n• WiFiのみオプションはモバイルデータの使用を防ぎます\n• バックグラウンド同期は間隔に基づいて自動的に実行されます\n• 同期ボタンから手動同期が常に利用可能です\n• 同期されたデータはAndroidカレンダーと連絡先アプリに表示されます</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">エラーが発生しました</string>

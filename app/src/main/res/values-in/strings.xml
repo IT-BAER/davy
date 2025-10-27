@@ -145,11 +145,29 @@
     <string name="faq_enable_auto_sync_answer">Buka Pengaturan Android → Akun → DAVy → Aktifkan \'Sinkronkan data secara otomatis\'</string>
     <string name="faq_multiple_accounts">Bisakah saya menyinkronkan beberapa akun?</string>
     <string name="faq_multiple_accounts_answer">Ya, Anda dapat menambahkan dan menyinkronkan beberapa akun CalDAV/CardDAV secara bersamaan.</string>
+    <string name="faq_what_is_webcal">Apa itu langganan WebCal?</string>
+    <string name="faq_what_is_webcal_answer">Langganan WebCal adalah umpan kalender hanya-baca (URL webcal://) yang DAVy ambil secara berkala dan sinkronkan ke perangkat Anda. Sempurna untuk kalender publik, jadwal olahraga, hari libur, dll. Temukan di tab WebCal pada detail akun.</string>
+    <string name="faq_permissions_needed">Mengapa DAVy memerlukan izin?</string>
+    <string name="faq_permissions_needed_answer">• Kalender: Baca/tulis untuk menyinkronkan acara dengan perangkat Anda\n• Kontak: Baca/tulis untuk menyinkronkan kontak dengan perangkat Anda\n• Notifikasi (Android 13+): Tampilkan status sinkronisasi dan kesalahan\nDAVy hanya mengakses data yang diperlukan untuk sinkronisasi - tanpa pelacakan atau analitik.</string>
+    <string name="faq_battery_optimization">Mengapa menonaktifkan optimasi baterai?</string>
+    <string name="faq_battery_optimization_answer">Optimasi baterai Android dapat mencegah sinkronisasi latar belakang. Menonaktifkannya memastikan DAVy dapat menyinkronkan secara andal sesuai jadwal. Anda akan diminta untuk menonaktifkannya di pengaturan akun. DAVy dirancang untuk penggunaan baterai minimal.</string>
+    <string name="faq_batch_operations">Bagaimana operasi batch bekerja?</string>
+    <string name="faq_batch_operations_answer">Tekan lama kalender, buku alamat, atau langganan WebCal apa pun untuk memasuki mode pemilihan batch. Pilih beberapa item, lalu gunakan tombol hapus di menu untuk menghapus semuanya sekaligus. Ketuk di luar atau gunakan gestur kembali untuk keluar dari mode batch.</string>
     
     <!-- Guides Screen -->
     <string name="guides">Panduan</string>
     <string name="getting_started">Memulai</string>
     <string name="setup_guides">Panduan pengaturan</string>
+    <string name="guides_getting_started_title">Memulai</string>
+    <string name="guides_getting_started_body">1. Berikan izin kalender dan kontak saat diminta\n2. Tambahkan akun dengan mengetuk tombol +\n3. Pilih penyedia Anda (Nextcloud, Fastmail, iCloud) atau gunakan Pengaturan Manual\n4. Masukkan URL server, nama pengguna, dan kata sandi Anda\n5. DAVy akan secara otomatis menemukan kalender, buku alamat, dan langganan WebCal yang tersedia</string>
+    <string name="guides_calendars_title">Mengelola kalender dan langganan WebCal</string>
+    <string name="guides_calendars_body">• Ketuk akun untuk melihat kalender dan langganannya\n• Gunakan tab untuk beralih antara kalender CalDAV, Buku alamat, dan langganan WebCal\n• "Refresh daftar" memperbarui koleksi yang tersedia dari server\n• Buat kalender baru dengan tombol + di menu\n• Berlangganan umpan WebCal hanya-baca (webcal://) melalui tab WebCal\n• Aktifkan/nonaktifkan sinkronisasi per kalender menggunakan sakelar\n• Pilihan batch kalender dengan menekan lama, lalu hapus beberapa sekaligus\n• Sinkronisasi individual atau batch menggunakan tombol "Sinkronkan"</string>
+    <string name="guides_contacts_title">Mengelola kontak</string>
+    <string name="guides_contacts_body">• Beralih ke tab "Buku alamat" di detail akun\n• Buku alamat disinkronkan secara otomatis berdasarkan pengaturan Anda\n• Aktifkan/nonaktifkan sinkronisasi per buku alamat menggunakan sakelar\n• Buat buku alamat baru dengan tombol + di menu\n• Pilihan batch dan penghapusan buku alamat dengan menekan lama\n• Semua kontak yang disinkronkan muncul di aplikasi Kontak Android</string>
+    <string name="guides_account_settings_title">Pengaturan akun</string>
+    <string name="guides_account_settings_body">• Akses pengaturan melalui ikon menu di detail akun\n• Perbarui URL server dan kredensial autentikasi\n• Aktifkan "Sinkronisasi hanya WiFi" untuk menghemat data seluler\n• Atur warna kalender default untuk kalender baru\n• Konfigurasi metode grup kontak (Kategori atau Grup)\n• Lewati acara lama untuk mengurangi waktu sinkronisasi awal\n• Nonaktifkan optimasi baterai untuk sinkronisasi latar belakang yang andal\n• Konfigurasi interval sinkronisasi otomatis (per jam, harian, dll.)</string>
+    <string name="guides_sync_title">Sinkronisasi</string>
+    <string name="guides_sync_body">• Tombol "Sinkronkan semua" di layar utama menyinkronkan semua akun\n• Sinkronisasi per akun tersedia di detail akun\n• Tombol sinkronisasi individual untuk kalender, kontak, dan langganan WebCal\n• Sinkronisasi otomatis dapat dikonfigurasi di pengaturan akun\n• Opsi hanya WiFi mencegah penggunaan data seluler\n• Sinkronisasi latar belakang berjalan otomatis berdasarkan interval Anda\n• Sinkronisasi manual selalu tersedia melalui tombol sinkronisasi\n• Data yang disinkronkan muncul di aplikasi Kalender dan Kontak Android</string>
     
     <!-- Errors and Messages -->
     <string name="error_generic">Terjadi kesalahan</string>
