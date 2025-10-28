@@ -207,6 +207,8 @@
     <plurals name="number_of_events">
         <item quantity="zero">Brak wydarzeń</item>
         <item quantity="one">1 wydarzenie</item>
+        <item quantity="few">%d wydarzenia</item>
+        <item quantity="many">%d wydarzeń</item>
         <item quantity="other">%d wydarzeń</item>
     </plurals>
     
