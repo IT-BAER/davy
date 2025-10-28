@@ -215,12 +215,16 @@
     <plurals name="number_of_contacts">
         <item quantity="zero">Brak kontaktów</item>
         <item quantity="one">1 kontakt</item>
+        <item quantity="few">%d kontakty</item>
+        <item quantity="many">%d kontaktów</item>
         <item quantity="other">%d kontaktów</item>
     </plurals>
     
     <plurals name="number_of_tasks">
         <item quantity="zero">Brak zadań</item>
         <item quantity="one">1 zadanie</item>
+        <item quantity="few">%d zadania</item>
+        <item quantity="many">%d zadań</item>
         <item quantity="other">%d zadań</item>
     </plurals>
     
