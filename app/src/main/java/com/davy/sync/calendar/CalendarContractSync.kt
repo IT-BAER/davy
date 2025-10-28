@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -646,9 +647,19 @@ class CalendarContractSync @Inject constructor(
                 organizer = event.organizer
             )
 
-            if (existingSnapshot == desiredSnapshot) {
+            val differences = snapshotDifferences(existingSnapshot, desiredSnapshot)
+            if (differences.isEmpty()) {
                 return UpdateEventResult.UNCHANGED
             }
+
+            Timber.v(
+                "Provider update for '%s' (id=%d) – differing fields: %s",
+                event.title,
+                eventId,
+                differences.entries.joinToString(limit = 6) { (field, values) ->
+                    "$field=${values.first}→${values.second}"
+                }
+            )
 
             val values = ContentValues().apply {
                 put(CalendarContract.Events.CALENDAR_ID, androidCalendarId)
@@ -755,6 +766,122 @@ class CalendarContractSync @Inject constructor(
     private fun Cursor.getLongOrNull(index: Int): Long? = if (isNull(index)) null else getLong(index)
 
     private fun Cursor.getIntOrNull(index: Int): Int? = if (isNull(index)) null else getInt(index)
+
+    private fun snapshotDifferences(
+        existing: ProviderEventSnapshot,
+        desired: ProviderEventSnapshot
+    ): Map<String, Pair<Any?, Any?>> {
+        val diffs = linkedMapOf<String, Pair<Any?, Any?>>()
+
+        if (existing.calendarId != desired.calendarId) {
+            diffs["calendarId"] = existing.calendarId to desired.calendarId
+        }
+
+        if (!stringsEquivalent(existing.title, desired.title)) {
+            diffs["title"] = existing.title to desired.title
+        }
+
+        if (!stringsEquivalent(existing.description, desired.description)) {
+            diffs["description"] = existing.description to desired.description
+        }
+
+        if (!stringsEquivalent(existing.location, desired.location)) {
+            diffs["location"] = existing.location to desired.location
+        }
+
+        if (!longsEquivalent(existing.dtStart, desired.dtStart)) {
+            diffs["dtStart"] = existing.dtStart to desired.dtStart
+        }
+
+        if (!longsEquivalent(existing.dtEnd, desired.dtEnd)) {
+            diffs["dtEnd"] = existing.dtEnd to desired.dtEnd
+        }
+
+        if (!intsEquivalent(existing.allDay, desired.allDay)) {
+            diffs["allDay"] = existing.allDay to desired.allDay
+        }
+
+        val existingTimezone = normalizeTimezone(existing.timezone, desired.timezone)
+        val desiredTimezone = normalizeTimezone(desired.timezone, desired.timezone)
+        if (!stringsEquivalent(existingTimezone, desiredTimezone)) {
+            diffs["timezone"] = existing.timezone to desired.timezone
+        }
+
+        if (!stringsEquivalent(existing.uid, desired.uid)) {
+            diffs["uid"] = existing.uid to desired.uid
+        }
+
+        if (!statusesEquivalent(existing.status, desired.status)) {
+            diffs["status"] = existing.status to desired.status
+        }
+
+        if (!stringsEquivalent(existing.rrule, desired.rrule)) {
+            diffs["rrule"] = existing.rrule to desired.rrule
+        }
+
+        if (!organizersEquivalent(existing.organizer, desired.organizer)) {
+            diffs["organizer"] = existing.organizer to desired.organizer
+        }
+
+        return diffs
+    }
+
+    private fun stringsEquivalent(a: String?, b: String?): Boolean {
+        val normalizedA = normalizeText(a)
+        val normalizedB = normalizeText(b)
+        return normalizedA == normalizedB
+    }
+
+    private fun longsEquivalent(a: Long?, b: Long?): Boolean {
+        return (a ?: b) == (b ?: a)
+    }
+
+    private fun intsEquivalent(a: Int?, b: Int?): Boolean {
+        return (a ?: b ?: 0) == (b ?: a ?: 0)
+    }
+
+    private fun normalizeTimezone(value: String?, fallback: String?): String? {
+        val candidate = value?.takeIf { it.isNotBlank() } ?: fallback?.takeIf { it.isNotBlank() }
+        return when {
+            candidate == null -> null
+            candidate.equals("gmt", ignoreCase = true) -> "UTC"
+            candidate.equals("etc/utc", ignoreCase = true) -> "UTC"
+            else -> candidate
+        }
+    }
+
+    private fun statusesEquivalent(existing: Int?, desired: Int?): Boolean {
+        return if (desired == null) {
+            true
+        } else {
+            (existing ?: desired) == desired
+        }
+    }
+
+    private fun normalizeText(value: String?): String? {
+        val trimmed = value?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        // Calendar provider normalizes CRLF to LF, so treat them as equivalents
+        return trimmed
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+    }
+
+    private fun organizersEquivalent(existing: String?, desired: String?): Boolean {
+        val normalizedDesired = normalizeOrganizer(desired)
+        if (normalizedDesired == null) {
+            // Provider keeps previous organizer when we don't supply one; treat as equivalent to avoid redundant updates.
+            return true
+        }
+
+        val normalizedExisting = normalizeOrganizer(existing)
+        return normalizedExisting == normalizedDesired
+    }
+
+    private fun normalizeOrganizer(value: String?): String? {
+        val text = normalizeText(value) ?: return null
+        val withoutMailto = text.removePrefix("mailto:").removePrefix("MAILTO:")
+        return withoutMailto.lowercase(Locale.US)
+    }
     
     /**
      * Map EventStatus enum to CalendarContract status integer.

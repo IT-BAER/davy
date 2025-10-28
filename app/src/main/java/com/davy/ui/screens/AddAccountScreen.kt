@@ -1637,8 +1637,7 @@ class AddAccountViewModel @Inject constructor(
             )
             return
         }
-        
-    val fullUrl = HTTPS_PREFIX + state.serverUrl
+        val fullUrl = HTTPS_PREFIX + state.serverUrl
         
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -1706,9 +1705,8 @@ class AddAccountViewModel @Inject constructor(
             createDemoAccount(state)
             return
         }
-        
         // Combine protocol + serverUrl for validation
-    val fullUrl = HTTPS_PREFIX + state.serverUrl
+        val fullUrl = HTTPS_PREFIX + state.serverUrl
         
         // Validate server URL
         val urlValidation = serverUrlValidator.validate(fullUrl)
