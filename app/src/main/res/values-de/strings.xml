@@ -48,6 +48,13 @@
     <string name="username">Benutzername</string>
     <string name="password">Passwort</string>
     <string name="account_color">Kontofarbe</string>
+    <!-- Server URL Guidance -->
+    <string name="server_url_guidance_title">Tipps zur Server-URL</string>
+    <string name="server_url_guidance_autodiscovery">Wir versuchen, deine DAV-Endpunkte automatisch zu erkennen. Gib einfach deine Serveradresse ein (z. B. \"nextcloud.example.com\").</string>
+    <string name="server_url_guidance_manual">Wenn die automatische Erkennung fehlschlägt, gib den vollständigen DAV-Pfad an:</string>
+    <string name="server_url_example_nextcloud">• Nextcloud/ownCloud: example.com/remote.php/dav</string>
+    <string name="server_url_example_baikal">• Baikal: example.com/dav.php</string>
+    <string name="server_url_example_radicale">• Radicale: example.com:5232/user</string>
     
     <!-- Sync -->
     <string name="syncing">Synchronisiert…</string>
@@ -390,6 +397,7 @@
     <string name="enter_certificate_alias">Zertifikatsalias eingeben</string>
     <string name="no_certificate_selected">Kein Zertifikat ausgewählt</string>
     <string name="install_certificate">Zertifikat installieren</string>
+    <string name="optional_tap_to_select">Optional (zum Auswählen tippen)</string>
     <string name="done">Fertig</string>
 
     <!-- Backup/Wiederherstellung Beschreibungen (neu) -->
@@ -465,14 +473,40 @@
     <string name="choose_login_method">Wähle Anmeldemethode</string>
     <string name="nextcloud">Nextcloud</string>
     <string name="nextcloud_login_description">Anmelden mit deinem Nextcloud-Server</string>
+    <string name="icloud">iCloud</string>
+    <string name="icloud_login_description">Mit deinem Apple-Konto synchronisieren</string>
+    <string name="icloud_email_label">Apple-ID-E-Mail</string>
+    <string name="icloud_email_placeholder">deine@icloud.com</string>
+    <string name="icloud_app_password_label">App-spezifisches Passwort</string>
+    <string name="icloud_app_password_required">App-spezifisches Passwort erforderlich</string>
+    <string name="icloud_password_instructions">Für iCloud wird aus Sicherheitsgründen ein app-spezifisches Passwort benötigt:</string>
+    <string name="icloud_password_step_1">1. Gehe zu appleid.apple.com</string>
+    <string name="icloud_password_step_2">2. Melde dich mit deiner Apple-ID an</string>
+    <string name="icloud_password_step_3">3. Gehe zu Sicherheit → App-spezifische Passwörter</string>
+    <string name="icloud_password_step_4">4. Erstelle ein Passwort mit dem Namen "DAVy"</string>
+    <string name="icloud_password_step_5">5. Kopiere und füge es hier ein</string>
+    <string name="generate_app_password">App-Passwort erstellen</string>
     <string name="google">Google</string>
     <string name="google_login_description">Synchronisieren mit Google Kalender &amp; Kontakten</string>
+    <string name="google_coming_soon">Google Kalender &amp; Kontakte Integration kommt bald!</string>
     <string name="other_server">Anderer Server</string>
     <string name="other_server_description">CalDAV/CardDAV-Server-Konfiguration</string>
     <string name="nextcloud_server_url">Nextcloud-Server-URL</string>
     <string name="nextcloud_server_url_placeholder">cloud.example.com</string>
+    <string name="fastmail">Fastmail</string>
+    <string name="fastmail_login_description">Schnelle, private E-Mail &amp; Kalender</string>
+    <string name="fastmail_email_label">Fastmail-E-Mail</string>
+    <string name="fastmail_email_placeholder">deine@fastmail.com</string>
+    <string name="fastmail_password_label">App-spezifisches Passwort</string>
+    <string name="fastmail_password_instructions">Fastmail erfordert ein app-spezifisches Passwort:</string>
+    <string name="fastmail_password_step_1">1. Gehe zu Einstellungen → Datenschutz &amp; Sicherheit → App-Passwörter verwalten</string>
+    <string name="fastmail_password_step_2">2. Klicke auf "Neues App-Passwort"</string>
+    <string name="fastmail_password_step_3">3. Gib ihm einen Namen (z. B. "DAVy")</string>
+    <string name="fastmail_password_step_4">4. Aktiviere "CalDAV" und "CardDAV" Zugriff</string>
+    <string name="fastmail_password_step_5">5. Kopiere das generierte Passwort</string>
+    <string name="generate_fastmail_app_password">App-Passwort generieren</string>
+    <string name="continue_button">Weiter</string>
     <string name="login_with_nextcloud">Mit Nextcloud anmelden</string>
-    <string name="google_coming_soon">Google Kalender &amp; Kontakte Integration kommt bald!</string>
     <string name="protocol_label">Protokoll</string>
     <string name="account_name_placeholder">Mein Kalender</string>
     <string name="server_url_placeholder">nextcloud.example.com</string>
@@ -511,6 +545,22 @@
     <string name="bullet_username">• Benutzername: %1$s</string>
     <string name="bullet_password">• Passwort: %1$s</string>
     
+    <!-- Kontodetailseite (neu) -->
+    <string name="account">Konto</string>
+    <string name="content_description_warning">Warnung</string>
+    <string name="content_description_sync_selected">Auswahl synchronisieren</string>
+    <string name="exit_batch_selection">Sammelauswahl beenden</string>
+    <string name="batch_selection">Sammelauswahl</string>
+    <string name="create_calendar">Kalender erstellen</string>
+    <string name="delete_selected">Ausgewählte löschen</string>
+    <string name="create_address_book">Adressbuch erstellen</string>
+    <string name="sync_webcal_subscriptions">WebCal-Abonnements synchronisieren</string>
+    <string name="add_webcal_subscription">WebCal-Abonnement hinzufügen</string>
+    <string name="sync_selected_with_count">Auswahl synchronisieren (%1$d)</string>
+    <string name="caldav">CalDAV</string>
+    <string name="carddav">CardDAV</string>
+    <string name="webcal">WebCal</string>
+
     <!-- Batch-Löschbestätigungen (neu) -->
     <string name="delete_selected_calendars_title">Ausgewählte Kalender löschen?</string>
     <string name="delete_selected_calendars_message">Dadurch werden die ausgewählten Kalender sowohl vom Server als auch von deinem Gerät gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>

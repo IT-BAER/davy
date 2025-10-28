@@ -499,6 +499,9 @@
     <string name="fastmail_password_step_4">4. Enable "CalDAV" and "CardDAV" access</string>
     <string name="fastmail_password_step_5">5. Copy the generated password</string>
     <string name="generate_fastmail_app_password">Generate App Password</string>
+    <string name="google">Google</string>
+    <string name="google_login_description">Sync with Google Calendar &amp; Contacts</string>
+    <string name="google_coming_soon">Google Calendar &amp; Contacts integration coming soon!</string>
     <string name="continue_button">Continue</string>
     <string name="other_server">Other Server</string>
     <string name="other_server_description">CalDAV/CardDAV server configuration</string>
