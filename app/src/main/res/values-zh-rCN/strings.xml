@@ -140,11 +140,15 @@
     <string name="faq_which_servers">支持哪些服务器？</string>
     <string name="faq_which_servers_answer">DAVy 适用于任何兼容 CalDAV/CardDAV 的服务器，包括 Nextcloud、ownCloud、Radicale、Baïkal 等。</string>
     <string name="faq_sync_not_working">为什么我的同步不工作？</string>
-    <string name="faq_sync_not_working_answer">• 服务器 URL 正确（包括 https://）\n• 用户名和密码有效\n• 仅 WiFi 同步已禁用或 WiFi 已连接\n• Android 设置中已启用自动同步</string>
+    <string name="faq_sync_not_working_answer">请检查以下常见原因：\n\n• 服务器 URL 正确（包含 https://）\n• 用户名和密码有效\n• 已为日历/通讯录启用同步（开关）\n• “仅 Wi‑Fi”已关闭或设备已连接 Wi‑Fi\n• 已为 DAVy 关闭电池优化\n• 应用已授予“日历”和“联系人”权限</string>
     <string name="faq_enable_auto_sync">如何启用自动同步？</string>
-    <string name="faq_enable_auto_sync_answer">前往 Android 设置 → 账户 → DAVy → 启用"自动同步数据"</string>
+    <string name="faq_enable_auto_sync_answer">自动同步由 DAVy 的设置控制——无需在 Android 系统设置中启用。\n\n1. 点按某个账户打开账户详情\n\n2. 确认在日历/通讯录上启用了同步（开关）\n\n3. 按提示为 DAVy 关闭电池优化（对可靠的后台同步很重要）\n\n4. 可选：在账户设置菜单中配置同步间隔</string>
     <string name="faq_multiple_accounts">我可以同步多个账户吗？</string>
     <string name="faq_multiple_accounts_answer">是的，您可以同时添加和同步多个 CalDAV/CardDAV 账户。</string>
+    <string name="faq_where_are_my_data">我的已同步日程/联系人在哪里？</string>
+    <string name="faq_where_are_my_data_answer">日历事件显示在 Android 的“日历”应用中。联系人显示在“联系人”应用中。DAVy 在后台负责同步，您的系统应用负责显示数据。\n\n若未看到事件：打开“日历”应用 → 设置 → 确认 DAVy 账户已启用/可见。</string>
+    <string name="faq_how_delete_account">如何删除账户或集合？</string>
+    <string name="faq_how_delete_account_answer">删除账户：\n• 在主界面长按账户卡片\n• 滚动到详情页底部\n• 点按“删除账户”\n\n删除单个项目：\n• 轻触某个日历/通讯录/WebCal\n• 滚动到详情页底部\n• 点按“删除”\n\n批量删除：\n• 长按任意日历/通讯录/WebCal 进入批量模式\n• 选择多个项目\n• 右上角三点菜单 → 删除\n\n删除账户会移除所有相关数据。</string>
     <string name="faq_what_is_webcal">什么是WebCal订阅？</string>
     <string name="faq_what_is_webcal_answer">WebCal订阅是只读日历源（webcal:// URL），DAVy会定期获取并同步到您的设备。非常适合公共日历、体育赛程、节假日等。在账户详情的WebCal标签中查找。</string>
     <string name="faq_permissions_needed">为什么DAVy需要权限？</string>
@@ -161,11 +165,11 @@
     <string name="guides_getting_started_title">入门</string>
     <string name="guides_getting_started_body">1. 在提示时授予日历和联系人权限\n2. 点击+按钮添加账户\n3. 选择您的提供商（Nextcloud、Fastmail、iCloud）或使用手动设置\n4. 输入您的服务器URL、用户名和密码\n5. DAVy将自动发现可用的日历、地址簿和WebCal订阅</string>
     <string name="guides_calendars_title">管理日历和WebCal订阅</string>
-    <string name="guides_calendars_body">• 点击账户查看其日历和订阅\n• 使用标签在CalDAV日历、地址簿和WebCal订阅之间切换\n• "刷新列表"从服务器更新可用集合\n• 使用菜单中的+按钮创建新日历\n• 通过WebCal标签订阅只读WebCal源（webcal://）\n• 使用开关启用/禁用每个日历的同步\n• 长按批量选择日历，然后一次删除多个\n• 使用"同步"按钮进行单独或批量同步</string>
+    <string name="guides_calendars_body">• 点按账户查看其日历与订阅\n\n• 使用标签在 CalDAV 日历、通讯录和 WebCal 订阅间切换\n\n• “刷新列表”从服务器获取可用集合\n\n• 通过菜单中的 + 按钮创建新日历\n\n• 在 WebCal 标签订阅只读 WebCal 源（webcal://）\n\n• 通过开关启用/禁用单个日历同步\n\n• 点按某个日历可进行设置：仅 Wi‑Fi、强制只读、自定义间隔或重命名\n\n• 点按彩色圆圈更改日历颜色\n\n• 长按进行批量选择，并一次删除多个\n\n• 使用“同步”按钮进行单个或批量同步</string>
     <string name="guides_contacts_title">管理联系人</string>
-    <string name="guides_contacts_body">• 切换到账户详情中的"地址簿"标签\n• 地址簿根据您的设置自动同步\n• 使用开关启用/禁用每个地址簿的同步\n• 使用菜单中的+按钮创建新地址簿\n• 长按批量选择和删除地址簿\n• 所有同步的联系人都会出现在Android联系人应用中</string>
+    <string name="guides_contacts_body">• 前往账户详情中的“通讯录”标签\n\n• 通讯录会根据您的设置自动同步\n\n• 使用开关启用/禁用每个通讯录的同步\n\n• 点按某个通讯录可进行设置：仅 Wi‑Fi、强制只读、自定义间隔或重命名\n\n• 使用菜单中的 + 按钮创建新的通讯录\n\n• 长按可进行批量选择和删除\n\n• 所有已同步联系人都会显示在 Android“联系人”应用中</string>
     <string name="guides_account_settings_title">账户设置</string>
-    <string name="guides_account_settings_body">• 通过账户详情中的菜单图标访问设置\n• 更新服务器URL和身份验证凭据\n• 启用"仅WiFi同步"以节省移动数据\n• 为新日历设置默认日历颜色\n• 配置联系人分组方法（类别或组）\n• 跳过旧事件以减少初始同步时间\n• 禁用电池优化以实现可靠的后台同步\n• 配置自动同步间隔（每小时、每天等）</string>
+    <string name="guides_account_settings_body">• 通过账户详情页的菜单图标进入设置\n\n• 更新服务器 URL 与凭据\n\n• 启用“仅 Wi‑Fi 同步”以节省移动数据（账户默认值）\n\n• 为 CalDAV 日历、CardDAV 联系人和 WebCal 订阅分别设置同步间隔\n\n• 设置新建日历的默认颜色\n\n• 配置联系人分组方式（类别或群组）\n\n• 跳过旧事件以缩短首次同步时间\n\n• 关闭电池优化以保证可靠的后台同步</string>
     <string name="guides_sync_title">同步</string>
     <string name="guides_sync_body">• 主屏幕上的"全部同步"按钮同步所有账户\n• 账户详情中提供每个账户的同步\n• 日历、联系人和WebCal订阅的单独同步按钮\n• 可以在账户设置中配置自动同步\n• 仅WiFi选项可防止移动数据使用\n• 后台同步根据您的间隔自动运行\n• 通过同步按钮始终可以手动同步\n• 同步的数据显示在Android日历和联系人应用中</string>
     

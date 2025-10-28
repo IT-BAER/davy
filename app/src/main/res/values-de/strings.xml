@@ -188,15 +188,15 @@
     <string name="faq_which_servers">Welche Server werden unterstützt?</string>
     <string name="faq_which_servers_answer">DAVy funktioniert mit jedem CalDAV/CardDAV-kompatiblen Server, einschließlich Nextcloud, ownCloud, Radicale, Baïkal und mehr.</string>
     <string name="faq_sync_not_working">Warum funktioniert meine Synchronisierung nicht?</string>
-    <string name="faq_sync_not_working_answer">• Server-URL ist korrekt (einschließlich https://)\n• Benutzername und Passwort sind gültig\n• Nur-WLAN-Synchronisierung ist deaktiviert oder WLAN ist verbunden\n• Auto-Sync ist in den Android-Einstellungen aktiviert</string>
+    <string name="faq_sync_not_working_answer">Prüfen Sie diese häufigen Ursachen:\n\n• Server-URL ist korrekt (einschließlich https://)\n• Benutzername und Passwort sind gültig\n• Synchronisierung für Kalender/Adressbuch ist aktiviert (Schalter)\n• Nur‑WLAN‑Synchronisierung ist deaktiviert oder WLAN ist verbunden\n• Akkuoptimierung ist für DAVy deaktiviert\n• App hat Kalender‑ und Kontakte‑Berechtigungen</string>
     <string name="faq_enable_auto_sync">Wie aktiviere ich die automatische Synchronisierung?</string>
-    <string name="faq_enable_auto_sync_answer">Geh zu Android-Einstellungen → Konten → DAVy → Aktiviere „Daten automatisch synchronisieren“</string>
+    <string name="faq_enable_auto_sync_answer">Die automatische Synchronisierung wird in den DAVy‑Einstellungen gesteuert – Android‑Systemeinstellungen sind nicht erforderlich.\n\n1. Kontodetails öffnen, indem Sie ein Konto antippen\n\n2. Sicherstellen, dass bei Kalendern/Adressbüchern die Synchronisierung aktiviert ist (Schalter)\n\n3. Bei Aufforderung die Akkuoptimierung deaktivieren (wichtig für zuverlässige Hintergrund‑Syncs)\n\n4. Optional das Synchronisierungsintervall im Kontomenü konfigurieren</string>
     <string name="faq_multiple_accounts">Kann ich mehrere Konten synchronisieren?</string>
     <string name="faq_multiple_accounts_answer">Ja, Sie können mehrere CalDAV/CardDAV-Konten gleichzeitig hinzufügen und synchronisieren.</string>
     <string name="faq_where_are_my_data">Wo sind meine synchronisierten Ereignisse/Kontakte?</string>
-    <string name="faq_where_are_my_data_answer">Kalenderereignisse erscheinen in der Android-Kalender-App. Kontakte erscheinen in der Android-Kontakte-App. DAVy übernimmt die Synchronisierung, die Standard-Apps zeigen die Daten an.</string>
+    <string name="faq_where_are_my_data_answer">Kalendertermine erscheinen in der Android‑Kalender‑App. Kontakte erscheinen in der Android‑Kontakte‑App. DAVy synchronisiert im Hintergrund, Ihre Standard‑Apps zeigen die Daten an.\n\nWenn keine Termine angezeigt werden: Kalender‑App öffnen → Einstellungen → Sicherstellen, dass das DAVy‑Konto aktiviert/sichtbar ist.</string>
     <string name="faq_how_delete_account">Wie lösche ich ein Konto?</string>
-    <string name="faq_how_delete_account_answer">Tippe auf der Hauptseite ein Konto länger an und bestätige das Löschen. Dadurch wird das Konto entfernt und die Synchronisierung beendet.</string>
+    <string name="faq_how_delete_account_answer">Kontolöschung:\n• Auf der Hauptseite die Konto‑Karte lange drücken\n• Zum Ende der Detailseite scrollen\n• Auf „Konto löschen“ tippen\n\nLöschen einzelner Elemente:\n• Kalender/Adressbuch/WebCal einmal antippen\n• Zum Ende der Detailseite scrollen\n• Auf „Löschen“ tippen\n\nLöschen mehrerer Elemente:\n• Beliebigen Kalender/Adressbuch/WebCal lange drücken, um den Stapelmodus zu öffnen\n• Mehrere Elemente auswählen\n• Dreipunkt‑Menü (oben rechts) → Löschen\n\nDas Löschen eines Kontos entfernt alle zugehörigen Daten.</string>
     <string name="faq_what_is_wifi_only">Was ist die Nur-WLAN-Synchronisierung?</string>
     <string name="faq_what_is_wifi_only_answer">Aktiviere dies in den Kontoeinstellungen, damit nur bei bestehender WLAN-Verbindung synchronisiert wird. Das spart mobile Daten.</string>
     <string name="faq_rename_account">Was passiert, wenn ich ein Konto umbenenne?</string>
@@ -572,32 +572,15 @@
     
     <!-- Guides Page (neu) -->
     <string name="guides_getting_started_title">Erste Schritte</string>
-    <string name="guides_getting_started_body">1. Füge ein Konto über die +‑Taste hinzu
-2. Gib die CalDAV/CardDAV‑Server‑URL ein
-3. Trage Benutzername und Passwort ein
-4. DAVy erkennt verfügbare Kalender und Kontakte automatisch</string>
-    <string name="guides_calendars_title">Kalender verwalten</string>
-    <string name="guides_calendars_body">• Tippe auf ein Konto, um Kalender anzuzeigen
-• Nutze „Liste aktualisieren“, um verfügbare Kalender zu aktualisieren
-• Synchronisiere einzelne Kalender oder nutze „Alle synchronisieren“
-• Erstelle neue Kalender mit der +‑Taste
-• Halte einen Kalender lange gedrückt, um ihn zu löschen</string>
+    <string name="guides_getting_started_body">1. Kalender‑ und Kontakte‑Berechtigungen bei Aufforderung erteilen\n\n2. Über die +‑Taste ein Konto hinzufügen\n\n3. Anbieter wählen (Nextcloud, Fastmail, iCloud) oder Manuelle Einrichtung nutzen\n\n4. Server‑URL, Benutzername und Passwort eingeben\n\n5. DAVy erkennt verfügbare Kalender, Adressbücher und WebCal‑Abonnements automatisch</string>
+    <string name="guides_calendars_title">Kalender &amp; WebCal‑Abonnements verwalten</string>
+    <string name="guides_calendars_body">• Ein Konto antippen, um dessen Kalender und Abonnements zu sehen\n\n• Über Tabs zwischen CalDAV‑Kalendern, Adressbüchern und WebCal‑Abonnements wechseln\n\n• „Liste aktualisieren“ holt verfügbare Sammlungen vom Server\n\n• Neue Kalender über die +‑Schaltfläche im Menü erstellen\n\n• Über den WebCal‑Tab schreibgeschützte WebCal‑Feeds (webcal://) abonnieren\n\n• Synchronisierung pro Kalender mit den Schaltern aktivieren/deaktivieren\n\n• Einen Kalender antippen, um zu konfigurieren: Nur‑WLAN‑Sync, Schreibschutz erzwingen, benutzerdefiniertes Intervall oder umbenennen\n\n• Auf den farbigen Kreis tippen, um die Kalenderfarbe zu ändern\n\n• Kalender per Langdruck im Stapel auswählen und mehrere auf einmal löschen\n\n• Einzel- oder Stapelsynchronisierung über die „Sync“-Schaltflächen</string>
     <string name="guides_contacts_title">Kontakte verwalten</string>
-    <string name="guides_contacts_body">• Wechsle zum Tab „Kontakte“, um Adressbücher anzuzeigen
-• Kontakte werden je nach Einstellungen automatisch synchronisiert
-• Alle synchronisierten Kontakte erscheinen in der Android‑Kontakte‑App</string>
+    <string name="guides_contacts_body">• In den Kontodetails zum Tab „Adressbücher“ wechseln\n\n• Adressbücher synchronisieren automatisch gemäß Ihren Einstellungen\n\n• Synchronisierung pro Adressbuch mit den Schaltern aktivieren/deaktivieren\n\n• Ein Adressbuch antippen, um zu konfigurieren: Nur‑WLAN‑Sync, Schreibschutz erzwingen, benutzerdefiniertes Intervall oder umbenennen\n\n• Neue Adressbücher mit der +‑Schaltfläche im Menü erstellen\n\n• Adressbücher per Langdruck im Stapel auswählen und löschen\n\n• Alle synchronisierten Kontakte erscheinen in der Android‑Kontakte‑App</string>
     <string name="guides_account_settings_title">Kontoeinstellungen</string>
-    <string name="guides_account_settings_body">• Tippe im Kontodetail auf das Zahnrad
-• Lege Anmeldedaten fest
-• Aktiviere Nur‑WLAN‑Synchronisierung
-• Wähle Kalenderfarben
-• Wähle die Kontaktgruppen‑Methode
-• Überspringe alte Kalenderereignisse</string>
+    <string name="guides_account_settings_body">• Zugriff auf die Einstellungen über das Menüsymbol in den Kontodetails\n\n• Server‑URL und Anmeldedaten aktualisieren\n\n• „Nur‑WLAN‑Sync“ aktivieren, um mobile Daten zu sparen (gilt als Konto‑Standard)\n\n• Separate Synchronisierungsintervalle für CalDAV‑Kalender, CardDAV‑Kontakte und WebCal‑Abonnements festlegen\n\n• Standard‑Kalenderfarbe für neue Kalender setzen\n\n• Kontaktgruppenmethode konfigurieren (Kategorien oder Gruppen)\n\n• Alte Ereignisse überspringen, um die erste Synchronisierung zu verkürzen\n\n• Akkuoptimierung deaktivieren für zuverlässige Hintergrund‑Synchronisierung</string>
     <string name="guides_sync_title">Synchronisierung</string>
-    <string name="guides_sync_body">• „Alle synchronisieren“ synchronisiert Kalender, Kontakte und Aufgaben
-• Eigene Sync‑Schaltflächen pro Ressourcentyp
-• Auto‑Sync kann in den Android‑Einstellungen aktiviert werden
-• Nur‑WLAN‑Option in den Kontoeinstellungen verfügbar</string>
+    <string name="guides_sync_body">• „Alle synchronisieren“ auf der Hauptseite synchronisiert alle Konten\n\n• Konto‑weise Synchronisierung in den Kontodetails verfügbar\n\n• Eigene Sync‑Schaltflächen für Kalender, Kontakte und WebCal‑Abonnements\n\n• Auto‑Sync ist in den Kontoeinstellungen konfigurierbar\n\n• Nur‑WLAN‑Option verhindert mobile Datennutzung\n\n• Hintergrundsynchronisierung läuft automatisch gemäß Ihrem Intervall\n\n• Manuelle Synchronisierung jederzeit über die Sync‑Schaltflächen möglich\n\n• Synchronisierte Daten erscheinen in Android‑Kalender‑ und Kontakte‑Apps</string>
 
     <!-- Intervallbezeichnungen (neu) -->
     <string name="every_duration">Alle %1$s</string>

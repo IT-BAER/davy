@@ -57,8 +57,8 @@ truth = "1.4.0"
 coroutinesTest = "1.8.1"
 turbine = "1.0.0"
 androidxTest = "1.6.1"
-androidxTestRules = "1.6.1"
-androidxTestRunner = "1.7.0"
+androidxTestRules = "1.5.0"
+androidxTestRunner = "1.6.1"
 androidxEspresso = "3.6.1"
 composeUiTest = "1.6.1"
 
@@ -69,6 +69,7 @@ ktlint = "13.1.0"
 # Other
 androidxNavigation = "2.7.7"
 timber = "5.0.1"
+orgJson = "20240303"
 
 [libraries]
 # Kotlin
@@ -138,6 +139,9 @@ androidx-browser = { module = "androidx.browser:browser", version.ref = "browser
 
 # Logging
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+
+# JSON
+orgjson = { module = "org.json:json", version.ref = "orgJson" }
 
 # Testing - JUnit 5
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }

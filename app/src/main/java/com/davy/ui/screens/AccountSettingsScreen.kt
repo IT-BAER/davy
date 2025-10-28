@@ -34,7 +34,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AccountSettingsScreen(
     accountId: Long,
-    onNavigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    onNavigateAfterDeletion: () -> Unit,
     viewModel: AccountDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -44,7 +45,8 @@ fun AccountSettingsScreen(
     LaunchedEffect(uiState.accountDeleted) {
         if (uiState.accountDeleted) {
             viewModel.onAccountDeletionHandled()
-            onNavigateBack()
+            // After deletion, return to account list (details screen would reference a deleted account)
+            onNavigateAfterDeletion()
         }
     }
     
@@ -60,7 +62,7 @@ fun AccountSettingsScreen(
             TopAppBar(
                 title = { Text(stringResource(id = com.davy.R.string.account_settings)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = onNavigateUp) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = com.davy.R.string.back))
                     }
                 }

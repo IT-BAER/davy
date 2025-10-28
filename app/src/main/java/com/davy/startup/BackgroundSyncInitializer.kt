@@ -50,5 +50,6 @@ class BackgroundSyncInitializer : Initializer<Unit> {
         }
     }
 
-    override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()
+    override fun dependencies(): List<Class<out Initializer<*>>> =
+        listOf(WorkManagerSetupInitializer::class.java)
 }

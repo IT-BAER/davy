@@ -140,11 +140,15 @@
     <string name="faq_which_servers">Welke servers worden ondersteund?</string>
     <string name="faq_which_servers_answer">DAVy werkt met elke CalDAV/CardDAV-compatibele server, inclusief Nextcloud, ownCloud, Radicale, Baïkal en meer.</string>
     <string name="faq_sync_not_working">Waarom werkt mijn synchronisatie niet?</string>
-    <string name="faq_sync_not_working_answer">• Server-URL is correct (inclusief https://)\n• Gebruikersnaam en wachtwoord zijn geldig\n• Alleen WiFi-synchronisatie is uitgeschakeld of WiFi is verbonden\n• Automatische synchronisatie is ingeschakeld in Android-instellingen</string>
+    
     <string name="faq_enable_auto_sync">Hoe schakel ik automatische synchronisatie in?</string>
-    <string name="faq_enable_auto_sync_answer">Ga naar Android-instellingen → Accounts → DAVy → Schakel \'Gegevens automatisch synchroniseren\' in</string>
+    <string name="faq_enable_auto_sync_answer">Automatisch synchroniseren wordt beheerd in de instellingen van DAVy. Android-systeeminstellingen zijn niet nodig.\n\n1. Tik op het account om Details te openen\n\n2. Controleer of sync aan staat voor agenda/adresboek (schakelaar)\n\n3. Schakel batterij-optimalisatie uit wanneer daarom wordt gevraagd (belangrijk voor betrouwbare achtergrondsync)\n\n4. Optioneel: Stel het sync-interval in via het menu Accountinstellingen</string>
     <string name="faq_multiple_accounts">Kan ik meerdere accounts synchroniseren?</string>
     <string name="faq_multiple_accounts_answer">Ja, u kunt meerdere CalDAV/CardDAV-accounts tegelijkertijd toevoegen en synchroniseren.</string>
+    <string name="faq_where_are_my_data">Waar vind ik mijn gesynchroniseerde items?</string>
+    
+    <string name="faq_how_delete_account">Hoe verwijder ik een account of collecties?</string>
+    
     <string name="faq_what_is_webcal">Wat zijn WebCal-abonnementen?</string>
     <string name="faq_what_is_webcal_answer">WebCal-abonnementen zijn alleen-lezen kalenderfeeds (webcal:// URL\'s) die DAVy periodiek ophaalt en synchroniseert naar uw apparaat. Perfect voor openbare kalenders, sportroosters, feestdagen, enz. Vind ze in het WebCal-tabblad van accountdetails.</string>
     <string name="faq_permissions_needed">Waarom heeft DAVy machtigingen nodig?</string>
@@ -161,11 +165,11 @@
     <string name="guides_getting_started_title">Aan de slag</string>
     <string name="guides_getting_started_body">1. Geef kalender- en contactenmachtigingen wanneer gevraagd\n2. Voeg een account toe door op de + knop te tikken\n3. Kies uw provider (Nextcloud, Fastmail, iCloud) of gebruik Handmatige instelling\n4. Voer uw server-URL, gebruikersnaam en wachtwoord in\n5. DAVy zal automatisch beschikbare kalenders, adresboeken en WebCal-abonnementen ontdekken</string>
     <string name="guides_calendars_title">Kalenders en WebCal-abonnementen beheren</string>
-    <string name="guides_calendars_body">• Tik op een account om kalenders en abonnementen te bekijken\n• Gebruik tabbladen om te schakelen tussen CalDAV-kalenders, Adresboeken en WebCal-abonnementen\n• "Lijst vernieuwen" werkt beschikbare verzamelingen van server bij\n• Maak nieuwe kalenders met de + knop in het menu\n• Abonneer op alleen-lezen WebCal-feeds (webcal://) via het WebCal-tabblad\n• Schakel synchronisatie per kalender in/uit met de schakelaars\n• Batchselectie van kalenders door lang te drukken, verwijder vervolgens meerdere tegelijk\n• Individuele of batchsynchronisatie met "Synchroniseren"-knoppen</string>
+    
     <string name="guides_contacts_title">Contacten beheren</string>
-    <string name="guides_contacts_body">• Ga naar het tabblad "Adresboeken" in accountdetails\n• Adresboeken synchroniseren automatisch op basis van uw instellingen\n• Schakel synchronisatie per adresboek in/uit met de schakelaars\n• Maak nieuwe adresboeken met de + knop in het menu\n• Batchselectie en verwijdering van adresboeken door lang te drukken\n• Alle gesynchroniseerde contacten verschijnen in de Android Contacten-app</string>
+    
     <string name="guides_account_settings_title">Accountinstellingen</string>
-    <string name="guides_account_settings_body">• Toegang tot instellingen via het menupictogram in accountdetails\n• Werk server-URL en authenticatiegegevens bij\n• Schakel "Alleen WiFi-synchronisatie" in om mobiele data te besparen\n• Stel standaard kalenderkleur in voor nieuwe kalenders\n• Configureer contactgroep-methode (Categorieën of Groepen)\n• Sla oude gebeurtenissen over om initiële synchronisatietijd te verkorten\n• Schakel batterijoptimalisatie uit voor betrouwbare achtergrondsynchronisatie\n• Configureer auto-sync-interval (per uur, dagelijks, enz.)</string>
+    
     <string name="guides_sync_title">Synchroniseren</string>
     <string name="guides_sync_body">• "Alles synchroniseren"-knop op hoofdscherm synchroniseert alle accounts\n• Per-account synchronisatie beschikbaar in accountdetails\n• Individuele synchronisatieknoppen voor kalenders, contacten en WebCal-abonnementen\n• Auto-sync configureerbaar in accountinstellingen\n• Alleen WiFi-optie voorkomt gebruik van mobiele data\n• Achtergrondsynchronisatie draait automatisch op basis van uw interval\n• Handmatige synchronisatie altijd beschikbaar via synchronisatieknoppen\n• Gesynchroniseerde gegevens verschijnen in Android Kalender- en Contacten-apps</string>
     

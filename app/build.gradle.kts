@@ -221,6 +221,7 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.vintage.engine)
     testImplementation(libs.room.testing)
+    testImplementation(libs.orgjson)
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
     // Testing - Android

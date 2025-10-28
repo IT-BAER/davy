@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.CalendarContract
@@ -57,6 +58,27 @@ class CalendarContractSync @Inject constructor(
         // Mutex to prevent concurrent CalendarContractSync operations
         private val syncMutex = Mutex()
     }
+
+    private enum class UpdateEventResult {
+        UPDATED,
+        UNCHANGED,
+        FAILED
+    }
+
+    private data class ProviderEventSnapshot(
+        val calendarId: Long,
+        val title: String?,
+        val description: String?,
+        val location: String?,
+        val dtStart: Long?,
+        val dtEnd: Long?,
+        val allDay: Int?,
+        val timezone: String?,
+        val uid: String?,
+        val status: Int?,
+        val rrule: String?,
+        val organizer: String?
+    )
     
     /**
      * Enable all calendars (VISIBLE=1, SYNC_EVENTS=1) for the given account name in the provider.
@@ -176,19 +198,22 @@ class CalendarContractSync @Inject constructor(
 
                     if (existingEventId != null) {
                         // Update existing event; on failure, try to insert anew
-                        if (updateEvent(existingEventId, event, androidCalendarId, accountName)) {
-                            eventsUpdated++
-                            // Persist androidEventId if changed
-                            if (event.androidEventId != existingEventId) {
-                                eventRepository.updateAndroidEventId(event.id, existingEventId)
+                        when (updateEvent(existingEventId, event, androidCalendarId, accountName)) {
+                            UpdateEventResult.UPDATED -> {
+                                eventsUpdated++
+                                if (event.androidEventId != existingEventId) {
+                                    eventRepository.updateAndroidEventId(event.id, existingEventId)
+                                }
                             }
-                        } else {
-                            Timber.w("Update failed for event '${event.title}' (id=$existingEventId). Attempting insert fallback…")
-                            val newEventId = insertEvent(event, androidCalendarId, accountName)
-                            if (newEventId != null) {
-                                eventsInserted++
-                                eventRepository.updateAndroidEventId(event.id, newEventId)
-                                Timber.d("Fallback insert succeeded for '${event.title}' → newId=$newEventId")
+                            UpdateEventResult.UNCHANGED -> Timber.d("Skipping provider update for '${event.title}' – no changes detected")
+                            UpdateEventResult.FAILED -> {
+                                Timber.w("Update failed for event '${event.title}' (id=$existingEventId). Attempting insert fallback…")
+                                val newEventId = insertEvent(event, androidCalendarId, accountName)
+                                if (newEventId != null) {
+                                    eventsInserted++
+                                    eventRepository.updateAndroidEventId(event.id, newEventId)
+                                    Timber.d("Fallback insert succeeded for '${event.title}' → newId=$newEventId")
+                                }
                             }
                         }
                     } else {
@@ -281,18 +306,22 @@ class CalendarContractSync @Inject constructor(
                         }
 
                         if (existingEventId != null) {
-                            if (updateEvent(existingEventId, event, androidCalendarId, accountName)) {
-                                eventsUpdated++
-                                if (event.androidEventId != existingEventId) {
-                                    eventRepository.updateAndroidEventId(event.id, existingEventId)
+                            when (updateEvent(existingEventId, event, androidCalendarId, accountName)) {
+                                UpdateEventResult.UPDATED -> {
+                                    eventsUpdated++
+                                    if (event.androidEventId != existingEventId) {
+                                        eventRepository.updateAndroidEventId(event.id, existingEventId)
+                                    }
                                 }
-                            } else {
-                                Timber.w("Update failed for event '${event.title}' (id=$existingEventId). Attempting insert fallback…")
-                                val newEventId = insertEvent(event, androidCalendarId, accountName)
-                                if (newEventId != null) {
-                                    eventsInserted++
-                                    eventRepository.updateAndroidEventId(event.id, newEventId)
-                                    Timber.d("Fallback insert succeeded for '${event.title}' → newId=$newEventId")
+                                UpdateEventResult.UNCHANGED -> Timber.d("Skipping provider update for '${event.title}' – no changes detected")
+                                UpdateEventResult.FAILED -> {
+                                    Timber.w("Update failed for event '${event.title}' (id=$existingEventId). Attempting insert fallback…")
+                                    val newEventId = insertEvent(event, androidCalendarId, accountName)
+                                    if (newEventId != null) {
+                                        eventsInserted++
+                                        eventRepository.updateAndroidEventId(event.id, newEventId)
+                                        Timber.d("Fallback insert succeeded for '${event.title}' → newId=$newEventId")
+                                    }
                                 }
                             }
                         } else {
@@ -594,8 +623,33 @@ class CalendarContractSync @Inject constructor(
         event: com.davy.domain.model.CalendarEvent,
         androidCalendarId: Long,
         accountName: String
-    ): Boolean {
+    ): UpdateEventResult {
         try {
+            val existingSnapshot = loadProviderEventSnapshot(accountName, eventId)
+            if (existingSnapshot == null) {
+                Timber.d("Provider event $eventId not found before update; will signal failure")
+                return UpdateEventResult.FAILED
+            }
+
+            val desiredSnapshot = ProviderEventSnapshot(
+                calendarId = androidCalendarId,
+                title = event.title,
+                description = event.description,
+                location = event.location,
+                dtStart = event.dtStart,
+                dtEnd = event.dtEnd,
+                allDay = if (event.allDay) 1 else 0,
+                timezone = event.timezone ?: "UTC",
+                uid = event.uid,
+                status = event.status?.let { mapEventStatus(it) },
+                rrule = event.rrule,
+                organizer = event.organizer
+            )
+
+            if (existingSnapshot == desiredSnapshot) {
+                return UpdateEventResult.UNCHANGED
+            }
+
             val values = ContentValues().apply {
                 put(CalendarContract.Events.CALENDAR_ID, androidCalendarId)
                 put(CalendarContract.Events.TITLE, event.title)
@@ -605,6 +659,7 @@ class CalendarContractSync @Inject constructor(
                 put(CalendarContract.Events.DTEND, event.dtEnd)
                 put(CalendarContract.Events.ALL_DAY, if (event.allDay) 1 else 0)
                 put(CalendarContract.Events.EVENT_TIMEZONE, event.timezone ?: "UTC")
+                put(CalendarContract.Events.UID_2445, event.uid)
                 
                 // Add status if present
                 event.status?.let {
@@ -633,17 +688,73 @@ class CalendarContractSync @Inject constructor(
             
             if (rowsUpdated > 0) {
                 Timber.d("Updated event with ID: $eventId (${event.title})")
-                return true
-            } else {
-                Timber.e("Failed to update event id=$eventId title='${event.title}' (0 rows)")
-                return false
+                return UpdateEventResult.UPDATED
             }
+
+            Timber.e("Failed to update event id=$eventId title='${event.title}' (0 rows)")
+            return UpdateEventResult.FAILED
             
         } catch (e: Exception) {
             Timber.e(e, "Exception updating event: ${event.title}")
-            return false
+            return UpdateEventResult.FAILED
         }
     }
+
+    private fun loadProviderEventSnapshot(accountName: String, eventId: Long): ProviderEventSnapshot? {
+        val projection = arrayOf(
+            CalendarContract.Events.CALENDAR_ID,
+            CalendarContract.Events.TITLE,
+            CalendarContract.Events.DESCRIPTION,
+            CalendarContract.Events.EVENT_LOCATION,
+            CalendarContract.Events.DTSTART,
+            CalendarContract.Events.DTEND,
+            CalendarContract.Events.ALL_DAY,
+            CalendarContract.Events.EVENT_TIMEZONE,
+            CalendarContract.Events.UID_2445,
+            CalendarContract.Events.STATUS,
+            CalendarContract.Events.RRULE,
+            CalendarContract.Events.ORGANIZER
+        )
+
+        return try {
+            val syncAdapterUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_NAME, accountName)
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_TYPE, ACCOUNT_TYPE)
+                .build()
+            val uri = ContentUris.withAppendedId(syncAdapterUri, eventId)
+
+            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (!cursor.moveToFirst()) {
+                    Timber.d("Provider event $eventId query returned no rows")
+                    return null
+                }
+                ProviderEventSnapshot(
+                    calendarId = cursor.getLongOrNull(0) ?: return null,
+                    title = cursor.getStringOrNull(1),
+                    description = cursor.getStringOrNull(2),
+                    location = cursor.getStringOrNull(3),
+                    dtStart = cursor.getLongOrNull(4),
+                    dtEnd = cursor.getLongOrNull(5),
+                    allDay = cursor.getIntOrNull(6),
+                    timezone = cursor.getStringOrNull(7),
+                    uid = cursor.getStringOrNull(8),
+                    status = cursor.getIntOrNull(9),
+                    rrule = cursor.getStringOrNull(10),
+                    organizer = cursor.getStringOrNull(11)
+                )
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to load provider snapshot for eventId=$eventId")
+            null
+        }
+    }
+
+    private fun Cursor.getStringOrNull(index: Int): String? = if (isNull(index)) null else getString(index)
+
+    private fun Cursor.getLongOrNull(index: Int): Long? = if (isNull(index)) null else getLong(index)
+
+    private fun Cursor.getIntOrNull(index: Int): Int? = if (isNull(index)) null else getInt(index)
     
     /**
      * Map EventStatus enum to CalendarContract status integer.

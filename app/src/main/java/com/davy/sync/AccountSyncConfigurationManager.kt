@@ -95,7 +95,7 @@ class AccountSyncConfigurationManager @Inject constructor(
         val accounts = accountRepository.getAll()
         for (account in accounts) {
             // Use service-specific scheduling instead of old single-job approach
-            scheduleServiceSpecificSync(account.id)
+            scheduleServiceSpecificSync(account.id, preserve = true)
         }
     }
     
@@ -163,8 +163,8 @@ class AccountSyncConfigurationManager @Inject constructor(
      * Schedule separate sync jobs for each service type (CalDAV, CardDAV, WebCAL).
      * Each service respects its own sync interval setting.
      */
-    suspend fun scheduleServiceSpecificSync(accountId: Long) {
-        Timber.d("Scheduling service-specific sync for account $accountId")
+    suspend fun scheduleServiceSpecificSync(accountId: Long, preserve: Boolean = false) {
+        Timber.d("Scheduling service-specific sync for account $accountId (preserve=$preserve)")
         
         val prefs = context.getSharedPreferences("sync_config_$accountId", Context.MODE_PRIVATE)
         val globalAutoSyncEnabled = isGlobalAutoSyncEnabled()
@@ -183,13 +183,22 @@ class AccountSyncConfigurationManager @Inject constructor(
         // Schedule CalDAV sync
         val calendarInterval = prefs.getInt("calendar_sync_interval", 60)
         if (calendarInterval > 0) {
-            Timber.d("Scheduling CalDAV sync: interval=${calendarInterval}min, wifiOnly=$effectiveWifiOnly")
-            syncManager.scheduleServiceSync(
-                accountId = accountId,
-                serviceType = SyncManager.SYNC_TYPE_CALENDAR,
-                intervalMinutes = calendarInterval,
-                wifiOnly = effectiveWifiOnly
-            )
+            Timber.d("Scheduling CalDAV sync: interval=${calendarInterval}min, wifiOnly=$effectiveWifiOnly, preserve=$preserve")
+            if (preserve) {
+                syncManager.scheduleServiceSyncPreserving(
+                    accountId = accountId,
+                    serviceType = SyncManager.SYNC_TYPE_CALENDAR,
+                    intervalMinutes = calendarInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            } else {
+                syncManager.scheduleServiceSync(
+                    accountId = accountId,
+                    serviceType = SyncManager.SYNC_TYPE_CALENDAR,
+                    intervalMinutes = calendarInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            }
         } else {
             Timber.d("CalDAV sync disabled (manual only)")
             syncManager.cancelServiceSync(accountId, SyncManager.SYNC_TYPE_CALENDAR)
@@ -198,13 +207,22 @@ class AccountSyncConfigurationManager @Inject constructor(
         // Schedule CardDAV sync
         val contactInterval = prefs.getInt("contact_sync_interval", 60)
         if (contactInterval > 0) {
-            Timber.d("Scheduling CardDAV sync: interval=${contactInterval}min, wifiOnly=$effectiveWifiOnly")
-            syncManager.scheduleServiceSync(
-                accountId = accountId,
-                serviceType = SyncManager.SYNC_TYPE_CONTACTS,
-                intervalMinutes = contactInterval,
-                wifiOnly = effectiveWifiOnly
-            )
+            Timber.d("Scheduling CardDAV sync: interval=${contactInterval}min, wifiOnly=$effectiveWifiOnly, preserve=$preserve")
+            if (preserve) {
+                syncManager.scheduleServiceSyncPreserving(
+                    accountId = accountId,
+                    serviceType = SyncManager.SYNC_TYPE_CONTACTS,
+                    intervalMinutes = contactInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            } else {
+                syncManager.scheduleServiceSync(
+                    accountId = accountId,
+                    serviceType = SyncManager.SYNC_TYPE_CONTACTS,
+                    intervalMinutes = contactInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            }
         } else {
             Timber.d("CardDAV sync disabled (manual only)")
             syncManager.cancelServiceSync(accountId, SyncManager.SYNC_TYPE_CONTACTS)
@@ -213,13 +231,22 @@ class AccountSyncConfigurationManager @Inject constructor(
         // Schedule WebCAL sync
         val webCalInterval = prefs.getInt("webcal_sync_interval", 60)
         if (webCalInterval > 0) {
-            Timber.d("Scheduling WebCAL sync: interval=${webCalInterval}min, wifiOnly=$effectiveWifiOnly")
-            syncManager.scheduleServiceSync(
-                accountId = accountId,
-                serviceType = "webcal",
-                intervalMinutes = webCalInterval,
-                wifiOnly = effectiveWifiOnly
-            )
+            Timber.d("Scheduling WebCAL sync: interval=${webCalInterval}min, wifiOnly=$effectiveWifiOnly, preserve=$preserve")
+            if (preserve) {
+                syncManager.scheduleServiceSyncPreserving(
+                    accountId = accountId,
+                    serviceType = "webcal",
+                    intervalMinutes = webCalInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            } else {
+                syncManager.scheduleServiceSync(
+                    accountId = accountId,
+                    serviceType = "webcal",
+                    intervalMinutes = webCalInterval,
+                    wifiOnly = effectiveWifiOnly
+                )
+            }
         } else {
             Timber.d("WebCAL sync disabled (manual only)")
             syncManager.cancelServiceSync(accountId, "webcal")

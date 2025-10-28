@@ -47,11 +47,16 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
-            <!-- Disable WorkManager auto-initialization to use custom HiltWorkerFactory -->
+            <!-- Disable WorkManager's default initializer so we can supply HiltWorkerFactory explicitly -->
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
                 android:value="androidx.startup"
                 tools:node="remove" />
+
+            <!-- Initialize WorkManager with HiltWorkerFactory before scheduling background sync -->
+            <meta-data
+                android:name="com.davy.startup.WorkManagerSetupInitializer"
+                android:value="androidx.startup" />
             
             <!-- Initialize background sync (deferred from Application.onCreate()) -->
             <meta-data

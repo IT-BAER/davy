@@ -140,9 +140,12 @@
     <string name="faq_which_servers">어떤 서버가 지원되나요?</string>
     <string name="faq_which_servers_answer">DAVy는 Nextcloud, ownCloud, Radicale, Baïkal 등을 포함한 모든 CalDAV/CardDAV 호환 서버와 작동합니다.</string>
     <string name="faq_sync_not_working">동기화가 작동하지 않는 이유는?</string>
-    <string name="faq_sync_not_working_answer">• 서버 URL이 올바른지 확인 (https:// 포함)\n• 사용자 이름과 비밀번호가 유효한지 확인\n• WiFi에서만 동기화가 비활성화되었거나 WiFi에 연결되어 있는지 확인\n• Android 설정에서 자동 동기화가 활성화되어 있는지 확인</string>
+    
+    <!-- Updated to align with English canonical guidance -->
+    
     <string name="faq_enable_auto_sync">자동 동기화를 활성화하는 방법은?</string>
-    <string name="faq_enable_auto_sync_answer">Android 설정 → 계정 → DAVy → \'데이터 자동 동기화\' 활성화</string>
+    <!-- Auto-sync is managed in-app; Android system setting not required -->
+    <string name="faq_enable_auto_sync_answer">자동 동기는 DAVy 설정에서 관리됩니다. Android 시스템 설정은 필요하지 않습니다.\n\n1. 계정을 탭하여 계정 상세로 이동\n\n2. 캘린더/주소록에서 동기가 켜져 있는지 확인(스위치)\n\n3. 요청 시 배터리 최적화를 해제합니다(안정적인 백그라운드 동기를 위해 중요)\n\n4. 선택 사항: 계정 설정 메뉴에서 동기 간격을 설정</string>
     <string name="faq_multiple_accounts">여러 계정을 동기화할 수 있나요?</string>
     <string name="faq_multiple_accounts_answer">예, 여러 CalDAV/CardDAV 계정을 동시에 추가하고 동기화할 수 있습니다.</string>
     <string name="faq_what_is_webcal">WebCal 구독이란 무엇인가요?</string>
@@ -199,18 +202,10 @@
     <string name="date_format_short">yyyy년 M월 d일</string>
     <string name="datetime_format_long">yyyy년 M월 d일 HH:mm</string>
     
-    <!-- Plurals -->
-    <plurals name="number_of_events">
-        <item quantity="other">%d개의 일정</item>
-    </plurals>
-    
-    <plurals name="number_of_contacts">
-        <item quantity="other">%d개의 연락처</item>
-    </plurals>
-    
-    <plurals name="number_of_tasks">
-        <item quantity="other">%d개의 작업</item>
-    </plurals>
+        <string name="faq_where_are_my_data">동기화된 일정/연락처는 어디에서 볼 수 있나요?</string>
+        
+        <string name="faq_how_delete_account">계정이나 컬렉션을 삭제하려면?</string>
+        
     
     <!-- Add Account Screen -->
     <string name="password_placeholder">••••••••</string>

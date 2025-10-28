@@ -15,7 +15,7 @@ import javax.inject.Singleton
  * Handles:
  * - Periodic background sync scheduling (per account settings)
  * - Manual sync triggering
- * - Sync constraints (network, battery)
+ * - Sync constraints (network)
  * - Retry policies
  */
 @Singleton
@@ -51,13 +51,11 @@ class SyncManager @Inject constructor(
         intervalMinutes: Int = DEFAULT_SYNC_INTERVAL_MINUTES.toInt(),
         wifiOnly: Boolean = false
     ) {
-        val constraintsBuilder = Constraints.Builder()
+        val constraints = Constraints.Builder()
             .setRequiredNetworkType(
                 if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             )
-            .setRequiresBatteryNotLow(true)
-        
-        val constraints = constraintsBuilder.build()
+            .build()
         
         val inputData = workDataOf(
             SyncWorker.INPUT_ACCOUNT_ID to accountId,
@@ -95,7 +93,6 @@ class SyncManager @Inject constructor(
     fun schedulePeriodicSync() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
             .build()
         
         val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
@@ -128,13 +125,11 @@ class SyncManager @Inject constructor(
         intervalMinutes: Int = DEFAULT_SYNC_INTERVAL_MINUTES.toInt(),
         wifiOnly: Boolean = false
     ) {
-        val constraintsBuilder = Constraints.Builder()
+        val constraints = Constraints.Builder()
             .setRequiredNetworkType(
                 if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             )
-            .setRequiresBatteryNotLow(true)
-        
-        val constraints = constraintsBuilder.build()
+            .build()
         
         val inputData = workDataOf(
             SyncWorker.INPUT_ACCOUNT_ID to accountId,
@@ -189,13 +184,11 @@ class SyncManager @Inject constructor(
     ) {
         Timber.d("schedulePeriodicSyncPreserving: accountId=$accountId, intervalMinutes=$intervalMinutes, wifiOnly=$wifiOnly")
         
-        val constraintsBuilder = Constraints.Builder()
+        val constraints = Constraints.Builder()
             .setRequiredNetworkType(
                 if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             )
-            .setRequiresBatteryNotLow(true)
-        
-        val constraints = constraintsBuilder.build()
+            .build()
         
         val inputData = workDataOf(
             SyncWorker.INPUT_ACCOUNT_ID to accountId,
@@ -269,17 +262,16 @@ class SyncManager @Inject constructor(
         accountId: Long,
         serviceType: String,
         intervalMinutes: Int,
-        wifiOnly: Boolean = false
+        wifiOnly: Boolean = false,
+        policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE
     ) {
         Timber.d("Scheduling service-specific sync: account=$accountId, service=$serviceType, interval=${intervalMinutes}min")
         
-        val constraintsBuilder = Constraints.Builder()
+        val constraints = Constraints.Builder()
             .setRequiredNetworkType(
                 if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             )
-            .setRequiresBatteryNotLow(true)
-        
-        val constraints = constraintsBuilder.build()
+            .build()
         
     // Map webcal to calendar sync type but only force WebCal when the serviceType is actually webcal
     val actualSyncType = if (serviceType == "webcal") SYNC_TYPE_CALENDAR else serviceType
@@ -308,12 +300,31 @@ class SyncManager @Inject constructor(
             .build()
         
         val workName = "periodic_sync_${accountId}_$serviceType"
-        Timber.d("Enqueueing unique periodic work: $workName with UPDATE policy")
+        Timber.d("Enqueueing unique periodic work: $workName with policy=$policy")
         
         workManager.enqueueUniquePeriodicWork(
             workName,
-            ExistingPeriodicWorkPolicy.UPDATE,
+            policy,
             periodicSyncRequest
+        )
+    }
+
+    /**
+     * Schedule service-specific periodic sync but preserve the existing timer if already scheduled.
+     * This avoids resetting the next-run window on app startup.
+     */
+    fun scheduleServiceSyncPreserving(
+        accountId: Long,
+        serviceType: String,
+        intervalMinutes: Int,
+        wifiOnly: Boolean = false
+    ) {
+        scheduleServiceSync(
+            accountId = accountId,
+            serviceType = serviceType,
+            intervalMinutes = intervalMinutes,
+            wifiOnly = wifiOnly,
+            policy = ExistingPeriodicWorkPolicy.KEEP
         )
     }
     
@@ -356,6 +367,7 @@ class SyncManager @Inject constructor(
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
             .setInputData(inputData)
             .setConstraints(constraints)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .addTag(TAG_MANUAL_SYNC)
             .addTag("account_$accountId")
             .build()
@@ -380,6 +392,7 @@ class SyncManager @Inject constructor(
         
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(constraints)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(
                 workDataOf(
                     SyncWorker.INPUT_SYNC_TYPE to SYNC_TYPE_ALL,

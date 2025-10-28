@@ -306,8 +306,12 @@ fun NavGraph(
             val accountId = backStackEntry.arguments?.getLong("accountId") ?: 0L
             com.davy.ui.screens.AccountSettingsScreen(
                 accountId = accountId,
-                onNavigateBack = { 
-                    // When navigating back (e.g., after account deletion), pop all the way to account list
+                onNavigateUp = { 
+                    // Back arrow should return to the previous screen (AccountDetail)
+                    navController.popBackStack()
+                },
+                onNavigateAfterDeletion = {
+                    // After deleting an account, return to the account list
                     navController.popBackStack("accounts", inclusive = false)
                 }
             )
