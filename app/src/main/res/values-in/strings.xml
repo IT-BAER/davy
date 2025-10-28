@@ -39,6 +39,7 @@
     <string name="account_details">Detail akun</string>
     <string name="account_settings">Pengaturan akun</string>
     <string name="delete_account">Hapus akun</string>
+    <string name="delete_account_question">Hapus akun?</string>
     <string name="delete_account_confirmation">Apakah Anda yakin ingin menghapus akun ini? Ini akan menghapus semua data yang disinkronkan.</string>
     <string name="no_accounts">Belum ada akun</string>
     <string name="no_accounts_description">Tambahkan akun CalDAV/CardDAV pertama Anda untuk memulai</string>

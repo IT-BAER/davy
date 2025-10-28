@@ -39,6 +39,7 @@
     <string name="account_details">تفاصيل الحساب</string>
     <string name="account_settings">إعدادات الحساب</string>
     <string name="delete_account">حذف الحساب</string>
+    <string name="delete_account_question">حذف الحساب؟</string>
     <string name="delete_account_confirmation">هل أنت متأكد من رغبتك في حذف هذا الحساب؟ سيؤدي ذلك إلى إزالة جميع البيانات المتزامنة.</string>
     <string name="no_accounts">لا توجد حسابات</string>
     <string name="no_accounts_description">أضف أول حساب CalDAV/CardDAV للبدء</string>

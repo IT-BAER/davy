@@ -38,6 +38,7 @@
     <string name="account_details">Сведения об учетной записи</string>
     <string name="account_settings">Настройки учетной записи</string>
     <string name="delete_account">Удалить учетную запись</string>
+    <string name="delete_account_question">Удалить учетную запись?</string>
     <string name="delete_account_confirmation">Вы уверены, что хотите удалить эту учетную запись? Это удалит все синхронизированные данные.</string>
     <string name="no_accounts">Учетных записей пока нет</string>
     <string name="no_accounts_description">Добавьте свою первую учетную запись CalDAV/CardDAV, чтобы начать</string>

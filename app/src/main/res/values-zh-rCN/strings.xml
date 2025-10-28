@@ -39,6 +39,7 @@
     <string name="account_details">账户详情</string>
     <string name="account_settings">账户设置</string>
     <string name="delete_account">删除账户</string>
+    <string name="delete_account_question">删除账户？</string>
     <string name="delete_account_confirmation">您确定要删除此账户吗？这将删除所有同步的数据。</string>
     <string name="no_accounts">暂无账户</string>
     <string name="no_accounts_description">添加您的第一个 CalDAV/CardDAV 账户以开始使用</string>

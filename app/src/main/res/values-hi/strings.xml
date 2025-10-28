@@ -39,6 +39,7 @@
     <string name="account_details">खाता विवरण</string>
     <string name="account_settings">खाता सेटिंग्स</string>
     <string name="delete_account">खाता हटाएं</string>
+    <string name="delete_account_question">खाता हटाएं?</string>
     <string name="delete_account_confirmation">क्या आप वाकई इस खाते को हटाना चाहते हैं? यह सभी सिंक किए गए डेटा को हटा देगा।</string>
     <string name="no_accounts">कोई खाता नहीं</string>
     <string name="no_accounts_description">शुरू करने के लिए अपना पहला CalDAV/CardDAV खाता जोड़ें</string>

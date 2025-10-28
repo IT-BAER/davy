@@ -38,6 +38,7 @@
     <string name="account_details">Detalles de la cuenta</string>
     <string name="account_settings">Configuración de la cuenta</string>
     <string name="delete_account">Eliminar cuenta</string>
+    <string name="delete_account_question">¿Eliminar cuenta?</string>
     <string name="delete_account_confirmation">¿Está seguro de que desea eliminar esta cuenta? Esto eliminará todos los datos sincronizados.</string>
     <string name="no_accounts">Aún no hay cuentas</string>
     <string name="no_accounts_description">Agregue su primera cuenta CalDAV/CardDAV para comenzar</string>
