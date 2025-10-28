@@ -36,6 +36,7 @@ class DavyApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         // Initialize debug logger based on user preferences (controls whether Timber logs are active)
+        // This MUST be called first before any Timber logging
         com.davy.util.DebugLogger.init(this)
 
         // Enable StrictMode in debug builds to catch accidental disk/network on main thread and leaks
@@ -54,6 +55,7 @@ class DavyApplication : Application(), Configuration.Provider {
             )
         }
 
+        // Note: These debug logs will only show if debug logging is enabled
         Timber.d("=========================================")
         Timber.d("🚀 APPLICATION ONCREATE START")
         Timber.d("=========================================")

@@ -1,10 +1,12 @@
 package com.davy.di
 
+import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,7 +24,9 @@ import javax.inject.Singleton
  * - Retrofit instance
  * - Moshi JSON converter
  * 
- * Note: Authentication interceptor and TLS configuration will be added later.
+ * HTTP logging respects user's debug logging preference:
+ * - When debug logging is enabled: Full request/response body logging
+ * - When debug logging is disabled: No HTTP logging (reduces overhead)
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -38,11 +42,20 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
+    fun provideHttpLoggingInterceptor(@ApplicationContext context: Context): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message ->
             Timber.tag("OkHttp").d(message)
         }.apply {
-            level = if (com.davy.BuildConfig.DEBUG) {
+            // Check user's debug logging preference
+            val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+            val debugEnabled = if (prefs.contains("debug_logging")) {
+                prefs.getBoolean("debug_logging", false)
+            } else {
+                // Default to BuildConfig.DEBUG if user hasn't set preference
+                com.davy.BuildConfig.DEBUG
+            }
+            
+            level = if (debugEnabled) {
                 HttpLoggingInterceptor.Level.BODY
             } else {
                 HttpLoggingInterceptor.Level.NONE
