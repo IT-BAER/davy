@@ -404,9 +404,17 @@ class CalDAVSyncService @Inject constructor(
             val eventsToDownload = mutableListOf<String>()
             val localEventMap = eventRepository.getByCalendarId(calendar.id).associateBy { it.eventUrl }
             
+            Timber.d("DEBUG: localEventMap contains ${localEventMap.size} events with keys:")
+            localEventMap.keys.take(3).forEach { Timber.d("  Local key: '$it'") }
+            
             serverEvents.forEach { eventResource ->
                 val localEvent = localEventMap[eventResource.href]
                 if (localEvent == null || localEvent.etag != eventResource.etag) {
+                    if (localEvent == null) {
+                        Timber.d("DEBUG: No local match for server href '${eventResource.href}'")
+                    } else {
+                        Timber.d("DEBUG: ETag mismatch - server: '${eventResource.etag}', local: '${localEvent.etag}' for '${eventResource.href}'")
+                    }
                     eventsToDownload.add(eventResource.href)
                 }
             }
@@ -471,7 +479,7 @@ class CalDAVSyncService @Inject constructor(
                                 } else {
                                     eventRepository.update(eventToSave.copy(id = existingEventByUid.id))
                                     Timber.d("Updated existing event: ${event.title} (UID: ${event.uid})")
-                                    downloaded++
+                                    // Don't increment downloaded counter for updates - only new events count
                                 }
                             }
                         } catch (e: Exception) {

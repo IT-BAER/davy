@@ -21,6 +21,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
+import java.util.Collections
 
 /**
  * WorkManager worker for synchronizing CalDAV/CardDAV data.
@@ -55,34 +56,42 @@ class SyncWorker @AssistedInject constructor(
         const val WORK_NAME = "davy_sync_work"
         const val INPUT_ACCOUNT_ID = "account_id"
         const val INPUT_SYNC_TYPE = "sync_type"
-    const val INPUT_FORCE_WEB_CAL = "force_webcal"
+        const val INPUT_FORCE_WEB_CAL = "force_webcal"
         
         const val SYNC_TYPE_ALL = "all"
         const val SYNC_TYPE_CALENDAR = "calendar"
         const val SYNC_TYPE_CONTACTS = "contacts"
         const val SYNC_TYPE_TASKS = "tasks"
+
+        private val runningSyncs = Collections.synchronizedSet(mutableSetOf<String>())
     }
     
     override suspend fun doWork(): Result {
+        val accountId = inputData.getLong(INPUT_ACCOUNT_ID, -1L)
+        val syncType = inputData.getString(INPUT_SYNC_TYPE) ?: SYNC_TYPE_ALL
+        val calendarId = inputData.getLong("calendar_id", -1L)
+        val addressBookId = inputData.getLong("addressbook_id", -1L)
+        val forceWebCal = inputData.getBoolean(INPUT_FORCE_WEB_CAL, false)
+
+        val syncSignature = buildSyncSignature(accountId, syncType, calendarId, addressBookId, forceWebCal)
+        if (!runningSyncs.add(syncSignature)) {
+            Timber.i("Sync already running for signature=$syncSignature – skipping duplicate invocation")
+            return Result.success()
+        }
+
         Timber.d("========================================")
         Timber.d("SYNCWORKER STARTED")
         Timber.d("Run attempt: $runAttemptCount")
         Timber.d("========================================")
-        
+
         return try {
-            val accountId = inputData.getLong(INPUT_ACCOUNT_ID, -1L)
-            val syncType = inputData.getString(INPUT_SYNC_TYPE) ?: SYNC_TYPE_ALL
-            val calendarId = inputData.getLong("calendar_id", -1L)
-            val addressBookId = inputData.getLong("addressbook_id", -1L)
-            val forceWebCal = inputData.getBoolean(INPUT_FORCE_WEB_CAL, false)
-            
             Timber.d("Input data:")
             Timber.d("  - Account ID: $accountId")
             Timber.d("  - Sync Type: $syncType")
             Timber.d("  - Calendar ID: $calendarId")
             Timber.d("  - AddressBook ID: $addressBookId")
             Timber.d("  - Force WebCal: $forceWebCal")
-            
+
             if (accountId == -1L) {
                 Timber.w("No account ID specified, syncing all accounts")
                 syncAllAccounts(syncType, forceWebCal)
@@ -90,7 +99,7 @@ class SyncWorker @AssistedInject constructor(
                 Timber.d("→ Syncing account ID: $accountId, type: $syncType")
                 syncAccount(accountId, syncType, calendarId, addressBookId, forceWebCal)
             }
-            
+
             Timber.d("========================================")
             Timber.d("✓ SYNCWORKER COMPLETED SUCCESSFULLY")
             Timber.d("========================================")
@@ -113,7 +122,23 @@ class SyncWorker @AssistedInject constructor(
                 Timber.e("✗ Max retries reached")
                 Result.failure()
             }
+        } finally {
+            runningSyncs.remove(syncSignature)
         }
+    }
+
+    private fun buildSyncSignature(
+        accountId: Long,
+        syncType: String,
+        calendarId: Long,
+        addressBookId: Long,
+        forceWebCal: Boolean
+    ): String {
+        val accountKey = if (accountId == -1L) "ALL" else accountId.toString()
+        val calendarKey = if (calendarId == -1L) "*" else calendarId.toString()
+        val addressKey = if (addressBookId == -1L) "*" else addressBookId.toString()
+        val webCalKey = if (forceWebCal) "1" else "0"
+        return listOf(accountKey, syncType, calendarKey, addressKey, webCalKey).joinToString(separator = "/")
     }
     
     private suspend fun syncAllAccounts(syncType: String, forceWebCal: Boolean) {

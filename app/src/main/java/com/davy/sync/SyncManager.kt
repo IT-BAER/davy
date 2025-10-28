@@ -5,6 +5,7 @@ import androidx.work.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,6 +38,21 @@ class SyncManager @Inject constructor(
         const val SYNC_TYPE_CONTACTS = "contacts"
         const val SYNC_TYPE_TASKS = "tasks"
     }
+
+    private fun accountTag(accountId: Long) = "account_${accountId}"
+
+    private fun serviceTag(serviceType: String) = "service_${serviceType.lowercase(Locale.ROOT)}"
+
+    private fun periodicCommonTag(accountId: Long, serviceType: String) =
+        "periodic-sync/common/${serviceType.lowercase(Locale.ROOT)}/${accountTag(accountId)}"
+
+    private fun periodicWorkerName(accountId: Long, serviceType: String) =
+        "periodic-sync ${serviceType.lowercase(Locale.ROOT)} ${accountTag(accountId)}"
+
+    private fun legacyPeriodicWorkName(accountId: Long) = "periodic_sync_account_${accountId}"
+
+    private fun legacyServiceWorkName(accountId: Long, serviceType: String) =
+        "periodic_sync_${accountId}_${serviceType}"
     
     /**
      * Schedule periodic background sync for a specific account.
@@ -64,7 +80,7 @@ class SyncManager @Inject constructor(
             SyncWorker.INPUT_FORCE_WEB_CAL to false
         )
         
-        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
+        val periodicSyncBuilder = PeriodicWorkRequestBuilder<SyncWorker>(
             intervalMinutes.toLong(),
             TimeUnit.MINUTES
         )
@@ -76,11 +92,16 @@ class SyncManager @Inject constructor(
                 TimeUnit.MILLISECONDS
             )
             .addTag(TAG_PERIODIC_SYNC)
-            .addTag("account_$accountId")
-            .build()
-        
+            .addTag(accountTag(accountId))
+            .addTag(serviceTag(SYNC_TYPE_ALL))
+            .addTag(periodicCommonTag(accountId, SYNC_TYPE_ALL))
+
+        val periodicSyncRequest = periodicSyncBuilder.build()
+
+        workManager.cancelUniqueWork(legacyPeriodicWorkName(accountId))
+
         workManager.enqueueUniquePeriodicWork(
-            "periodic_sync_account_$accountId",
+            periodicWorkerName(accountId, SYNC_TYPE_ALL),
             ExistingPeriodicWorkPolicy.UPDATE,
             periodicSyncRequest
         )
@@ -138,7 +159,7 @@ class SyncManager @Inject constructor(
             SyncWorker.INPUT_FORCE_WEB_CAL to false
         )
         
-        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
+        val periodicSyncBuilder = PeriodicWorkRequestBuilder<SyncWorker>(
             intervalMinutes.toLong(),
             TimeUnit.MINUTES
         )
@@ -150,14 +171,17 @@ class SyncManager @Inject constructor(
                 TimeUnit.MILLISECONDS
             )
             .addTag(TAG_PERIODIC_SYNC)
-            .addTag("account_$accountId")
-            .build()
-        
-        // Use UPDATE policy: updates existing work with new interval/constraints
-        // This avoids cancelling and re-enqueueing which would trigger immediate execution
+            .addTag(accountTag(accountId))
+            .addTag(serviceTag(SYNC_TYPE_ALL))
+            .addTag(periodicCommonTag(accountId, SYNC_TYPE_ALL))
+
+        val periodicSyncRequest = periodicSyncBuilder.build()
+
+        workManager.cancelUniqueWork(legacyPeriodicWorkName(accountId))
+
         Timber.d("schedulePeriodicSyncSilent: Updating work with interval ${intervalMinutes}min, policy UPDATE")
         val operation = workManager.enqueueUniquePeriodicWork(
-            "periodic_sync_account_$accountId",
+            periodicWorkerName(accountId, SYNC_TYPE_ALL),
             ExistingPeriodicWorkPolicy.UPDATE,
             periodicSyncRequest
         )
@@ -197,7 +221,7 @@ class SyncManager @Inject constructor(
             SyncWorker.INPUT_FORCE_WEB_CAL to false
         )
         
-        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
+        val periodicSyncBuilder = PeriodicWorkRequestBuilder<SyncWorker>(
             intervalMinutes.toLong(),
             TimeUnit.MINUTES
         )
@@ -209,12 +233,17 @@ class SyncManager @Inject constructor(
                 TimeUnit.MILLISECONDS
             )
             .addTag(TAG_PERIODIC_SYNC)
-            .addTag("account_$accountId")
-            .build()
-        
-        Timber.d("→ Enqueueing periodic work with unique name: periodic_sync_account_$accountId, policy: KEEP (preserve timer)")
+            .addTag(accountTag(accountId))
+            .addTag(serviceTag(SYNC_TYPE_ALL))
+            .addTag(periodicCommonTag(accountId, SYNC_TYPE_ALL))
+
+        val periodicSyncRequest = periodicSyncBuilder.build()
+
+    workManager.cancelUniqueWork(legacyPeriodicWorkName(accountId))
+
+    Timber.d("→ Enqueueing periodic work with unique name: ${periodicWorkerName(accountId, SYNC_TYPE_ALL)}, policy: KEEP (preserve timer)")
         val operation = workManager.enqueueUniquePeriodicWork(
-            "periodic_sync_account_$accountId",
+            periodicWorkerName(accountId, SYNC_TYPE_ALL),
             ExistingPeriodicWorkPolicy.KEEP,
             periodicSyncRequest
         )
@@ -233,7 +262,8 @@ class SyncManager @Inject constructor(
      * Cancel periodic sync for a specific account.
      */
     fun cancelPeriodicSync(accountId: Long) {
-        workManager.cancelUniqueWork("periodic_sync_account_$accountId")
+        workManager.cancelUniqueWork(periodicWorkerName(accountId, SYNC_TYPE_ALL))
+        workManager.cancelUniqueWork(legacyPeriodicWorkName(accountId))
         // Also cancel all service-specific syncs for this account
         cancelServiceSync(accountId, SYNC_TYPE_CALENDAR)
         cancelServiceSync(accountId, SYNC_TYPE_CONTACTS)
@@ -272,18 +302,18 @@ class SyncManager @Inject constructor(
                 if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             )
             .build()
-        
-    // Map webcal to calendar sync type but only force WebCal when the serviceType is actually webcal
-    val actualSyncType = if (serviceType == "webcal") SYNC_TYPE_CALENDAR else serviceType
-    val forceWebCal = serviceType == "webcal"
-        
+
+        // Map webcal to calendar sync type but only force WebCal when the serviceType is actually webcal
+        val actualSyncType = if (serviceType == "webcal") SYNC_TYPE_CALENDAR else serviceType
+        val forceWebCal = serviceType == "webcal"
+
         val inputData = workDataOf(
             SyncWorker.INPUT_ACCOUNT_ID to accountId,
             SyncWorker.INPUT_SYNC_TYPE to actualSyncType,
             SyncWorker.INPUT_FORCE_WEB_CAL to forceWebCal
         )
         
-        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
+        val periodicSyncBuilder = PeriodicWorkRequestBuilder<SyncWorker>(
             intervalMinutes.toLong(),
             TimeUnit.MINUTES
         )
@@ -295,13 +325,22 @@ class SyncManager @Inject constructor(
                 TimeUnit.MILLISECONDS
             )
             .addTag(TAG_PERIODIC_SYNC)
-            .addTag("account_$accountId")
-            .addTag("service_$serviceType")
-            .build()
-        
-        val workName = "periodic_sync_${accountId}_$serviceType"
+            .addTag(accountTag(accountId))
+            .addTag(serviceTag(serviceType))
+            .addTag(periodicCommonTag(accountId, serviceType))
+
+        if (serviceType != actualSyncType) {
+            periodicSyncBuilder.addTag(serviceTag(actualSyncType))
+            periodicSyncBuilder.addTag(periodicCommonTag(accountId, actualSyncType))
+        }
+
+        val periodicSyncRequest = periodicSyncBuilder.build()
+
+        val workName = periodicWorkerName(accountId, serviceType)
         Timber.d("Enqueueing unique periodic work: $workName with policy=$policy")
-        
+
+        workManager.cancelUniqueWork(legacyServiceWorkName(accountId, serviceType))
+
         workManager.enqueueUniquePeriodicWork(
             workName,
             policy,
@@ -335,9 +374,10 @@ class SyncManager @Inject constructor(
      * @param serviceType Service type (calendar, contacts, or webcal)
      */
     fun cancelServiceSync(accountId: Long, serviceType: String) {
-        val workName = "periodic_sync_${accountId}_$serviceType"
+        val workName = periodicWorkerName(accountId, serviceType)
         Timber.d("Canceling service-specific sync: $workName")
         workManager.cancelUniqueWork(workName)
+        workManager.cancelUniqueWork(legacyServiceWorkName(accountId, serviceType))
     }
     
     /**
