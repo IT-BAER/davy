@@ -43,8 +43,8 @@ object DatabaseModule {
             DavyDatabase::class.java,
             DavyDatabase.DATABASE_NAME
         )
+            .addMigrations(DavyDatabase.MIGRATION_15_16)
             .fallbackToDestructiveMigration() // For development - remove in production
-            // .addMigrations(*DatabaseMigrations.getAllMigrations()) // Add when migrations exist
             .build()
     }
     

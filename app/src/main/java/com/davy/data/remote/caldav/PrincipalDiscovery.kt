@@ -813,7 +813,7 @@ class PrincipalDiscovery @Inject constructor(
                 } ?: false
                 
                 // Parse ACL privileges from current-user-privilege-set (CalDAV ACL spec)
-                // CRITICAL: Use optimistic defaults (true) if privilege-set not present (DAVx5 pattern)
+                // CRITICAL: Use optimistic defaults (true) if privilege-set not present
                 // Only parse explicit privileges if server provides current-user-privilege-set
                 val privilegeSetNode = responseNode.let { node ->
                     xpath.evaluate(

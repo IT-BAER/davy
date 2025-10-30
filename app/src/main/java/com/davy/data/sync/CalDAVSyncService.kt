@@ -58,10 +58,24 @@ class CalDAVSyncService @Inject constructor(
     /**
      * Sync a specific calendar.
      * Returns SyncResult with statistics for this calendar only.
+     * 
+     * @param pushOnly If true, only uploads dirty events without downloading from server (optimized for local changes)
      */
-    suspend fun syncCalendar(account: Account, calendar: Calendar): SyncResult {
+    suspend fun syncCalendar(account: Account, calendar: Calendar, pushOnly: Boolean = false): SyncResult {
         return syncLock.withLock {
-            Timber.d("Starting CalDAV sync for single calendar: ${calendar.displayName}")
+            Timber.d("========================================")
+            if (pushOnly) {
+                Timber.d("⚡ STARTING PUSH-ONLY SYNC")
+                Timber.d("   Calendar: ${calendar.displayName}")
+                Timber.d("   Mode: Upload dirty events only (NO DOWNLOAD)")
+                Timber.d("   WILL update lastSyncedAt timestamp")
+            } else {
+                Timber.d("🔄 STARTING FULL BIDIRECTIONAL SYNC")
+                Timber.d("   Calendar: ${calendar.displayName}")
+                Timber.d("   Mode: Download from server + Upload dirty events")
+                Timber.d("   WILL update lastSyncedAt timestamp")
+            }
+            Timber.d("========================================")
             
             val password = credentialStore.getPassword(account.id)
             if (password == null) {
@@ -75,15 +89,45 @@ class CalDAVSyncService @Inject constructor(
             }
             
             try {
-                Timber.d("Syncing calendar: ${calendar.displayName} (${calendar.calendarUrl})")
-                val result = syncCalendarEvents(calendar, account, password)
-                Timber.d("Calendar sync completed: ↓${result.eventsDownloaded} ↑${result.eventsUploaded} events")
+                val result = if (pushOnly) {
+                    // Push-only mode: Skip download phase, only upload dirty events
+                    Timber.d("⚡ Push-only mode: Uploading dirty events only")
+                    val uploaded = uploadDirtyEvents(calendar, account, password)
+                    
+                    // Update last sync time to show in UI
+                    Timber.d("📊 ⏰ UPDATING lastSyncedAt timestamp (push-only sync completed)")
+                    calendarRepository.update(calendar.copy(
+                        lastSyncedAt = System.currentTimeMillis()
+                    ))
+                    
+                    EventSyncResult(eventsDownloaded = 0, eventsUploaded = uploaded)
+                } else {
+                    // Full bidirectional sync (download + upload)
+                    Timber.d("🔄 Full sync mode: Syncing calendar events (download + upload)")
+                    syncCalendarEvents(calendar, account, password)
+                }
+                
+                Timber.d("========================================")
+                if (pushOnly) {
+                    Timber.d("✓ PUSH-ONLY SYNC COMPLETED: ↑${result.eventsUploaded} uploaded")
+                } else {
+                    Timber.d("✓ FULL SYNC COMPLETED: ↓${result.eventsDownloaded} downloaded, ↑${result.eventsUploaded} uploaded")
+                }
+                Timber.d("========================================")
                 return@withLock SyncResult.Success(0, result.eventsDownloaded, result.eventsUploaded)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to sync calendar: ${calendar.displayName}")
                 return@withLock SyncResult.Error(e.message ?: "Unknown error")
             }
         }
+    }
+    
+    /**
+     * Get the count of dirty events for a specific calendar.
+     * Used by SyncAdapter gate to determine if a sync is needed.
+     */
+    suspend fun getDirtyEventCount(calendarId: Long): Int {
+        return eventRepository.getDirtyEventsByCalendarId(calendarId).size
     }
     
     private suspend fun syncAccountInternal(account: Account): SyncResult {
@@ -324,12 +368,16 @@ class CalDAVSyncService @Inject constructor(
             
             // Update sync token and last sync time
             syncResponse.newSyncToken?.let { newToken ->
+                Timber.d("📊 Updating calendar with new sync-token: $newToken")
+                Timber.d("📊 ⏰ UPDATING lastSyncedAt timestamp (full sync completed)")
                 calendarRepository.update(calendar.copy(
                     syncToken = newToken,
                     lastSyncedAt = System.currentTimeMillis()
                 ))
             } ?: run {
                 // Even if no new token, update last sync time
+                Timber.d("📊 No new sync-token, but updating lastSyncedAt anyway")
+                Timber.d("📊 ⏰ UPDATING lastSyncedAt timestamp (full sync completed)")
                 calendarRepository.update(calendar.copy(
                     lastSyncedAt = System.currentTimeMillis()
                 ))
@@ -509,6 +557,7 @@ class CalDAVSyncService @Inject constructor(
                     
                     token?.let {
                         Timber.d("📊 Storing sync-token for next Collection Sync: $it")
+                        Timber.d("📊 ⏰ UPDATING lastSyncedAt timestamp (full sync completed)")
                         calendarRepository.update(calendar.copy(
                             syncToken = it,
                             lastSyncedAt = System.currentTimeMillis()
@@ -522,6 +571,7 @@ class CalDAVSyncService @Inject constructor(
             
             // Always update last sync time even if token fetch failed
             if (!lastSyncUpdated) {
+                Timber.d("📊 ⏰ UPDATING lastSyncedAt timestamp (full sync completed, no token update)")
                 calendarRepository.update(calendar.copy(
                     lastSyncedAt = System.currentTimeMillis()
                 ))

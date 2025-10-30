@@ -22,6 +22,7 @@ data class AddressBook(
     val owner: String? = null,  // Owner principal URL (null = owned by user, non-null = shared addressbook)
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
+    val lastSynced: Long? = null,  // Last successful sync timestamp (null = never synced)
     
     // Server permissions (from CardDAV current-user-privilege-set)
     // See reference implementation: Collection.privWriteContent

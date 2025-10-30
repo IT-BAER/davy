@@ -9,21 +9,24 @@ import com.davy.data.repository.CalendarRepository
 import com.davy.sync.SyncLock
 import com.davy.sync.SyncManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Handles calendar changes detected by CalendarContentObserver.
  * 
  * Processes changes to determine which events need to be pushed to the server
  * and triggers appropriate sync operations.
+ * 
+ * Changed from @ServiceScoped to @Singleton to match CalendarContentObserver scope,
+ * since calendar monitoring now runs at application level without a foreground service.
  */
-@ServiceScoped
+@Singleton
 class CalendarChangeHandler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val accountRepository: AccountRepository,
@@ -100,6 +103,10 @@ class CalendarChangeHandler @Inject constructor(
     
     /**
      * Handle event changes (creation, modification, deletion).
+     * 
+     * Strategy: When we can't identify a specific event ID from the URI,
+     * we still avoid full sync of all calendars. Instead, we scan all calendars
+     * for dirty events and only sync calendars that have actual changes.
      */
     private suspend fun handleEventChange(uri: Uri?) {
         Timber.d("Handling event change: $uri")
@@ -108,11 +115,11 @@ class CalendarChangeHandler @Inject constructor(
         val androidEventId = uri?.lastPathSegment?.toLongOrNull()
         
         if (androidEventId != null) {
-            // Specific event changed
+            // Specific event changed - handle it directly
             handleSpecificEventChange(androidEventId)
         } else {
-            // Bulk change or unknown - sync all DAVy calendars
-            handleBulkEventChange()
+            // Generic event URI without specific ID - scan for dirty events by calendar
+            handleGenericEventChange()
         }
     }
     
@@ -140,7 +147,8 @@ class CalendarChangeHandler @Inject constructor(
             null
         )
         
-        cursor?.use {
+        // Check if event was found in Calendar Provider
+        val eventFound = cursor?.use {
             if (it.moveToFirst()) {
                 val calendarId = it.getLong(it.getColumnIndexOrThrow(CalendarContract.Events.CALENDAR_ID))
                 val title = it.getString(it.getColumnIndexOrThrow(CalendarContract.Events.TITLE))
@@ -166,23 +174,94 @@ class CalendarChangeHandler @Inject constructor(
                         reverseSync.syncEventFromProvider(androidEventId)
                         Timber.d("✓ Reverse sync completed")
                         
-                        // Trigger push sync to server
-                        Timber.d("→ Triggering push sync to server for account: ${account.accountName}")
-                        syncManager.syncNow(account.id, SyncManager.SYNC_TYPE_CALENDAR)
-                        Timber.d("✓ Push sync triggered")
+                        // Get the DAVy calendar that this Android calendar maps to
+                        val davyCalendar = calendarRepository.getByAndroidCalendarId(calendarId)
+                        
+                        if (davyCalendar != null) {
+                            // Trigger PUSH-ONLY sync for this specific calendar to avoid full download
+                            Timber.d("→ Triggering PUSH-ONLY sync to server for calendar: ${davyCalendar.displayName}")
+                            syncManager.syncCalendarPushOnly(account.id, davyCalendar.id)
+                            Timber.d("✓ Push-only sync triggered")
+                        } else {
+                            Timber.w("✗ Could not find DAVy calendar for Android calendar: $calendarId")
+                            // Fallback to full sync if calendar mapping not found
+                            syncManager.syncNow(account.id, SyncManager.SYNC_TYPE_CALENDAR)
+                        }
                     } else {
                         Timber.w("✗ Could not find DAVy account for calendar: $calendarId")
                     }
+                    
+                    true // Event found and processed
                 } else {
                     Timber.d("✗ Event does not belong to DAVy calendar (skipping)")
+                    true // Event found but not ours
                 }
             } else {
-                Timber.w("✗ Event not found in cursor")
+                false // Event not found
             }
-        } ?: Timber.w("✗ Cursor is null when querying event $androidEventId")
+        } ?: false
+        
+        // If event wasn't found in Calendar Provider, it might have been deleted
+        if (!eventFound) {
+            Timber.d("✗ Event not found in Calendar Provider - may have been deleted")
+            handleEventDeletion(androidEventId)
+        }
         
         Timber.d("========================================")
         Timber.d("END handleSpecificEventChange")
+        Timber.d("========================================")
+    }
+    
+    /**
+     * Handle event deletion by finding the event in DAVy DB and marking it for server deletion.
+     */
+    private suspend fun handleEventDeletion(androidEventId: Long) {
+        Timber.d("========================================")
+        Timber.d("HANDLING EVENT DELETION: Android Event ID = $androidEventId")
+        Timber.d("========================================")
+        
+        // Find the event in DAVy database by androidEventId
+        val davyEvent = eventRepository.getByAndroidEventId(androidEventId)
+        
+        if (davyEvent != null) {
+            Timber.d("✓ Found deleted event in DAVy DB: ${davyEvent.title} (DAVy ID: ${davyEvent.id})")
+            
+            // Get the calendar to find the account
+            val calendar = calendarRepository.getById(davyEvent.calendarId)
+            
+            if (calendar != null) {
+                Timber.d("✓ Calendar: ${calendar.displayName} (ID: ${calendar.id})")
+                
+                val account = accountRepository.getById(calendar.accountId)
+                
+                if (account != null) {
+                    Timber.d("✓ Account: ${account.accountName} (ID: ${account.id})")
+                    
+                    // Mark event as deleted and dirty in DAVy database
+                    Timber.d("→ Marking event as deleted and dirty for server deletion...")
+                    val deletedEvent = davyEvent.copy(
+                        deletedAt = System.currentTimeMillis(),
+                        dirty = true
+                    )
+                    eventRepository.update(deletedEvent)
+                    Timber.d("✓ Event marked for deletion")
+                    
+                    // Trigger PUSH-ONLY sync to upload the deletion to server
+                    Timber.d("→ Triggering PUSH-ONLY sync to delete from server...")
+                    syncManager.syncCalendarPushOnly(account.id, calendar.id)
+                    Timber.d("✓ Push-only sync triggered")
+                } else {
+                    Timber.w("✗ Could not find account for calendar")
+                }
+            } else {
+                Timber.w("✗ Could not find calendar for deleted event")
+            }
+        } else {
+            Timber.w("✗ Event not found in DAVy database - may be a non-DAVy event")
+        }
+        
+        Timber.d("========================================")
+        Timber.d("END handleEventDeletion")
         Timber.d("========================================")
     }
     
@@ -200,6 +279,262 @@ class CalendarChangeHandler @Inject constructor(
                 syncManager.syncNow(account.id, SyncManager.SYNC_TYPE_CALENDAR)
             }
         }
+    }
+    
+    /**
+     * Handle generic event change without specific event ID.
+     * 
+     * This happens when:
+     * - New events are created (URI: content://com.android.calendar/events)
+     * - Bulk operations are performed
+     * - Some Android versions send generic URI for deletions
+     * 
+     * Strategy: Instead of syncing ALL calendars, we:
+     * 1. Query Calendar Provider for dirty events in DAVy calendars
+     * 2. Check for deleted events (events in DAVy DB but not in Calendar Provider)
+     * 3. Group affected events by calendar
+     * 4. Only sync calendars that have changes
+     * 
+     * This avoids triggering full sync for all calendars when only one calendar has changes.
+     */
+    private suspend fun handleGenericEventChange() {
+        Timber.d("========================================")
+        Timber.d("HANDLING GENERIC EVENT CHANGE")
+        Timber.d("Strategy: Query DIRTY and DELETED events")
+        Timber.d("========================================")
+        
+        try {
+            Timber.d("→ Starting to query Calendar Provider for changes...")
+            // Map to track which DAVy calendars have changes
+            val calendarsWithChanges = mutableSetOf<Long>()
+            
+            // STEP 1: Query DIRTY events (modified/created) - exclude DELETED ones
+            Timber.d("→ Step 1: Scanning for DIRTY (modified/created) events...")
+            val dirtyProjection = arrayOf(
+                CalendarContract.Events._ID,
+                CalendarContract.Events.CALENDAR_ID,
+                CalendarContract.Events.TITLE
+            )
+
+            // IMPORTANT: On some providers, seeing special rows (like DELETED) requires
+            // querying as a SyncAdapter with ACCOUNT_NAME and ACCOUNT_TYPE.
+            // We'll iterate DAVy accounts and their Android calendars and run scoped queries.
+            var dirtyCount = 0
+            val accounts = accountRepository.getAll().filter { it.calendarEnabled }
+            for (account in accounts) {
+                val syncAdapterUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, account.accountName)
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, ACCOUNT_TYPE)
+                    .build()
+
+                val davyCalendars = calendarRepository.getSyncEnabledByAccountId(account.id)
+                for (cal in davyCalendars) {
+                    val androidCalId = cal.androidCalendarId ?: continue
+
+                    val dirtyCursor = context.contentResolver.query(
+                        syncAdapterUri,
+                        dirtyProjection,
+                        "${CalendarContract.Events.CALENDAR_ID} = ? AND ${CalendarContract.Events.DIRTY} = 1 AND ${CalendarContract.Events.DELETED} = 0",
+                        arrayOf(androidCalId.toString()),
+                        null
+                    )
+
+                    dirtyCursor?.use {
+                        val idIndex = it.getColumnIndexOrThrow(CalendarContract.Events._ID)
+                        val calendarIdIndex = it.getColumnIndexOrThrow(CalendarContract.Events.CALENDAR_ID)
+                        val titleIndex = it.getColumnIndexOrThrow(CalendarContract.Events.TITLE)
+
+                        while (it.moveToNext()) {
+                            val eventId = it.getLong(idIndex)
+                            val calendarId = it.getLong(calendarIdIndex)
+                            val title = it.getString(titleIndex) ?: "Untitled"
+
+                            // This is our calendar by construction (filtered by CALENDAR_ID),
+                            // but keep the guard for safety on OEM variants
+                            if (isDAVyCalendar(calendarId)) {
+                                Timber.d("   Found dirty event: eventId=$eventId, calendarId=$calendarId, title='$title'")
+                                calendarsWithChanges.add(calendarId)
+                                dirtyCount++
+
+                                // Sync this specific event to DAVy database
+                                reverseSync.syncEventFromProvider(eventId)
+                            }
+                        }
+                    }
+                }
+            }
+            Timber.d("   ✓ Found $dirtyCount dirty events across DAVy accounts")
+            
+            // STEP 2: Query DELETED events
+            // Android Calendar Provider automatically sets DELETED=1 when event is deleted
+            // This is MUCH more reliable than scanning for missing events!
+            Timber.d("→ Step 2: Scanning for DELETED events (using Android's DELETED flag)...")
+            
+            val deletedProjection = arrayOf(
+                CalendarContract.Events._ID,
+                CalendarContract.Events.CALENDAR_ID,
+                CalendarContract.Events.TITLE
+            )
+
+            var deletedCount = 0
+            // Iterate DAVy accounts and their calendars and run scoped deleted queries
+            for (account in accounts) {
+                val syncAdapterUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, account.accountName)
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, ACCOUNT_TYPE)
+                    .build()
+
+                val davyCalendars = calendarRepository.getSyncEnabledByAccountId(account.id)
+                for (cal in davyCalendars) {
+                    val androidCalId = cal.androidCalendarId ?: continue
+
+                    val deletedCursor = context.contentResolver.query(
+                        syncAdapterUri,
+                        deletedProjection,
+                        "${CalendarContract.Events.CALENDAR_ID} = ? AND ${CalendarContract.Events.DELETED} = 1",
+                        arrayOf(androidCalId.toString()),
+                        null
+                    )
+
+                    deletedCursor?.use {
+                        val idIndex = it.getColumnIndexOrThrow(CalendarContract.Events._ID)
+                        val calendarIdIndex = it.getColumnIndexOrThrow(CalendarContract.Events.CALENDAR_ID)
+                        val titleIndex = it.getColumnIndexOrThrow(CalendarContract.Events.TITLE)
+
+                        while (it.moveToNext()) {
+                            val eventId = it.getLong(idIndex)
+                            val calendarId = it.getLong(calendarIdIndex)
+                            val title = it.getString(titleIndex) ?: "Untitled"
+
+                            // This is our calendar by construction
+                            Timber.d("   🗑️ Found DELETED event: eventId=$eventId, calendarId=$calendarId, title='$title'")
+                            calendarsWithChanges.add(calendarId)
+                            deletedCount++
+
+                            // Find the event in DAVy DB and mark it for deletion
+                            val davyEvent = eventRepository.getByAndroidEventId(eventId)
+                            if (davyEvent != null) {
+                                Timber.d("   → Marking DAVy event ${davyEvent.id} as deleted (dirty=true, deletedAt=${System.currentTimeMillis()})")
+                                val deletedEvent = davyEvent.copy(
+                                    deletedAt = System.currentTimeMillis(),
+                                    dirty = true
+                                )
+                                eventRepository.update(deletedEvent)
+                            } else {
+                                Timber.w("   ⚠️ Event $eventId was deleted but not found in DAVy DB (might have been synced already)")
+                            }
+                        }
+                    }
+                }
+            }
+            Timber.d("   ✓ Found $deletedCount deleted events across DAVy accounts")
+            
+            // Fallback always for calendars not already flagged: some providers hide DELETED rows
+            Timber.d("Running fallback existence check for calendars not already changed…")
+
+            var inferredDeletedCount = 0
+            for (account in accounts) {
+                val syncAdapterUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, account.accountName)
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, ACCOUNT_TYPE)
+                    .build()
+
+                val davyCalendars = calendarRepository.getSyncEnabledByAccountId(account.id)
+                for (cal in davyCalendars) {
+                    val androidCalId = cal.androidCalendarId ?: continue
+                    if (calendarsWithChanges.contains(androidCalId)) continue // already handled via DIRTY/DELETED
+
+                    // Build provider set of existing event IDs for this calendar
+                    val idProjection = arrayOf(CalendarContract.Events._ID)
+                    val existingIds = mutableSetOf<Long>()
+                    val existingCursor = context.contentResolver.query(
+                        syncAdapterUri,
+                        idProjection,
+                        "${CalendarContract.Events.CALENDAR_ID} = ? AND ${CalendarContract.Events.DELETED} = 0",
+                        arrayOf(androidCalId.toString()),
+                        null
+                    )
+                    existingCursor?.use {
+                        val idIdx = it.getColumnIndexOrThrow(CalendarContract.Events._ID)
+                        while (it.moveToNext()) {
+                            existingIds.add(it.getLong(idIdx))
+                        }
+                    }
+
+                    if (existingIds.isEmpty()) {
+                        // Avoid accidental mass deletes inference if provider filtered everything out
+                        Timber.d("   Fallback: Provider returned 0 existing IDs for calendar ${cal.displayName} — skipping inference for this calendar")
+                        continue
+                    }
+
+                    // Cross-check DAVy DB events for this calendar
+                    val davyEvents = eventRepository.getByCalendarId(cal.id)
+                    var missingInProviderForCalendar = 0
+                    for (evt in davyEvents) {
+                        val aId = evt.androidEventId
+                        if (aId != null && evt.deletedAt == null && !existingIds.contains(aId)) {
+                            // Event no longer present in provider — infer deletion
+                            val deletedEvent = evt.copy(
+                                deletedAt = System.currentTimeMillis(),
+                                dirty = true
+                            )
+                            eventRepository.update(deletedEvent)
+                            missingInProviderForCalendar++
+                            inferredDeletedCount++
+                        }
+                    }
+
+                    if (missingInProviderForCalendar > 0) {
+                        Timber.d("   Fallback: Inferred $missingInProviderForCalendar deleted events for calendar '${cal.displayName}'")
+                        calendarsWithChanges.add(androidCalId)
+                    }
+                }
+            }
+
+            Timber.d("   Fallback inference completed — inferred $inferredDeletedCount deletions (this pass)")
+
+            if (calendarsWithChanges.isEmpty()) {
+                Timber.d("No changes found in DAVy calendars - nothing to sync")
+                Timber.d("========================================")
+                return
+            }
+            
+            Timber.d("Found changes in ${calendarsWithChanges.size} calendar(s)")
+            
+            // For each Android calendar with changes, trigger push-only sync
+            for (androidCalendarId in calendarsWithChanges) {
+                val davyCalendar = calendarRepository.getByAndroidCalendarId(androidCalendarId)
+                
+                if (davyCalendar != null && davyCalendar.syncEnabled) {
+                    val account = accountRepository.getById(davyCalendar.accountId)
+                    
+                    if (account != null) {
+                        Timber.d("→ Triggering PUSH-ONLY sync for calendar: ${davyCalendar.displayName} (Android ID: $androidCalendarId, DAVy ID: ${davyCalendar.id})")
+                        syncManager.syncCalendarPushOnly(account.id, davyCalendar.id)
+                    } else {
+                        Timber.w("Could not find account for DAVy calendar: ${davyCalendar.id}")
+                    }
+                } else {
+                    if (davyCalendar == null) {
+                        Timber.w("Could not find DAVy calendar mapping for Android calendar: $androidCalendarId")
+                    } else {
+                        Timber.d("Skipping calendar '${davyCalendar.displayName}' (sync disabled)")
+                    }
+                }
+            }
+            
+            Timber.d("✓ Generic event change handling completed")
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Error handling generic event change")
+        }
+        
+        Timber.d("========================================")
+        Timber.d("END handleGenericEventChange")
+        Timber.d("========================================")
     }
     
     /**
@@ -221,21 +556,28 @@ class CalendarChangeHandler @Inject constructor(
     
     /**
      * Handle unknown change type.
+     * This typically happens when:
+     * 1. Generic URIs without specific event/calendar IDs
+     * 2. Bulk operations affecting multiple items
+     * 3. Calendar Provider internal operations
+     * 
+     * Strategy: Use the same targeted approach as generic event changes.
+     * Only sync calendars that actually have dirty events.
      */
     private suspend fun handleUnknownChange() {
         Timber.d("========================================")
         Timber.d("HANDLING UNKNOWN CHANGE")
+        Timber.d("Strategy: Query dirty events and sync only affected calendars")
         Timber.d("========================================")
         
-    // Step 1: Sync FROM Calendar Provider TO DAVy database (reverse sync)
-    Timber.d("→ Starting reverse sync for dirty DAVy calendar events...")
-    reverseSync.syncDirtyEventsOnly()
-        Timber.d("✓ Reverse sync completed")
-        
-        // Step 2: Upload dirty events to server
-        Timber.d("→ Triggering push sync for all accounts...")
-        syncManager.syncAllNow()
-        Timber.d("✓ Push sync triggered")
+        try {
+            Timber.d("→ Calling handleGenericEventChange()...")
+            // Delegate to the generic event change handler which implements the optimized approach
+            handleGenericEventChange()
+            Timber.d("→ handleGenericEventChange() completed successfully")
+        } catch (e: Exception) {
+            Timber.e(e, "✗ ERROR in handleGenericEventChange()")
+        }
         
         Timber.d("========================================")
         Timber.d("END handleUnknownChange")

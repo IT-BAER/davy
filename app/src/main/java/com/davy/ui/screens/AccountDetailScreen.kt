@@ -2153,8 +2153,8 @@ private fun AddressBookCard(
                 
                 // Display last sync time
                 Text(
-                    text = if (addressBook.ctag != null) {
-                        stringResource(id = R.string.last_sync, formatRelativeTime(addressBook.updatedAt))
+                    text = if (addressBook.lastSynced != null) {
+                        stringResource(id = R.string.last_sync, formatRelativeTime(addressBook.lastSynced))
                     } else {
                         stringResource(id = R.string.never_synced)
                     },
@@ -2361,7 +2361,11 @@ private fun AddressBookSettingsDialog(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = formatRelativeTime(addressBook.updatedAt),
+                            text = if (addressBook.lastSynced != null) {
+                                formatRelativeTime(addressBook.lastSynced)
+                            } else {
+                                stringResource(id = R.string.never_synced)
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

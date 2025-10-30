@@ -16,11 +16,21 @@ import timber.log.Timber
 import javax.inject.Inject
 
 /**
- * Foreground service that monitors calendar changes.
+ * DEPRECATED: Foreground service that monitors calendar changes.
  * 
- * This service runs continuously to monitor the Android Calendar Provider
- * for changes to DAVy account calendars and triggers automatic push sync.
+ * This service is no longer used. Calendar monitoring is now handled by
+ * CalendarContentObserver registered at application level without requiring
+ * a foreground service.
+ * 
+ * This eliminates the persistent "monitoring calendar changes" notification.
+ * 
+ * @see com.davy.sync.calendar.CalendarContentObserver
+ * @see com.davy.startup.MonitoringServicesInitializer
  */
+@Deprecated(
+    message = "No longer needed - CalendarContentObserver is registered at app level without service",
+    level = DeprecationLevel.WARNING
+)
 @AndroidEntryPoint
 class CalendarMonitorService : Service() {
     

@@ -75,6 +75,15 @@ class AccountMigrationInitializer : Initializer<Unit> {
                 }
 
                 Timber.d("AccountMigrationInitializer: Migration completed")
+                
+                // Enable content-triggered sync for all existing accounts
+                // This allows immediate sync when users edit contacts/calendars in native Android apps
+                Timber.d("========================================")
+                Timber.d("Enabling content-triggered sync for all accounts...")
+                Timber.d("========================================")
+                androidAccountManager.enableContentTriggeredSyncForAllAccounts()
+                androidAccountManager.logSyncStatusForAllAccounts()
+                
             } catch (e: Exception) {
                 Timber.e(e, "AccountMigrationInitializer: Failed")
             }

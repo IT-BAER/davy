@@ -67,6 +67,11 @@
             <meta-data
                 android:name="com.davy.startup.AccountMigrationInitializer"
                 android:value="androidx.startup" />
+            
+            <!-- Initialize monitoring services for calendar and contact push sync -->
+            <meta-data
+                android:name="com.davy.startup.MonitoringServicesInitializer"
+                android:value="androidx.startup" />
         </provider>
         
         <!-- Main Activity -->
@@ -154,12 +159,19 @@
                 android:resource="@xml/contacts" />
         </service>
 
-        <!-- Foreground service for monitoring calendar changes -->
+        <!-- 
+            DEPRECATED: CalendarMonitorService no longer needed
+            Calendar monitoring is now handled by CalendarContentObserver
+            registered at application level without foreground service.
+            This eliminates the persistent "monitoring calendar changes" notification.
+        -->
+        <!--
         <service
             android:name=".sync.CalendarMonitorService"
             android:exported="false"
             android:enabled="true"
             android:foregroundServiceType="dataSync" />
+        -->
 
     </application>
 

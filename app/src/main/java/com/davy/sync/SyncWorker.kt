@@ -47,6 +47,7 @@ class SyncWorker @AssistedInject constructor(
     private val cardDAVSyncService: CardDAVSyncService,
     private val webCalSyncService: WebCalSyncService,
     private val calendarContractSync: CalendarContractSync,
+    private val calendarProviderToDAVySync: com.davy.sync.calendar.CalendarProviderToDAVySync,
     private val principalDiscovery: com.davy.data.remote.caldav.PrincipalDiscovery,
     private val credentialStore: com.davy.data.local.CredentialStore,
     private val authenticationManager: com.davy.data.remote.AuthenticationManager
@@ -72,6 +73,7 @@ class SyncWorker @AssistedInject constructor(
         val calendarId = inputData.getLong("calendar_id", -1L)
         val addressBookId = inputData.getLong("addressbook_id", -1L)
         val forceWebCal = inputData.getBoolean(INPUT_FORCE_WEB_CAL, false)
+        val pushOnly = inputData.getBoolean("push_only", false) // NEW: Push-only mode flag
 
         val syncSignature = buildSyncSignature(accountId, syncType, calendarId, addressBookId, forceWebCal)
         if (!runningSyncs.add(syncSignature)) {
@@ -80,9 +82,26 @@ class SyncWorker @AssistedInject constructor(
         }
 
         Timber.d("========================================")
-        Timber.d("SYNCWORKER STARTED")
+        Timber.d("🔄 SYNCWORKER STARTED")
         Timber.d("Run attempt: $runAttemptCount")
         Timber.d("========================================")
+        
+        // CRITICAL DIAGNOSTIC: Identify what triggered this sync
+        val tags = tags.joinToString(", ")
+        val isPeriodicSync = tags.contains("periodic_sync")
+        val isManualSync = tags.contains("manual_sync")
+        val isPushOnly = tags.contains("push_only")
+        
+        Timber.d("🔍 SYNC TRIGGER ANALYSIS:")
+        Timber.d("  - Worker Tags: $tags")
+        Timber.d("  - Is Periodic Sync: $isPeriodicSync")
+        Timber.d("  - Is Manual Sync: $isManualSync")
+        Timber.d("  - Is Push-Only: $isPushOnly")
+        Timber.d("  - pushOnly Flag: $pushOnly")
+        if (isPeriodicSync) {
+            Timber.w("⚠️  PERIODIC SYNC TRIGGERED - This is a scheduled background sync")
+            Timber.w("⚠️  This will perform FULL SYNC unless push-only mode is set")
+        }
 
         return try {
             Timber.d("Input data:")
@@ -91,13 +110,14 @@ class SyncWorker @AssistedInject constructor(
             Timber.d("  - Calendar ID: $calendarId")
             Timber.d("  - AddressBook ID: $addressBookId")
             Timber.d("  - Force WebCal: $forceWebCal")
+            Timber.d("  - Push Only: $pushOnly") // NEW: Log push-only flag
 
             if (accountId == -1L) {
                 Timber.w("No account ID specified, syncing all accounts")
                 syncAllAccounts(syncType, forceWebCal)
             } else {
                 Timber.d("→ Syncing account ID: $accountId, type: $syncType")
-                syncAccount(accountId, syncType, calendarId, addressBookId, forceWebCal)
+                syncAccount(accountId, syncType, calendarId, addressBookId, forceWebCal, pushOnly) // Pass push-only flag
             }
 
             Timber.d("========================================")
@@ -157,7 +177,8 @@ class SyncWorker @AssistedInject constructor(
         syncType: String,
         calendarId: Long = -1L,
         addressBookId: Long = -1L,
-        forceWebCal: Boolean
+        forceWebCal: Boolean,
+        pushOnly: Boolean = false // NEW: Push-only mode parameter
     ) {
         Timber.d("Syncing account $accountId")
         
@@ -169,14 +190,14 @@ class SyncWorker @AssistedInject constructor(
         }
         
         when (syncType) {
-            SYNC_TYPE_CALENDAR -> syncCalendars(account, calendarId, forceWebCal)
-            SYNC_TYPE_CONTACTS -> syncContacts(account, addressBookId)
+            SYNC_TYPE_CALENDAR -> syncCalendars(account, calendarId, forceWebCal, pushOnly) // Pass push-only flag
+            SYNC_TYPE_CONTACTS -> syncContacts(account, addressBookId, pushOnly)
             SYNC_TYPE_TASKS -> syncTasks(account)
             SYNC_TYPE_ALL -> {
                 // Parallel sync for all resource types
                 coroutineScope {
-                    val calendarJob = async { syncCalendars(account, calendarId, forceWebCal) }
-                    val contactsJob = async { syncContacts(account, addressBookId) }
+                    val calendarJob = async { syncCalendars(account, calendarId, forceWebCal, pushOnly) } // Pass push-only flag
+                    val contactsJob = async { syncContacts(account, addressBookId, pushOnly) }
                     val tasksJob = async { syncTasks(account) }
                     
                     // Wait for all syncs to complete
@@ -191,7 +212,8 @@ class SyncWorker @AssistedInject constructor(
     private suspend fun syncCalendars(
         account: com.davy.domain.model.Account,
         calendarId: Long = -1L,
-        forceWebCal: Boolean
+        forceWebCal: Boolean,
+        pushOnly: Boolean = false // NEW: Push-only mode parameter
     ) {
         Timber.d("========================================")
         Timber.d("SYNCING CALENDARS")
@@ -199,18 +221,25 @@ class SyncWorker @AssistedInject constructor(
         if (calendarId != -1L) {
             Timber.d("Specific Calendar ID: $calendarId")
         }
+        if (pushOnly) {
+            Timber.d("Mode: PUSH-ONLY (no download from server)")
+        }
         Timber.d("========================================")
         
         try {
             if (calendarId != -1L) {
                 // Sync specific calendar only
-                Timber.d("→ Calling CalDAVSyncService.syncCalendar($calendarId)...")
+                if (pushOnly) {
+                    Timber.d("→ Calling CalDAVSyncService.syncCalendar($calendarId, pushOnly=true)...")
+                } else {
+                    Timber.d("→ Calling CalDAVSyncService.syncCalendar($calendarId)...")
+                }
                 val calendar = calendarRepository.getById(calendarId)
                 if (calendar == null) {
                     Timber.e("Calendar not found: $calendarId")
                     return
                 }
-                val result = calDAVSyncService.syncCalendar(account, calendar)
+                val result = calDAVSyncService.syncCalendar(account, calendar, pushOnly) // Pass push-only flag
                 
                 when (result) {
                     is com.davy.data.sync.SyncResult.Success -> {
@@ -219,15 +248,30 @@ class SyncWorker @AssistedInject constructor(
                         Timber.d("  Events Downloaded: ${result.eventsDownloaded}")
                         Timber.d("  Events Uploaded: ${result.eventsUploaded}")
                         Timber.d("========================================")
-                        // Mirror only this calendar to Android Calendar Provider so events appear in Calendar app
-                        Timber.d("→ Syncing DAVy data to Android Calendar Provider (single calendar path, scoped)…")
-                        val providerResult = calendarContractSync.syncSingleCalendarToProvider(account.id, calendar.id)
-                        when (providerResult) {
-                            is com.davy.sync.calendar.CalendarContractResult.Success -> {
-                                Timber.d("✓ Calendar Provider sync: +${providerResult.calendarsCreated} cal, ↓${providerResult.eventsInserted} ins, ↺${providerResult.eventsUpdated} upd, 🗑️${providerResult.eventsDeleted} del")
+                        
+                        // Mirror to Calendar Provider only if NOT push-only mode
+                        // Push-only mode means we already have local data synced to provider
+                        if (!pushOnly) {
+                            Timber.d("→ Syncing DAVy data to Android Calendar Provider (single calendar path, scoped)…")
+                            val providerResult = calendarContractSync.syncSingleCalendarToProvider(account.id, calendar.id)
+                            when (providerResult) {
+                                is com.davy.sync.calendar.CalendarContractResult.Success -> {
+                                    Timber.d("✓ Calendar Provider sync: +${providerResult.calendarsCreated} cal, ↓${providerResult.eventsInserted} ins, ↺${providerResult.eventsUpdated} upd, 🗑️${providerResult.eventsDeleted} del")
+                                }
+                                is com.davy.sync.calendar.CalendarContractResult.Error -> {
+                                    Timber.e("✗ Calendar Provider sync failed: ${providerResult.message}")
+                                }
                             }
-                            is com.davy.sync.calendar.CalendarContractResult.Error -> {
-                                Timber.e("✗ Calendar Provider sync failed: ${providerResult.message}")
+                        } else {
+                            Timber.d("↪ Skipping Calendar Provider sync (push-only mode, provider already has latest data)")
+                            // CRITICAL FIX FOR ENDLESS LOOP:
+                            // After successful push-only upload, clear DIRTY flags in Calendar Provider
+                            // to prevent ContentObserver from firing again and causing an endless loop.
+                            // The issue: We marked events clean in DAVy DB, but Calendar Provider still has DIRTY=1,
+                            // which triggers ContentObserver → handleUnknownChange → push sync → loop forever.
+                            if (calendar.androidCalendarId != null) {
+                                Timber.d("→ Clearing DIRTY flags in Calendar Provider to prevent sync loop...")
+                                calendarProviderToDAVySync.clearDirtyFlagsForCalendar(calendar.androidCalendarId)
                             }
                         }
                     }
@@ -396,7 +440,8 @@ class SyncWorker @AssistedInject constructor(
     
     private suspend fun syncContacts(
         account: com.davy.domain.model.Account,
-        addressBookId: Long = -1L
+        addressBookId: Long = -1L,
+        pushOnly: Boolean = false
     ) {
         Timber.d("========================================")
         Timber.d("SYNCING CONTACTS")
@@ -409,13 +454,17 @@ class SyncWorker @AssistedInject constructor(
         try {
             if (addressBookId != -1L) {
                 // Sync specific address book only
-                Timber.d("→ Calling CardDAVSyncService.syncAddressBook($addressBookId)...")
+                if (pushOnly) {
+                    Timber.d("→ Calling CardDAVSyncService.syncAddressBook($addressBookId, pushOnly=true)...")
+                } else {
+                    Timber.d("→ Calling CardDAVSyncService.syncAddressBook($addressBookId)...")
+                }
                 val addressBook = addressBookRepository.getById(addressBookId)
                 if (addressBook == null) {
                     Timber.e("AddressBook not found: $addressBookId")
                     return
                 }
-                val result = cardDAVSyncService.syncAddressBook(account, addressBook)
+                val result = cardDAVSyncService.syncAddressBook(account, addressBook, pushOnly)
                 
                 Timber.d("========================================")
                 Timber.d("✓ ADDRESSBOOK SYNC SUCCESSFUL")
@@ -425,8 +474,12 @@ class SyncWorker @AssistedInject constructor(
                 Timber.d("========================================")
             } else {
                 // Sync all address books for the account
-                Timber.d("→ Calling CardDAVSyncService.syncAccount()...")
-                val result = cardDAVSyncService.syncAccount(account)
+                if (pushOnly) {
+                    Timber.d("→ Calling CardDAVSyncService.syncAccount(pushOnly=true)...")
+                } else {
+                    Timber.d("→ Calling CardDAVSyncService.syncAccount()...")
+                }
+                val result = cardDAVSyncService.syncAccount(account, pushOnly)
                 
                 Timber.d("========================================")
                 Timber.d("✓ CONTACT SYNC SUCCESSFUL")

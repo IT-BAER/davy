@@ -22,6 +22,8 @@ A privacy-focused Android application for synchronizing calendars and contacts u
 
 - Bidirectional sync with Android Calendar and Contacts
 
+- **Content-triggered sync** - Changes in native apps sync immediately
+
 - Background sync with configurable intervals
 
 - Conflict detection and resolution

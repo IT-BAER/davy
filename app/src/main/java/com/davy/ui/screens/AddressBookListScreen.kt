@@ -406,14 +406,17 @@ class AddressBookListViewModel @Inject constructor(
     
     /**
      * Sync contacts only (CardDAV service) for the current account.
+     * Triggers Android SyncAdapter framework with MANUAL flag to ensure proper sync execution.
      */
     fun syncContactsOnly() {
         viewModelScope.launch {
             try {
                 val accountId = _uiState.value.selectedAccountId
                 if (accountId != null) {
-                    syncManager.syncNow(accountId, com.davy.sync.SyncWorker.SYNC_TYPE_CONTACTS)
-                    Timber.tag(TAG).d("Sync requested for CardDAV service only (account: %s)", accountId)
+                    // FIXED: Trigger Android SyncAdapter with MANUAL flag instead of using SyncWorker
+                    // The SyncWorker bypasses ContactsSyncAdapter which has the actual sync logic
+                    syncManager.requestContactsSyncThroughAdapter(accountId)
+                    Timber.tag(TAG).d("Manual contacts sync requested through Android SyncAdapter for account: %s", accountId)
                 }
             } catch (e: Exception) {
                 Timber.tag(TAG).e(e, "Failed to sync contacts")

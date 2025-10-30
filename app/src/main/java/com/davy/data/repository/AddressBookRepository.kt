@@ -5,6 +5,7 @@ import com.davy.data.local.entity.AddressBookEntity
 import com.davy.domain.model.AddressBook
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -110,10 +111,33 @@ class AddressBookRepository @Inject constructor(
     }
     
     /**
-     * Update CTag for an address book.
+     * Update CTag and lastSynced for an address book after successful sync.
      */
     suspend fun updateCTag(id: Long, ctag: String) {
-        addressBookDao.updateCTag(id, ctag, System.currentTimeMillis())
+        val timestamp = System.currentTimeMillis()
+        Timber.d("📊 AddressBookRepository.updateCTag: id=$id, ctag=$ctag, timestamp=$timestamp")
+        Timber.d("📊 About to update address_books SET ctag='$ctag', updated_at=$timestamp, last_synced=$timestamp WHERE id=$id")
+        addressBookDao.updateCTag(id, ctag, updatedAt = timestamp, lastSynced = timestamp)
+        Timber.d("📊 ✓ Updated address book $id with lastSynced=$timestamp")
+        
+        // Verify the update actually happened
+        val updated = addressBookDao.getById(id)
+        Timber.d("📊 Verification: address book $id now has lastSynced=${updated?.lastSynced}")
+    }
+    
+    /**
+     * Update only lastSynced timestamp for an address book.
+     * Called when sync completes but no data changes were detected.
+     */
+    suspend fun updateLastSynced(id: Long) {
+        val timestamp = System.currentTimeMillis()
+        Timber.d("📊 AddressBookRepository.updateLastSynced: id=$id, timestamp=$timestamp")
+        addressBookDao.updateLastSynced(id, lastSynced = timestamp)
+        Timber.d("📊 ✓ Updated address book $id with lastSynced=$timestamp")
+        
+        // Verify the update actually happened
+        val updated = addressBookDao.getById(id)
+        Timber.d("📊 Verification: address book $id now has lastSynced=${updated?.lastSynced}")
     }
     
     /**
@@ -163,6 +187,7 @@ class AddressBookRepository @Inject constructor(
             owner = owner,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            lastSynced = lastSynced,
             privWriteContent = privWriteContent,
             forceReadOnly = forceReadOnly,
             wifiOnlySync = wifiOnlySync,
@@ -188,6 +213,7 @@ class AddressBookRepository @Inject constructor(
             owner = owner,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            lastSynced = lastSynced,
             privWriteContent = privWriteContent,
             forceReadOnly = forceReadOnly,
             wifiOnlySync = wifiOnlySync,

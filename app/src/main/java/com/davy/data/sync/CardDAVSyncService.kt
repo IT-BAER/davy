@@ -46,6 +46,19 @@ class CardDAVSyncService @Inject constructor(
     private val androidAccountManager: AndroidAccountManager,
     private val httpClient: OkHttpClient
 ) {
+    /**
+     * Convenience overload: sync a specific address book by ID.
+     * Resolves the AddressBook inside the service to avoid external repository lookups.
+     */
+    suspend fun syncAddressBook(account: Account, addressBookId: Long, pushOnly: Boolean = false): SyncResult {
+        val addressBook = addressBookRepository.getById(addressBookId)
+        return if (addressBook == null) {
+            Timber.w("AddressBook not found for id=$addressBookId; skipping")
+            SyncResult()
+        } else {
+            syncAddressBook(account, addressBook, pushOnly)
+        }
+    }
 
     data class SyncResult(
         val addressBooksAdded: Int = 0,
@@ -55,13 +68,14 @@ class CardDAVSyncService @Inject constructor(
         val errors: Int = 0
     )
 
-    suspend fun syncAccount(account: Account): SyncResult = withContext(Dispatchers.IO) {
+    suspend fun syncAccount(account: Account, pushOnly: Boolean = false): SyncResult = withContext(Dispatchers.IO) {
         Timber.d("========================================")
         Timber.d("Starting CardDAV sync for account: ${account.accountName}")
+        if (pushOnly) Timber.d("Mode: PUSH-ONLY (upload local changes, no download)")
         Timber.d("========================================")
 
         try {
-            syncAccountInternal(account)
+            syncAccountInternal(account, pushOnly)
         } catch (e: Exception) {
             Timber.e(e, "CardDAV sync failed for account: ${account.accountName}")
             SyncResult(errors = 1)
@@ -72,9 +86,10 @@ class CardDAVSyncService @Inject constructor(
      * Sync a specific address book.
      * Returns SyncResult with statistics for this address book only.
      */
-    suspend fun syncAddressBook(account: Account, addressBook: AddressBook): SyncResult = withContext(Dispatchers.IO) {
+    suspend fun syncAddressBook(account: Account, addressBook: AddressBook, pushOnly: Boolean = false): SyncResult = withContext(Dispatchers.IO) {
         Timber.d("========================================")
         Timber.d("Starting CardDAV sync for address book: ${addressBook.displayName}")
+        if (pushOnly) Timber.d("Mode: PUSH-ONLY (upload local changes, no download)")
         Timber.d("========================================")
         
         try {
@@ -90,7 +105,7 @@ class CardDAVSyncService @Inject constructor(
             }
             
             Timber.d("Syncing address book: ${addressBook.displayName} (${addressBook.url})")
-            val result = syncAddressBook(account, addressBook, password)
+            val result = syncAddressBook(account, addressBook, password, pushOnly)
             Timber.d("Address book sync completed: ↓${result.contactsDownloaded} ↑${result.contactsUploaded} ×${result.contactsDeleted} contacts")
             return@withContext result
         } catch (e: Exception) {
@@ -98,8 +113,7 @@ class CardDAVSyncService @Inject constructor(
             return@withContext SyncResult(errors = 1)
         }
     }
-
-    private suspend fun syncAccountInternal(account: Account): SyncResult {
+    private suspend fun syncAccountInternal(account: Account, pushOnly: Boolean): SyncResult {
         // Get password from credential store
         val password = credentialStore.getPassword(account.id)
         if (password == null) {
@@ -129,7 +143,7 @@ class CardDAVSyncService @Inject constructor(
                 async {
                     try {
                         Timber.d("Syncing address book: ${addressBook.displayName}")
-                        syncAddressBook(account, addressBook, password)
+                        syncAddressBook(account, addressBook, password, pushOnly)
                     } catch (e: Exception) {
                         Timber.e(e, "Failed to sync address book: ${addressBook.displayName}")
                         errors++
@@ -137,7 +151,6 @@ class CardDAVSyncService @Inject constructor(
                     }
                 }
             }
-            
             // Collect all results
             val results = syncJobs.map { it.await() }
             contactsDownloaded = results.sumOf { it.contactsDownloaded }
@@ -157,7 +170,7 @@ class CardDAVSyncService @Inject constructor(
         return result
     }
 
-    private suspend fun syncAddressBook(account: Account, addressBook: AddressBook, password: String): SyncResult {
+    private suspend fun syncAddressBook(account: Account, addressBook: AddressBook, password: String, pushOnly: Boolean): SyncResult {
         Timber.d("Syncing address book: ${addressBook.displayName} (${addressBook.url})")
         
         // Set sync flag to prevent ContentObserver loops
@@ -168,19 +181,22 @@ class CardDAVSyncService @Inject constructor(
         var contactsDeleted = 0
         
         try {
-            // Step 1: Fetch server ctag to check if anything changed
-            val serverCtag = fetchServerCtag(addressBook.url, account.username, password, account.accountName, account.id)
-            if (serverCtag == null) {
-                Timber.e("Failed to fetch server ctag for ${addressBook.displayName}")
-                return SyncResult()
+            var serverCtag: String? = null
+            var hasLocalContacts = false
+            var hasChanged = false
+            if (!pushOnly) {
+                // Step 1: Fetch server ctag to check if anything changed
+                serverCtag = fetchServerCtag(addressBook.url, account.username, password, account.accountName, account.id)
+                if (serverCtag == null) {
+                    Timber.e("Failed to fetch server ctag for ${addressBook.displayName}")
+                    return SyncResult()
+                }
+                // Check if we have any contacts locally for this address book
+                val localContacts = contactRepository.getByAddressBookId(addressBook.id)
+                hasLocalContacts = localContacts.isNotEmpty()
+                hasChanged = addressBook.ctag != serverCtag
+                Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged, Local contacts: ${localContacts.size}")
             }
-            
-            // Check if we have any contacts locally for this address book
-            val localContacts = contactRepository.getByAddressBookId(addressBook.id)
-            val hasLocalContacts = localContacts.isNotEmpty()
-            
-            val hasChanged = addressBook.ctag != serverCtag
-            Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged, Local contacts: ${localContacts.size}")
             
             // Step 2: Upload dirty contacts FIRST (before download to prevent overwriting local edits)
             Timber.d("  Uploading dirty contacts...")
@@ -196,19 +212,33 @@ class CardDAVSyncService @Inject constructor(
                 Timber.d("  Deleted $contactsDeleted contacts")
             }
             
-            // Step 4: Download contacts if address book changed OR if we have no local contacts (initial sync)
-            // This comes AFTER upload/delete so local changes aren't overwritten
-            // NOTE: Always download to check for server changes because some servers (like Nextcloud)
-            // don't reliably update ctag when contacts are edited via web interface
-            if (hasChanged || addressBook.ctag == null || !hasLocalContacts || true) {
-                Timber.d("  Downloading contacts (ctag changed: $hasChanged, no local: ${!hasLocalContacts})...")
-                contactsDownloaded = downloadContacts(account, addressBook, password)
-                Timber.d("  Downloaded $contactsDownloaded contacts")
-                
-                // Update ctag
-                addressBookRepository.updateCTag(addressBook.id, serverCtag)
+            // Step 4: Download contacts only when not in push-only mode
+            if (!pushOnly) {
+                // Download if ctag changed or initial sync condition
+                if ((hasChanged) || addressBook.ctag == null || !hasLocalContacts) {
+                    Timber.d("  Downloading contacts (ctag changed: $hasChanged, no local: ${!hasLocalContacts})...")
+                    contactsDownloaded = downloadContacts(account, addressBook, password)
+                    Timber.d("  Downloaded $contactsDownloaded contacts")
+                    // Update ctag after successful download
+                    if (serverCtag != null) {
+                        Timber.d("📊 CardDAVSyncService: Calling addressBookRepository.updateCTag(${addressBook.id}, $serverCtag)")
+                        addressBookRepository.updateCTag(addressBook.id, serverCtag)
+                        Timber.d("📊 CardDAVSyncService: updateCTag returned successfully")
+                    } else {
+                        Timber.w("📊 CardDAVSyncService: serverCtag is null, NOT calling updateCTag")
+                    }
+                } else {
+                    Timber.d("  Skipping download (no changes detected)")
+                    // Even though no changes, update lastSynced timestamp (like CalDAV does)
+                    Timber.d("📊 No changes detected, but updating lastSynced timestamp anyway")
+                    addressBookRepository.updateLastSynced(addressBook.id)
+                }
+            } else {
+                Timber.d("  Push-only mode: skipping server download step")
+                // In push-only mode, still update lastSynced to track sync attempts
+                Timber.d("📊 Push-only mode, updating lastSynced timestamp")
+                addressBookRepository.updateLastSynced(addressBook.id)
             }
-            
         } catch (e: Exception) {
             Timber.e(e, "Failed to sync address book: ${addressBook.displayName}")
         } finally {
@@ -596,8 +626,10 @@ class CardDAVSyncService @Inject constructor(
                 addressBookAccount.name,
                 AndroidAccountManager.ACCOUNT_TYPE_ADDRESS_BOOK
             )
-            
-            Timber.d("  Found ${dirtyRawContactIds.size} dirty contacts in Android ContactsProvider")
+
+            Timber.d(
+                "  Found ${dirtyRawContactIds.size} dirty contacts in Android ContactsProvider for account '${addressBookAccount.name}'"
+            )
             
             for (rawContactId in dirtyRawContactIds) {
                 try {
@@ -625,6 +657,7 @@ class CardDAVSyncService @Inject constructor(
                             etag = existingContact.etag
                         )
                         Timber.d("    Contact exists in database (ID: ${existingContact.id}), using existing URL and etag")
+                        Timber.d("    Database ETag: ${existingContact.etag}")
                     } else {
                         // New contact - set address book ID and insert into database
                         contact = contact.copy(addressBookId = addressBook.id)
@@ -674,20 +707,93 @@ class CardDAVSyncService @Inject constructor(
                         requestBuilder.header(key, value)
                     }
                     
-                    val response = httpClient.newCall(requestBuilder.build()).execute()
-                    val putResult = ContactPut.parsePutResponse(
+                    var response = httpClient.newCall(requestBuilder.build()).execute()
+                    var putResult = ContactPut.parsePutResponse(
                         status = response.code,
                         headers = response.headers.toMultimap()
                     )
+                    
+                    // Handle HTTP 412 (Precondition Failed) - ETag mismatch
+                    if (putResult.isPreconditionFailed) {
+                        Timber.w("    ETag mismatch (412) for contact: ${contact.displayName}, fetching fresh server version and retrying...")
+                        
+                        // Fetch current server version to get fresh ETag
+                        val getRequest = Request.Builder()
+                            .url(contactUrl)
+                            .get()
+                            .header("Authorization", Credentials.basic(account.username, password))
+                            .build()
+                        
+                        val getResponse = httpClient.newCall(getRequest).execute()
+                        
+                        if (getResponse.isSuccessful) {
+                            val freshEtag = ContactPut.extractETag(getResponse.headers.toMultimap())
+                            
+                            if (freshEtag != null) {
+                                Timber.d("    Fetched fresh ETag from server: $freshEtag")
+                                Timber.d("    Old database ETag was: ${contact.etag}")
+                                
+                                // Retry upload with fresh ETag
+                                val retryHeaders = ContactPut.buildHeaders(
+                                    isNew = false,
+                                    etag = freshEtag
+                                )
+                                
+                                val retryRequestBuilder = Request.Builder()
+                                    .url(contactUrl)
+                                    .put(requestBody)
+                                    .header("Authorization", Credentials.basic(account.username, password))
+                                
+                                for ((key, value) in retryHeaders) {
+                                    retryRequestBuilder.header(key, value)
+                                }
+                                
+                                response = httpClient.newCall(retryRequestBuilder.build()).execute()
+                                putResult = ContactPut.parsePutResponse(
+                                    status = response.code,
+                                    headers = response.headers.toMultimap()
+                                )
+                                
+                                Timber.d("    Retry result: ${response.code}")
+                            } else {
+                                Timber.w("    No ETag in server response, cannot retry with fresh ETag")
+                            }
+                        } else {
+                            Timber.w("    Failed to fetch contact from server (${getResponse.code}), cannot retry")
+                        }
+                    }
                     
                     if (putResult.isSuccess()) {
                         // Extract filename from contact URL for SOURCE_ID
                         val sourceId = contactUrl.substringAfterLast("/")
                         
+                        // Get final ETag - fetch from server if not in PUT response
+                        var finalETag = putResult.etag
+                        if (finalETag == null) {
+                            Timber.w("    No ETag in PUT response - fetching from server with GET request")
+                            val getRequest = Request.Builder()
+                                .url(contactUrl)
+                                .get()
+                                .header("Authorization", Credentials.basic(account.username, password))
+                                .build()
+                            
+                            val getResponse = httpClient.newCall(getRequest).execute()
+                            if (getResponse.isSuccessful) {
+                                finalETag = ContactPut.extractETag(getResponse.headers.toMultimap())
+                                if (finalETag != null) {
+                                    Timber.d("    Fetched ETag from server after upload: $finalETag")
+                                } else {
+                                    Timber.w("    Still no ETag after GET request - server may not support ETags")
+                                }
+                            } else {
+                                Timber.w("    Failed to GET contact after upload (${getResponse.code})")
+                            }
+                        }
+                        
                         // Update DAVy database
                         val updatedContact = contact.copy(
                             contactUrl = contactUrl,
-                            etag = putResult.etag ?: contact.etag,
+                            etag = finalETag ?: contact.etag,
                             isDirty = false
                         )
                         contactRepository.update(updatedContact)
@@ -703,7 +809,7 @@ class CardDAVSyncService @Inject constructor(
                         val values = android.content.ContentValues().apply {
                             put(ContactsContract.RawContacts.SOURCE_ID, sourceId)
                             put(ContactsContract.RawContacts.SYNC1, contact.uid)
-                            put(ContactsContract.RawContacts.SYNC2, putResult.etag ?: contact.etag)
+                            put(ContactsContract.RawContacts.SYNC2, finalETag ?: contact.etag)
                             put(ContactsContract.RawContacts.DIRTY, 0)
                         }
                         

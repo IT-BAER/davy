@@ -5,6 +5,7 @@ import android.accounts.AccountManager
 import android.content.ContentResolver
 import android.content.Context
 import android.provider.CalendarContract
+import com.davy.sync.SyncFrameworkIntegration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -18,7 +19,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class AndroidAccountManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val syncFrameworkIntegration: SyncFrameworkIntegration
 ) {
     
     companion object {
@@ -68,16 +70,18 @@ class AndroidAccountManager @Inject constructor(
                 }
             }
             
-            // Configure calendar sync (syncable but DO NOT enable automatic sync by default)
-            // This aligns behavior with CardDAV/WebCal and avoids immediate background sync on account creation
-            ContentResolver.setIsSyncable(account, CALENDAR_AUTHORITY, 1)
-            ContentResolver.setSyncAutomatically(account, CALENDAR_AUTHORITY, false)
-
-            // Configure contacts sync (keep automatic sync disabled unless explicitly enabled later)
-            ContentResolver.setIsSyncable(account, CONTACTS_AUTHORITY, 1)
-            ContentResolver.setSyncAutomatically(account, CONTACTS_AUTHORITY, false)
+            // Enable content-triggered sync for immediate push of local changes
+            // This allows instant sync when user edits contacts/calendars in native Android apps
+            // Note: Periodic sync is still managed separately via WorkManager
+            syncFrameworkIntegration.enableAllContentTriggeredSync(account)
             
-            Timber.d("Configured calendar (auto-sync OFF) and contacts (auto-sync OFF) for Android account: $accountName")
+            // Log sync status for debugging
+            val syncStatus = syncFrameworkIntegration.getSyncStatusSummary(account)
+            Timber.d("✓ Configured account with content-triggered sync: $accountName")
+            syncStatus.forEach { (name, status) ->
+                Timber.d("  $name: ${status}")
+            }
+            
             return true
             
         } catch (e: Exception) {
@@ -363,7 +367,10 @@ class AndroidAccountManager @Inject constructor(
             
             // Configure contacts sync for address book account (syncable, but NO automatic periodic sync)
             ContentResolver.setIsSyncable(account, CONTACTS_AUTHORITY, 1)
-            ContentResolver.setSyncAutomatically(account, CONTACTS_AUTHORITY, false)
+            // IMPORTANT: Enable auto-sync for Contacts so the system schedules immediate
+            // upload-only syncs when the user edits contacts in the Contacts app.
+            // This allows push-on-change even if our app process isn't running.
+            ContentResolver.setSyncAutomatically(account, CONTACTS_AUTHORITY, true)
             
             // Create default group for the address book account
             // This is CRITICAL for contacts to be visible in Contacts app filter
@@ -531,6 +538,116 @@ class AndroidAccountManager @Inject constructor(
             Timber.d("Set contacts provider settings for account: ${account.name}")
         } catch (e: Exception) {
             Timber.e(e, "Failed to set contacts provider settings for account: ${account.name}")
+        }
+    }
+
+    /**
+     * Ensure that all address book accounts have Contacts auto-sync enabled so that
+     * the system triggers immediate upload-only syncs on local changes, even when
+     * our app process is not running.
+     */
+    fun enableContactsAutoSyncForAddressBooks() {
+        try {
+            val addressBookAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE_ADDRESS_BOOK)
+            var enabledCount = 0
+            addressBookAccounts.forEach { acct ->
+                // Enable content-triggered sync using the wrapper
+                syncFrameworkIntegration.enableContactSyncOnContentChange(acct)
+                enabledCount++
+            }
+            Timber.d("✓ Content-triggered sync enabled for $enabledCount address book account(s)")
+        } catch (e: Exception) {
+            Timber.e(e, "✗ Failed to enable content-triggered sync for address book accounts")
+        }
+    }
+    
+    /**
+     * Enable content-triggered sync for all existing DAVy accounts.
+     * This should be called during app upgrade to enable this feature for existing users.
+     * 
+     * Benefits:
+     * - Immediate push of local changes to server
+     * - No waiting for periodic sync or manual sync
+     * - Better user experience with instant synchronization
+     */
+    fun enableContentTriggeredSyncForAllAccounts() {
+        try {
+            // Enable for main accounts
+            val mainAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
+            mainAccounts.forEach { account ->
+                syncFrameworkIntegration.enableAllContentTriggeredSync(account)
+            }
+            Timber.d("✓ Content-triggered sync enabled for ${mainAccounts.size} main account(s)")
+            
+            // Enable for address book accounts
+            val addressBookAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE_ADDRESS_BOOK)
+            addressBookAccounts.forEach { account ->
+                syncFrameworkIntegration.enableContactSyncOnContentChange(account)
+            }
+            Timber.d("✓ Content-triggered sync enabled for ${addressBookAccounts.size} address book account(s)")
+            
+            Timber.d("========================================")
+            Timber.d("✅ CONTENT-TRIGGERED SYNC ENABLED")
+            Timber.d("Total accounts: ${mainAccounts.size + addressBookAccounts.size}")
+            Timber.d("Users can now edit contacts/calendars in native apps")
+            Timber.d("and changes will sync immediately to the server!")
+            Timber.d("========================================")
+        } catch (e: Exception) {
+            Timber.e(e, "✗ Failed to enable content-triggered sync for all accounts")
+        }
+    }
+    
+    /**
+     * Disable content-triggered sync for all existing DAVy accounts.
+     * Can be used as a rollback mechanism if issues arise.
+     */
+    fun disableContentTriggeredSyncForAllAccounts() {
+        try {
+            val mainAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
+            mainAccounts.forEach { account ->
+                syncFrameworkIntegration.disableAllContentTriggeredSync(account)
+            }
+            
+            val addressBookAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE_ADDRESS_BOOK)
+            addressBookAccounts.forEach { account ->
+                syncFrameworkIntegration.disableContactSyncOnContentChange(account)
+            }
+            
+            Timber.d("✓ Content-triggered sync disabled for all accounts")
+        } catch (e: Exception) {
+            Timber.e(e, "✗ Failed to disable content-triggered sync for all accounts")
+        }
+    }
+    
+    /**
+     * Get sync status for all accounts (useful for debugging).
+     */
+    fun logSyncStatusForAllAccounts() {
+        try {
+            Timber.d("========================================")
+            Timber.d("SYNC STATUS SUMMARY")
+            Timber.d("========================================")
+            
+            val mainAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
+            Timber.d("Main accounts: ${mainAccounts.size}")
+            mainAccounts.forEach { account ->
+                Timber.d("Account: ${account.name}")
+                val status = syncFrameworkIntegration.getSyncStatusSummary(account)
+                status.forEach { (name, syncStatus) ->
+                    Timber.d("  $name: $syncStatus")
+                }
+            }
+            
+            val addressBookAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE_ADDRESS_BOOK)
+            Timber.d("Address book accounts: ${addressBookAccounts.size}")
+            addressBookAccounts.forEach { account ->
+                val contactsEnabled = syncFrameworkIntegration.isContactSyncEnabled(account)
+                Timber.d("  ${account.name}: auto-sync=${if (contactsEnabled) "ON" else "OFF"}")
+            }
+            
+            Timber.d("========================================")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to log sync status")
         }
     }
 }

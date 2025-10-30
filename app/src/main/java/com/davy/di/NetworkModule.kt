@@ -10,6 +10,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.Interceptor
+import android.net.TrafficStats
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import timber.log.Timber
@@ -69,7 +71,22 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         Timber.d("Creating OkHttpClient")
+        // Interceptor to tag sockets to avoid StrictMode's UntaggedSocketViolation noise
+        val trafficTaggingInterceptor = Interceptor { chain ->
+            // Use a stable tag for DAVy network traffic; could be refined per account later
+            val previousTag = try { TrafficStats.getThreadStatsTag() } catch (_: Throwable) { 0 }
+            try {
+                TrafficStats.setThreadStatsTag(0x44415659) // 'DAVY' in hex
+            } catch (_: Throwable) { /* no-op on platforms without TrafficStats */ }
+            try {
+                chain.proceed(chain.request())
+            } finally {
+                try { TrafficStats.setThreadStatsTag(previousTag) } catch (_: Throwable) { /* ignore */ }
+            }
+        }
+
         return OkHttpClient.Builder()
+            .addInterceptor(trafficTaggingInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

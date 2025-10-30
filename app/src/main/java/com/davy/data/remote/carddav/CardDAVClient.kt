@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 /**
  * CardDAV HTTP client for address book operations.
- * Implements CardDAV protocol methods following DAVx5 patterns:
+ * Implements CardDAV protocol methods:
  * - DELETE: Remove address books (with 404/410 as success)
  */
 @Singleton
@@ -19,7 +19,7 @@ class CardDAVClient @Inject constructor(
     
     /**
      * DELETE request to remove an address book from server.
-     * Follows DAVx5 pattern: treats 404/410 as successful deletion (resource already gone).
+     * Treats 404/410 as successful deletion (resource already gone).
      * 
      * @param addressBookUrl URL of the address book to delete
      * @param username Account username for authentication
@@ -43,7 +43,7 @@ class CardDAVClient @Inject constructor(
                 statusCode = response.code,
                 body = response.body?.string(),
                 headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                // DAVx5 pattern: 404 Not Found or 410 Gone means resource is already deleted → success
+                // 404 Not Found or 410 Gone means resource is already deleted → success
                 isSuccessful = response.isSuccessful || response.code == 204 || response.code == 404 || response.code == 410
             )
         } catch (e: IOException) {

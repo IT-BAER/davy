@@ -115,13 +115,33 @@ interface AddressBookDao {
     suspend fun getSyncEnabled(): List<AddressBookEntity>
     
     /**
-     * Updates address book CTag.
+     * Updates CTag and lastSynced for address book.
      * 
      * @param id Address book ID
      * @param ctag New CTag
+     * @param updatedAt Updated timestamp
+     * @param lastSynced Last sync timestamp
      */
-    @Query("UPDATE address_books SET ctag = :ctag, updated_at = :updatedAt WHERE id = :id")
-    suspend fun updateCTag(id: Long, ctag: String, updatedAt: Long = System.currentTimeMillis())
+    @Query("UPDATE address_books SET ctag = :ctag, updated_at = :updatedAt, last_synced = :lastSynced WHERE id = :id")
+    suspend fun updateCTag(
+        id: Long, 
+        ctag: String, 
+        updatedAt: Long = System.currentTimeMillis(),
+        lastSynced: Long = System.currentTimeMillis()
+    )
+    
+    /**
+     * Updates only lastSynced timestamp for address book.
+     * Called when sync completes but no data changes were detected.
+     * 
+     * @param id Address book ID
+     * @param lastSynced Last sync timestamp
+     */
+    @Query("UPDATE address_books SET last_synced = :lastSynced WHERE id = :id")
+    suspend fun updateLastSynced(
+        id: Long, 
+        lastSynced: Long = System.currentTimeMillis()
+    )
     
     /**
      * Counts address books for account.

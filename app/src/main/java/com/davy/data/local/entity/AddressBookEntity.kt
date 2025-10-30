@@ -22,6 +22,7 @@ import androidx.room.Index
  * @property androidAccountName Android account name for ContactsContract
  * @property createdAt Creation timestamp (epoch millis)
  * @property updatedAt Last update timestamp (epoch millis)
+ * @property lastSynced Last successful sync timestamp (epoch millis, null if never synced)
  * @property privWriteContent Server write permission from DAV:current-user-privilege-set
  */
 @Entity(
@@ -76,6 +77,9 @@ data class AddressBookEntity(
     
     @androidx.room.ColumnInfo(name = "updated_at")
     val updatedAt: Long = System.currentTimeMillis(),
+    
+    @androidx.room.ColumnInfo(name = "last_synced")
+    val lastSynced: Long? = null,
     
     // Owner principal URL (null if owned by user, non-null if shared addressbook)
     @androidx.room.ColumnInfo(name = "owner")

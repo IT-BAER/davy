@@ -4,6 +4,8 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.davy.data.local.dao.AccountDao
 import com.davy.data.local.dao.AddressBookDao
 import com.davy.data.local.dao.CalendarDao
@@ -56,7 +58,7 @@ import com.davy.data.local.entity.WebCalSubscriptionEntity
         TaskEntity::class,
         WebCalSubscriptionEntity::class
     ],
-    version = 15,  // Bumped for AddressBookEntity.forceReadOnly addition
+    version = 16,  // Bumped to add lastSynced field to AddressBookEntity
     autoMigrations = [
         AutoMigration(from = 14, to = 15)
     ],
@@ -117,5 +119,21 @@ abstract class DavyDatabase : RoomDatabase() {
     
     companion object {
         const val DATABASE_NAME = "davy_database"
+        
+        /**
+         * Manual migration from version 15 to 16.
+         * Adds lastSynced column to address_books table.
+         * Initializes lastSynced with updated_at for existing synced address books (those with ctag).
+         */
+        val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add last_synced column to address_books table
+                db.execSQL("ALTER TABLE address_books ADD COLUMN last_synced INTEGER")
+                
+                // Initialize last_synced with updated_at for existing address books that have been synced (have ctag)
+                // This preserves the existing sync history
+                db.execSQL("UPDATE address_books SET last_synced = updated_at WHERE ctag IS NOT NULL")
+            }
+        }
     }
 }

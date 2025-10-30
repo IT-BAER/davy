@@ -62,33 +62,73 @@ class CalendarProviderToDAVySync @Inject constructor(
     /**
      * Sync ONLY dirty events (reference implementation pattern).
      * More efficient than scanning all events when we know changes occurred.
+     * 
+     * @param androidCalendarId If specified, only scan this calendar. If null, scan all calendars.
      */
-    suspend fun syncDirtyEventsOnly() {
+    suspend fun syncDirtyEventsOnly(androidCalendarId: Long? = null) {
         Timber.d("========================================")
-        Timber.d("REVERSE SYNC DIRTY ONLY: Scanning for locally modified/deleted events")
+        if (androidCalendarId != null) {
+            Timber.d("REVERSE SYNC DIRTY ONLY: Scanning single calendar (Android ID: $androidCalendarId)")
+        } else {
+            Timber.d("REVERSE SYNC DIRTY ONLY: Scanning for locally modified/deleted events")
+            Timber.d("⚠️  WARNING: This method scans ALL calendars, not just affected ones")
+        }
+        Timber.d("⚠️  NOTE: This method ONLY marks events as deleted in DAVy DB")
+        Timber.d("⚠️  NOTE: It does NOT trigger any syncs itself")
         Timber.d("========================================")
         
         try {
-            val accounts = accountRepository.getAll()
             var totalDirty = 0
             var totalDeleted = 0
+            var calendarsScanned = 0
             
-            for (account in accounts) {
-                val calendars = calendarRepository.getByAccountId(account.id)
+            if (androidCalendarId != null) {
+                // Single calendar mode - only scan specified calendar
+                Timber.d("→ Scanning single calendar (Android ID: $androidCalendarId)")
                 
-                for (calendar in calendars) {
-                    if (calendar.androidCalendarId != null) {
-                        val dirtyCount = syncDirtyCalendarEvents(calendar.androidCalendarId)
-                        totalDirty += dirtyCount
-                        
-                        val deletedCount = syncDeletedCalendarEvents(calendar.androidCalendarId)
-                        totalDeleted += deletedCount
+                val dirtyCount = syncDirtyCalendarEvents(androidCalendarId)
+                totalDirty += dirtyCount
+                
+                val deletedCount = syncDeletedCalendarEvents(androidCalendarId)
+                totalDeleted += deletedCount
+                
+                calendarsScanned = 1
+                
+                if (dirtyCount > 0 || deletedCount > 0) {
+                    Timber.d("  ✓ Calendar: $dirtyCount dirty, $deletedCount deleted")
+                }
+            } else {
+                // All calendars mode - scan every calendar
+                val accounts = accountRepository.getAll()
+                Timber.d("Scanning ALL accounts and calendars...")
+                
+                for (account in accounts) {
+                    val calendars = calendarRepository.getByAccountId(account.id)
+                    Timber.d("Scanning account: ${account.accountName} (${calendars.size} calendars)")
+                    
+                    for (calendar in calendars) {
+                        if (calendar.androidCalendarId != null) {
+                            calendarsScanned++
+                            Timber.d("  → Scanning calendar: ${calendar.displayName} (Android ID: ${calendar.androidCalendarId})")
+                            
+                            val dirtyCount = syncDirtyCalendarEvents(calendar.androidCalendarId)
+                            totalDirty += dirtyCount
+                            
+                            val deletedCount = syncDeletedCalendarEvents(calendar.androidCalendarId)
+                            totalDeleted += deletedCount
+                            
+                            if (dirtyCount > 0 || deletedCount > 0) {
+                                Timber.d("  ✓ Calendar '${calendar.displayName}': $dirtyCount dirty, $deletedCount deleted")
+                            }
+                        }
                     }
                 }
             }
             
+            Timber.d("✓ Scanned $calendarsScanned calendars")
             Timber.d("✓ Total dirty events synced: $totalDirty")
             Timber.d("✓ Total deleted events synced: $totalDeleted")
+            Timber.d("⚠️  Reminder: This method does NOT update lastSyncedAt or trigger any syncs")
             Timber.d("========================================")
             Timber.d("END REVERSE SYNC DIRTY ONLY")
             Timber.d("========================================")
@@ -278,13 +318,35 @@ class CalendarProviderToDAVySync @Inject constructor(
             
             // Check if we already have this event in DAVy's database
             Timber.d("→ Checking if event already exists in DAVy DB...")
+            Timber.d("   LOOKUP STRATEGY 1: Try by davyEventId from eventDetails")
+            Timber.d("   - davyEventId from eventDetails: ${eventDetails.davyEventId}")
             var existingEvent = eventRepository.getById(eventDetails.davyEventId ?: 0)
-                ?: findEventByAndroidId(androidEventId)
+            if (existingEvent != null) {
+                Timber.d("   ✓ FOUND by davyEventId: ${existingEvent.id}")
+                Timber.d("   - Event URL: ${existingEvent.eventUrl}")
+                Timber.d("   - Event UID: ${existingEvent.uid}")
+                Timber.d("   - Event androidEventId: ${existingEvent.androidEventId}")
+            } else {
+                Timber.d("   ✗ NOT FOUND by davyEventId")
+                Timber.d("   LOOKUP STRATEGY 2: Try by androidEventId")
+                Timber.d("   - androidEventId: $androidEventId")
+                existingEvent = findEventByAndroidId(androidEventId)
+                if (existingEvent != null) {
+                    Timber.d("   ✓ FOUND by androidEventId: ${existingEvent.id}")
+                    Timber.d("   - Event URL: ${existingEvent.eventUrl}")
+                    Timber.d("   - Event UID: ${existingEvent.uid}")
+                } else {
+                    Timber.d("   ✗ NOT FOUND by androidEventId")
+                }
+            }
             
             // If not found by androidEventId, check by title + time in the same calendar
             if (existingEvent == null) {
+                Timber.d("   LOOKUP STRATEGY 3: Try by title+time match")
                 val calendarId = findDAVyCalendarId(eventDetails.androidCalendarId)
+                Timber.d("   - DAVy calendar ID for Android calendar ${eventDetails.androidCalendarId}: $calendarId")
                 if (calendarId != null) {
+                    Timber.d("   - Searching for: title='${eventDetails.title}', dtStart=${eventDetails.dtStart}, dtEnd=${eventDetails.dtEnd}")
                     existingEvent = findEventByTitleAndTime(
                         calendarId,
                         eventDetails.title,
@@ -292,15 +354,34 @@ class CalendarProviderToDAVySync @Inject constructor(
                         eventDetails.dtEnd
                     )
                     if (existingEvent != null) {
-                        Timber.d("✓ Found existing event by title+time match (ID: ${existingEvent.id})")
+                        Timber.d("   ✓ FOUND by title+time match (ID: ${existingEvent.id})")
+                        Timber.d("   - Event URL: ${existingEvent.eventUrl}")
+                        Timber.d("   - Event UID: ${existingEvent.uid}")
+                        Timber.d("   - Event androidEventId: ${existingEvent.androidEventId}")
+                    } else {
+                        Timber.d("   ✗ NOT FOUND by title+time match")
                     }
+                } else {
+                    Timber.d("   ✗ Could not determine DAVy calendar ID")
                 }
             }
             
+            Timber.d("========================================")
+            Timber.d("DECISION POINT: Update existing vs Create new")
+            Timber.d("========================================")
+            
             if (existingEvent != null) {
                 // Update existing event
-                Timber.d("✓ Found existing event in DAVy DB (ID: ${existingEvent.id})")
-                Timber.d("→ Updating event and marking as dirty...")
+                Timber.d("✅ DECISION: UPDATE EXISTING EVENT")
+                Timber.d("   Existing event details:")
+                Timber.d("   - DAVy DB ID: ${existingEvent.id}")
+                Timber.d("   - UID: ${existingEvent.uid}")
+                Timber.d("   - Event URL: '${existingEvent.eventUrl}'")
+                Timber.d("   - ETag: '${existingEvent.etag}'")
+                Timber.d("   - androidEventId: ${existingEvent.androidEventId}")
+                Timber.d("   - Old title: '${existingEvent.title}'")
+                Timber.d("   - New title: '${eventDetails.title}'")
+                Timber.d("→ Creating updatedEvent with copy()...")
                 val updatedEvent = existingEvent.copy(
                     title = eventDetails.title,
                     description = eventDetails.description,
@@ -313,10 +394,19 @@ class CalendarProviderToDAVySync @Inject constructor(
                     dirty = true, // Mark as dirty for upload
                     updatedAt = System.currentTimeMillis()
                 )
+                Timber.d("   Updated event details:")
+                Timber.d("   - UID (preserved): ${updatedEvent.uid}")
+                Timber.d("   - Event URL (preserved): '${updatedEvent.eventUrl}'")
+                Timber.d("   - ETag (preserved): '${updatedEvent.etag}'")
+                Timber.d("   - dirty flag: ${updatedEvent.dirty}")
+                Timber.d("→ Calling eventRepository.update()...")
                 eventRepository.update(updatedEvent)
                 Timber.d("✓ Event updated in DAVy DB and marked DIRTY for push sync")
+                Timber.d("✓ This will be uploaded as PUT (update) because eventUrl is NOT blank: '${updatedEvent.eventUrl}'")
             } else {
                 // New event created in Calendar app
+                Timber.d("⚠️  DECISION: CREATE NEW EVENT")
+                Timber.d("   Reason: No existing event found in DAVy DB")
                 Timber.d("✗ Event not found in DAVy DB - this is a NEW event")
                 Timber.d("→ Finding DAVy calendar for Android calendar ${eventDetails.androidCalendarId}...")
                 
@@ -493,4 +583,76 @@ class CalendarProviderToDAVySync @Inject constructor(
         val timezone: String?,
         val davyEventId: Long? = null
     )
+    
+    /**
+     * Clear DIRTY flags for all events in the specified Android calendar.
+     * This is needed after push-only sync to prevent endless ContentObserver loops.
+     * 
+     * After we upload dirty events to the server, we mark them clean in DAVy DB,
+     * but Calendar Provider still has DIRTY=1, which triggers ContentObserver again.
+     * This method clears the DIRTY flag in Calendar Provider to break the loop.
+     * 
+     * CRITICAL: Must use sync adapter URI to modify DIRTY flag, otherwise Calendar Provider
+     * throws "Only sync adapters may write to dirty" exception.
+     */
+    suspend fun clearDirtyFlagsForCalendar(androidCalendarId: Long) {
+        Timber.d("→ Clearing DIRTY flags in Calendar Provider for calendar $androidCalendarId")
+        
+        try {
+            // First, we need to get the account name for this calendar to build sync adapter URI
+            val projection = arrayOf(
+                CalendarContract.Calendars.ACCOUNT_NAME,
+                CalendarContract.Calendars.ACCOUNT_TYPE
+            )
+            
+            val cursor = context.contentResolver.query(
+                CalendarContract.Calendars.CONTENT_URI,
+                projection,
+                "${CalendarContract.Calendars._ID} = ?",
+                arrayOf(androidCalendarId.toString()),
+                null
+            )
+            
+            var accountName: String? = null
+            var accountType: String? = null
+            
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    accountName = it.getString(it.getColumnIndexOrThrow(CalendarContract.Calendars.ACCOUNT_NAME))
+                    accountType = it.getString(it.getColumnIndexOrThrow(CalendarContract.Calendars.ACCOUNT_TYPE))
+                }
+            }
+            
+            if (accountName == null || accountType == null) {
+                Timber.e("✗ Could not find account for calendar $androidCalendarId")
+                return
+            }
+            
+            // Build sync adapter URI for events
+            val syncAdapterUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_NAME, accountName)
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_TYPE, accountType)
+                .build()
+            
+            val updateValues = android.content.ContentValues().apply {
+                put(CalendarContract.Events.DIRTY, 0)
+            }
+            
+            val rowsUpdated = context.contentResolver.update(
+                syncAdapterUri,
+                updateValues,
+                "${CalendarContract.Events.CALENDAR_ID} = ? AND ${CalendarContract.Events.DIRTY} = 1",
+                arrayOf(androidCalendarId.toString())
+            )
+            
+            if (rowsUpdated > 0) {
+                Timber.d("✓ Cleared DIRTY flag on $rowsUpdated events in Calendar Provider (using sync adapter URI)")
+            } else {
+                Timber.d("✓ No dirty events to clear in Calendar Provider")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "✗ Failed to clear DIRTY flags in Calendar Provider")
+        }
+    }
 }

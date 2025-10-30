@@ -46,6 +46,13 @@ interface CalendarDao {
     suspend fun getByUrl(url: String): CalendarEntity?
     
     /**
+     * Get calendar by Android calendar ID.
+     * Used to map Android Calendar Provider events back to DAVy calendars.
+     */
+    @Query("SELECT * FROM calendars WHERE androidCalendarId = :androidCalendarId")
+    suspend fun getByAndroidCalendarId(androidCalendarId: Long): CalendarEntity?
+    
+    /**
      * Get all calendars for an account as Flow.
      */
     @Query("SELECT * FROM calendars WHERE accountId = :accountId ORDER BY displayName ASC")

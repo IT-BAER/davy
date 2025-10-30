@@ -83,7 +83,7 @@ data class Calendar(
     
     /**
      * Check if calendar collection itself can be deleted.
-     * Following DAVx5 pattern: calendar collections can be deleted unless user forced read-only.
+     * Calendar collections can be deleted unless user forced read-only.
      * The privUnbind permission applies to events, not the collection itself.
      * Matches AddressBook.canDelete() logic.
      */

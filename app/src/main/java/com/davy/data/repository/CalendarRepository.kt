@@ -55,6 +55,14 @@ class CalendarRepository @Inject constructor(
     }
     
     /**
+     * Get calendar by Android calendar ID.
+     * Useful for mapping Android Calendar Provider events back to DAVy calendars.
+     */
+    suspend fun getByAndroidCalendarId(androidCalendarId: Long): Calendar? {
+        return calendarDao.getByAndroidCalendarId(androidCalendarId)?.toDomain()
+    }
+    
+    /**
      * Get all calendars for an account as Flow.
      */
     fun getByAccountIdFlow(accountId: Long): Flow<List<Calendar>> {

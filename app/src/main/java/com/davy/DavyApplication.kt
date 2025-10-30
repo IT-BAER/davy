@@ -4,10 +4,8 @@ import android.app.Application
 import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.davy.sync.contacts.ContactsContentObserver
 import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
-import dagger.Lazy
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,19 +17,15 @@ import javax.inject.Inject
  * 
  * PERFORMANCE OPTIMIZATION:
  * - Removed WorkManager database deletion (was causing ~500ms delay on EVERY startup)
- * - Using Lazy injection to defer heavy dependency creation until needed
  * - Moved initialization to App Startup library for better control
  * - Removed preloading operations that blocked startup
+ * - Monitoring services (CalendarMonitorService, ContactsContentObserver) now initialized via MonitoringServicesInitializer
  */
 @HiltAndroidApp
 class DavyApplication : Application(), Configuration.Provider {
     
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
-    
-    // Use Lazy injection to defer expensive dependency creation
-    @Inject
-    lateinit var contactsContentObserver: Lazy<ContactsContentObserver>
     
     override fun onCreate() {
         super.onCreate()
@@ -64,24 +58,8 @@ class DavyApplication : Application(), Configuration.Provider {
         // Create notification channels for error notifications
         NotificationHelper.createNotificationChannels(this)
         
-        // Start contacts observer (deferred via lazy injection)
-        startContactsObserver()
-        
-        // All other initialization moved to AppInitializer (App Startup library)
-        // See: AccountSyncInitializer, BackgroundSyncInitializer, AccountMigrationInitializer
-    }
-    
-    /**
-     * Starts the contacts observer to monitor contact changes.
-     * Uses lazy injection to defer creation until needed.
-     */
-    private fun startContactsObserver() {
-        try {
-            contactsContentObserver.get().startObserving(contentResolver)
-            Timber.d("ContactsContentObserver started")
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to start ContactsContentObserver")
-        }
+        // All initialization moved to AppInitializer (App Startup library)
+        // See: MonitoringServicesInitializer, BackgroundSyncInitializer, AccountMigrationInitializer
     }
     
     override val workManagerConfiguration: Configuration
