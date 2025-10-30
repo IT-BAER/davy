@@ -210,6 +210,9 @@ class ContactRepository @Inject constructor(
             birthday = birthday,
             anniversary = anniversary,
             photoBase64 = photoBase64,
+            categories = if (categories.isNotEmpty()) gson.toJson(categories) else null,
+            isGroup = isGroup,
+            groupMembers = if (groupMembers.isNotEmpty()) gson.toJson(groupMembers) else null,
             isDirty = isDirty,
             isDeleted = isDeleted,
             androidContactId = androidContactId,
@@ -243,6 +246,16 @@ class ContactRepository @Inject constructor(
             gson.fromJson<List<String>>(it, type)
         } ?: emptyList()
         
+        val categoriesList = categories?.let {
+            val type = object : TypeToken<List<String>>() {}.type
+            gson.fromJson<List<String>>(it, type)
+        } ?: emptyList()
+        
+        val groupMembersList = groupMembers?.let {
+            val type = object : TypeToken<List<String>>() {}.type
+            gson.fromJson<List<String>>(it, type)
+        } ?: emptyList()
+        
         return Contact(
             id = id,
             addressBookId = addressBookId,
@@ -267,6 +280,9 @@ class ContactRepository @Inject constructor(
             birthday = birthday,
             anniversary = anniversary,
             photoBase64 = photoBase64,
+            categories = categoriesList,
+            isGroup = isGroup,
+            groupMembers = groupMembersList,
             isDirty = isDirty,
             isDeleted = isDeleted,
             androidContactId = androidContactId,

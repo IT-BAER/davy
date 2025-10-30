@@ -13,7 +13,10 @@ import ezvcard.parameter.TelephoneType as VCardTelephoneType
 import ezvcard.property.Address
 import ezvcard.property.Anniversary
 import ezvcard.property.Birthday
+import ezvcard.property.Categories
 import ezvcard.property.FormattedName
+import ezvcard.property.Kind
+import ezvcard.property.Member
 import ezvcard.property.Nickname
 import ezvcard.property.Note
 import ezvcard.property.Organization
@@ -222,6 +225,23 @@ class VCardSerializer @Inject constructor() {
             } catch (e: Exception) {
                 // Ignore invalid photo data
                 e.printStackTrace()
+            }
+        }
+
+        // Set group support
+        if (contact.categories.isNotEmpty()) {
+            val categories = Categories()
+            categories.values.addAll(contact.categories)
+            vcard.categories = categories
+        }
+        
+        if (contact.isGroup && version == VCardVersion.V4_0) {
+            // KIND:group only available in vCard 4.0
+            vcard.kind = Kind.group()
+            
+            // Add members
+            contact.groupMembers.forEach { memberUid ->
+                vcard.addMember(Member("urn:uuid:$memberUid"))
             }
         }
 

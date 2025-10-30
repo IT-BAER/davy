@@ -12,6 +12,10 @@ import com.davy.data.remote.carddav.VCardParser
 import com.davy.data.remote.carddav.VCardSerializer
 import com.davy.data.repository.AddressBookRepository
 import com.davy.data.repository.ContactRepository
+import com.davy.data.sync.groups.AndroidGroupManager
+import com.davy.data.sync.groups.CategoriesStrategy
+import com.davy.data.sync.groups.ContactGroupStrategy
+import com.davy.data.sync.groups.VCard4Strategy
 import com.davy.domain.model.Account
 import com.davy.domain.model.AddressBook
 import com.davy.domain.model.Contact
@@ -44,8 +48,30 @@ class CardDAVSyncService @Inject constructor(
     private val vCardSerializer: VCardSerializer,
     private val contactContentProviderAdapter: ContactContentProviderAdapter,
     private val androidAccountManager: AndroidAccountManager,
-    private val httpClient: OkHttpClient
+    private val httpClient: OkHttpClient,
+    private val categoriesStrategy: CategoriesStrategy,
+    private val vCard4Strategy: VCard4Strategy,
+    private val androidGroupManager: AndroidGroupManager
 ) {
+    /**
+     * Get group strategy based on account preferences.
+     */
+    private fun getGroupStrategy(account: Account): ContactGroupStrategy {
+        val prefs = context.getSharedPreferences("sync_config_${account.id}", Context.MODE_PRIVATE)
+        val groupMethod = prefs.getString("contact_group_method", "GROUP_VCARDS") ?: "GROUP_VCARDS"
+        
+        return when (groupMethod) {
+            "GROUP_VCARDS" -> {
+                Timber.d("Using GROUP_VCARDS strategy for contact groups")
+                vCard4Strategy
+            }
+            else -> {
+                Timber.d("Using CATEGORIES strategy for contact groups")
+                categoriesStrategy
+            }
+        }
+    }
+    
     /**
      * Convenience overload: sync a specific address book by ID.
      * Resolves the AddressBook inside the service to avoid external repository lookups.
@@ -184,6 +210,8 @@ class CardDAVSyncService @Inject constructor(
             var serverCtag: String? = null
             var hasLocalContacts = false
             var hasChanged = false
+            var localContactCount = 0
+            var serverContactCount: Int? = null
             if (!pushOnly) {
                 // Step 1: Fetch server ctag to check if anything changed
                 serverCtag = fetchServerCtag(addressBook.url, account.username, password, account.accountName, account.id)
@@ -194,9 +222,26 @@ class CardDAVSyncService @Inject constructor(
                 // Check if we have any contacts locally for this address book
                 val localContacts = contactRepository.getByAddressBookId(addressBook.id)
                 hasLocalContacts = localContacts.isNotEmpty()
+                localContactCount = localContacts.size
                 hasChanged = addressBook.ctag != serverCtag
-                Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged, Local contacts: ${localContacts.size}")
+                
+                // Fallback check: Get server contact count if ctag hasn't changed
+                // This handles cases where ctag update is delayed or contacts added externally
+                if (!hasChanged && hasLocalContacts) {
+                    serverContactCount = getServerContactCount(addressBook.url, account.username, password)
+                    if (serverContactCount != null && serverContactCount != localContactCount) {
+                        Timber.d("  ⚠️ Count mismatch detected: Server has $serverContactCount contacts, local has $localContactCount")
+                        hasChanged = true // Force sync due to count mismatch
+                    }
+                }
+                
+                Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged, Local contacts: $localContactCount")
             }
+            
+            // Step 1.5: Prepare group-related changes before upload
+            Timber.d("  Preparing group changes...")
+            val groupStrategy = getGroupStrategy(account)
+            groupStrategy.beforeUploadDirty(addressBook.id)
             
             // Step 2: Upload dirty contacts FIRST (before download to prevent overwriting local edits)
             Timber.d("  Uploading dirty contacts...")
@@ -219,6 +264,11 @@ class CardDAVSyncService @Inject constructor(
                     Timber.d("  Downloading contacts (ctag changed: $hasChanged, no local: ${!hasLocalContacts})...")
                     contactsDownloaded = downloadContacts(account, addressBook, password)
                     Timber.d("  Downloaded $contactsDownloaded contacts")
+                    
+                    // Step 4.5: Apply pending group memberships after download
+                    Timber.d("  Applying pending group memberships...")
+                    groupStrategy.postProcess(addressBook.id)
+                    
                     // Update ctag after successful download
                     if (serverCtag != null) {
                         Timber.d("📊 CardDAVSyncService: Calling addressBookRepository.updateCTag(${addressBook.id}, $serverCtag)")
@@ -242,6 +292,34 @@ class CardDAVSyncService @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Failed to sync address book: ${addressBook.displayName}")
         } finally {
+            // Clean up empty groups after sync (regardless of download/push-only mode)
+            try {
+                Timber.d("  Cleaning up empty groups for address book: ${addressBook.displayName}")
+                
+                // Get the address book Android account (same as used during contact sync)
+                val addressBookAccounts = androidAccountManager.getAddressBookAccounts(account.accountName)
+                val addressBookAccount = addressBookAccounts.firstOrNull { acct ->
+                    val addressBookId = androidAccountManager.getAddressBookId(acct)
+                    addressBookId == addressBook.id
+                }
+                
+                if (addressBookAccount != null) {
+                    val removedCount = androidGroupManager.removeEmptyGroups(
+                        addressBookAccount.name,
+                        AndroidAccountManager.ACCOUNT_TYPE_ADDRESS_BOOK
+                    )
+                    if (removedCount > 0) {
+                        Timber.d("  Removed $removedCount empty groups")
+                    } else {
+                        Timber.d("  No empty groups to remove")
+                    }
+                } else {
+                    Timber.w("  Address book Android account not found, cannot clean up groups")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to clean up empty groups")
+            }
+            
             // Clear sync flag after sync completes
             ContactsContentObserver.isSyncInProgress = false
         }
@@ -301,6 +379,47 @@ class CardDAVSyncService @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Exception fetching server ctag")
+            null
+        }
+    }
+    
+    /**
+     * Gets the count of contacts on the server for an address book.
+     * Used as a fallback check when ctag comparison alone isn't sufficient.
+     * 
+     * @param url Address book URL
+     * @param username Account username
+     * @param password Account password
+     * @return Number of contacts on server, or null if query failed
+     */
+    private suspend fun getServerContactCount(
+        url: String,
+        username: String,
+        password: String
+    ): Int? = withContext(Dispatchers.IO) {
+        try {
+            val addressBookQuery = AddressBookQuery()
+            val requestXml = addressBookQuery.createQueryAllRequest(url)
+            val requestBody = addressBookQuery.createRequestBody(requestXml)
+            val request = Request.Builder()
+                .url(url)
+                .method("REPORT", requestBody)
+                .header("Depth", "1")
+                .header("Content-Type", "application/xml; charset=utf-8")
+                .header("Authorization", Credentials.basic(username, password))
+                .build()
+            
+            val response = httpClient.newCall(request).execute()
+            if (!response.isSuccessful) {
+                Timber.w("Failed to fetch server contact count: ${response.code}")
+                return@withContext null
+            }
+            
+            val responseXml = response.body?.string() ?: return@withContext null
+            val contacts = addressBookQuery.parseQueryResponse(responseXml)
+            contacts.size
+        } catch (e: Exception) {
+            Timber.e(e, "Exception fetching server contact count")
             null
         }
     }
@@ -410,6 +529,10 @@ class CardDAVSyncService @Inject constructor(
             
             Timber.d("    Parsed contact: ${contact.displayName} (UID: ${contact.uid})")
             
+            // Verify/modify contact based on group strategy
+            val groupStrategy = getGroupStrategy(account)
+            val verifiedContact = groupStrategy.verifyContactBeforeSaving(contact)
+            
             // Check if contact exists locally (use absolute URL)
             val existingContact = contactRepository.getByUrl(absoluteContactUrl)
             
@@ -417,7 +540,7 @@ class CardDAVSyncService @Inject constructor(
                 Timber.d("    New contact - inserting into DAVy database")
                 
                 // New contact: Insert
-                val contactId = contactRepository.insert(contact)
+                val contactId = contactRepository.insert(verifiedContact)
                 Timber.d("    Inserted into DAVy DB with ID: $contactId")
                 
                 // Get the address book Android account (separate account per address book)
@@ -435,7 +558,7 @@ class CardDAVSyncService @Inject constructor(
                 // Sync to Android Contacts using the address book account
                 Timber.d("    Syncing to Android Contacts Provider using account: ${addressBookAccount.name}")
                 val syncResult = contactContentProviderAdapter.insertContact(
-                    contact = contact.copy(id = contactId),
+                    contact = verifiedContact.copy(id = contactId),
                     androidAccountName = addressBookAccount.name,
                     androidAccountType = AndroidAccountManager.ACCOUNT_TYPE_ADDRESS_BOOK
                 )
@@ -491,7 +614,7 @@ class CardDAVSyncService @Inject constructor(
 
                     Timber.d("    Inserting missing contact into Android Contacts Provider using account: ${addressBookAccount.name}")
                     val insertResult = contactContentProviderAdapter.insertContact(
-                        contact = contact.copy(id = existingContact.id),
+                        contact = verifiedContact.copy(id = existingContact.id),
                         androidAccountName = addressBookAccount.name,
                         androidAccountType = AndroidAccountManager.ACCOUNT_TYPE_ADDRESS_BOOK
                     )
@@ -519,7 +642,7 @@ class CardDAVSyncService @Inject constructor(
                         Timber.d("    Cleared dirty flag for raw contact ${insertResult.rawContactId}")
                     }
 
-                    Timber.d("    ✓ Successfully (re)inserted contact: ${contact.displayName}")
+                    Timber.d("    ✓ Successfully (re)inserted contact: ${verifiedContact.displayName}")
                     return@withContext true
                 }
 
@@ -527,7 +650,7 @@ class CardDAVSyncService @Inject constructor(
                 if (existingContact.etag != etag) {
                     Timber.d("    ETag changed - updating contact")
                     
-                    val updatedContact = contact.copy(
+                    val updatedContact = verifiedContact.copy(
                         id = existingContact.id,
                         androidContactId = existingContact.androidContactId,
                         androidRawContactId = existingContact.androidRawContactId

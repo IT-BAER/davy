@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,20 +179,25 @@ private fun AccountSettingsContent(
     )
     
     // Load saved intervals from SharedPreferences
-    var calendarSyncInterval by remember { mutableStateOf(prefs.getInt("calendar_sync_interval", 60)) }
-    var contactSyncInterval by remember { mutableStateOf(prefs.getInt("contact_sync_interval", 60)) }
-    var webCalSyncInterval by remember { mutableStateOf(prefs.getInt("webcal_sync_interval", 60)) }
+    val initialCalendarInterval = remember { prefs.getInt("calendar_sync_interval", 60) }
+    val initialContactInterval = remember { prefs.getInt("contact_sync_interval", 60) }
+    val initialWebCalInterval = remember { prefs.getInt("webcal_sync_interval", 60) }
+    val initialWifiOnly = remember { prefs.getBoolean("wifi_only", false) }
+    
+    var calendarSyncInterval by remember { mutableStateOf(initialCalendarInterval) }
+    var contactSyncInterval by remember { mutableStateOf(initialContactInterval) }
+    var webCalSyncInterval by remember { mutableStateOf(initialWebCalInterval) }
     var showCalendarIntervalDialog by remember { mutableStateOf(false) }
     var showContactIntervalDialog by remember { mutableStateOf(false) }
     var showWebCalIntervalDialog by remember { mutableStateOf(false) }
     
-    var syncOnlyOnWifi by remember { mutableStateOf(prefs.getBoolean("wifi_only", false)) }
+    var syncOnlyOnWifi by remember { mutableStateOf(initialWifiOnly) }
     var manageCalendarColors by remember { mutableStateOf(prefs.getBoolean("manage_calendar_colors", true)) }
     var eventColors by remember { mutableStateOf(prefs.getBoolean("event_colors", false)) }
     
     // CardDAV settings
     val contactGroupMethods = listOf("GROUP_VCARDS", "CATEGORIES")
-    var contactGroupMethod by remember { mutableStateOf(prefs.getString("contact_group_method", "CATEGORIES") ?: "CATEGORIES") }
+    var contactGroupMethod by remember { mutableStateOf(prefs.getString("contact_group_method", "GROUP_VCARDS") ?: "GROUP_VCARDS") }
     var showGroupMethodDialog by remember { mutableStateOf(false) }
     
     // CalDAV settings
@@ -235,6 +241,9 @@ private fun AccountSettingsContent(
     // Save all preference changes in one batched operation on background thread
     LaunchedEffect(debouncedPrefs) {
         withContext(Dispatchers.IO) {
+            Timber.d("AccountSettingsScreen: Debounced prefs changed - calInterval=${debouncedPrefs.calendarInterval}, contactInterval=${debouncedPrefs.contactInterval}, webCalInterval=${debouncedPrefs.webCalInterval}, wifiOnly=${debouncedPrefs.wifiOnly}")
+            Timber.d("AccountSettingsScreen: Initial values - calInterval=$initialCalendarInterval, contactInterval=$initialContactInterval, webCalInterval=$initialWebCalInterval, wifiOnly=$initialWifiOnly")
+            
             prefs.edit()
                 .putInt("calendar_sync_interval", debouncedPrefs.calendarInterval)
                 .putInt("contact_sync_interval", debouncedPrefs.contactInterval)
@@ -247,10 +256,15 @@ private fun AccountSettingsContent(
                 .apply()
             
             // Trigger sync configuration update if sync-related settings changed
-            if (debouncedPrefs.calendarInterval != calendarSyncInterval ||
-                debouncedPrefs.contactInterval != contactSyncInterval ||
-                debouncedPrefs.webCalInterval != webCalSyncInterval ||
-                debouncedPrefs.wifiOnly != syncOnlyOnWifi) {
+            val shouldUpdate = debouncedPrefs.calendarInterval != initialCalendarInterval ||
+                debouncedPrefs.contactInterval != initialContactInterval ||
+                debouncedPrefs.webCalInterval != initialWebCalInterval ||
+                debouncedPrefs.wifiOnly != initialWifiOnly
+            
+            Timber.d("AccountSettingsScreen: shouldUpdate=$shouldUpdate")
+            
+            if (shouldUpdate) {
+                Timber.d("AccountSettingsScreen: Calling onUpdateSyncConfiguration()")
                 onUpdateSyncConfiguration()
             }
             

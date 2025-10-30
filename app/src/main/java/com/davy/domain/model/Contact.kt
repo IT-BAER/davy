@@ -41,6 +41,11 @@ data class Contact(
     val anniversary: String? = null, // ISO 8601 date
     val photoBase64: String? = null,
     
+    // Group support
+    val categories: List<String> = emptyList(), // Group memberships (for CATEGORIES method)
+    val isGroup: Boolean = false, // Whether this is a group vCard (KIND:group)
+    val groupMembers: List<String> = emptyList(), // Member UIDs (for GROUP_VCARDS method)
+    
     // Sync state
     val isDirty: Boolean = false,
     val isDeleted: Boolean = false,

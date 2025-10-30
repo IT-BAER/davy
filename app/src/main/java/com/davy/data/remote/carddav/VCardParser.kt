@@ -113,6 +113,11 @@ class VCardParser @Inject constructor() {
             // Extract photo
             val photoBase64 = parsePhoto(vcard.photos?.firstOrNull())
 
+            // Extract group support
+            val categories = vcard.categories?.values?.toList() ?: emptyList()
+            val isGroup = vcard.kind?.isGroup ?: false
+            val groupMembers = vcard.members?.map { it.uri } ?: emptyList()
+
             // Build Contact
             Contact(
                 id = 0, // Will be set by Room
@@ -138,6 +143,9 @@ class VCardParser @Inject constructor() {
                 birthday = birthday,
                 anniversary = anniversary,
                 photoBase64 = photoBase64,
+                categories = categories,
+                isGroup = isGroup,
+                groupMembers = groupMembers,
                 isDirty = false,
                 isDeleted = false,
                 androidContactId = null,

@@ -134,6 +134,16 @@ data class ContactEntity(
     @androidx.room.ColumnInfo(name = "photo_base64")
     val photoBase64: String? = null,
     
+    // Group support
+    @androidx.room.ColumnInfo(name = "categories")
+    val categories: String? = null, // JSON: ["Work", "Friends"]
+    
+    @androidx.room.ColumnInfo(name = "is_group")
+    val isGroup: Boolean = false,
+    
+    @androidx.room.ColumnInfo(name = "group_members")
+    val groupMembers: String? = null, // JSON: ["uid1", "uid2"]
+    
     // Sync state
     @androidx.room.ColumnInfo(name = "is_dirty")
     val isDirty: Boolean = false,

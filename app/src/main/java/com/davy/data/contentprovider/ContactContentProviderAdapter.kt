@@ -6,6 +6,9 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
+import com.davy.data.sync.groups.AndroidGroupManager
+import com.davy.data.sync.groups.CachedGroupMembershipHandler
+import com.davy.data.sync.groups.GroupMembershipHandler
 import com.davy.domain.model.Contact
 import com.davy.domain.model.Email
 import com.davy.domain.model.PhoneNumber
@@ -30,10 +33,12 @@ import timber.log.Timber
  */
 class ContactContentProviderAdapter @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val typeMapper: TypeMapper
+    private val typeMapper: TypeMapper,
+    private val androidGroupManager: AndroidGroupManager
 ) {
 
     private val contentResolver: ContentResolver = context.contentResolver
+    private val groupMembershipHandler: GroupMembershipHandler by lazy { GroupMembershipHandler() }
 
     /**
      * Creates a sync adapter URI for the given base URI.
@@ -193,6 +198,25 @@ class ContactContentProviderAdapter @Inject constructor(
         addBirthdayData(operations, rawContactIndex, contact)
         addAnniversaryData(operations, rawContactIndex, contact)
         addPhotoData(operations, rawContactIndex, contact)
+        
+        // Add group memberships if contact has categories
+        if (contact.categories.isNotEmpty()) {
+            Timber.d("Contact has ${contact.categories.size} categories, ensuring groups exist")
+            val groupIdMap = androidGroupManager.ensureGroupsExist(
+                contact.categories.toSet(),
+                androidAccountName,
+                androidAccountType
+            )
+            groupMembershipHandler.handle(
+                operations,
+                rawContactId = null, // New contact, use back reference
+                rawContactBackRef = rawContactIndex,
+                contact,
+                androidAccountName,
+                androidAccountType,
+                groupIdMap
+            )
+        }
 
         return try {
             Timber.tag("ContactContentProviderAdapter").d("Inserting contact for account: %s (%s)", androidAccountName, androidAccountType)
@@ -290,6 +314,25 @@ class ContactContentProviderAdapter @Inject constructor(
 
         // Update photo separately (to avoid deletion)
         updatePhotoData(operations, rawContactId, contact)
+        
+        // Add group memberships if contact has categories
+        if (contact.categories.isNotEmpty()) {
+            Timber.d("Contact has ${contact.categories.size} categories, ensuring groups exist")
+            val groupIdMap = androidGroupManager.ensureGroupsExist(
+                contact.categories.toSet(),
+                androidAccountName,
+                androidAccountType
+            )
+            groupMembershipHandler.handle(
+                operations,
+                rawContactId = rawContactId, // Updating existing contact
+                rawContactBackRef = null,
+                contact,
+                androidAccountName,
+                androidAccountType,
+                groupIdMap
+            )
+        }
 
         return try {
             Timber.tag("ContactContentProviderAdapter").d("Updating contact with rawContactId: %s", rawContactId)

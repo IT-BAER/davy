@@ -58,7 +58,7 @@ import com.davy.data.local.entity.WebCalSubscriptionEntity
         TaskEntity::class,
         WebCalSubscriptionEntity::class
     ],
-    version = 16,  // Bumped to add lastSynced field to AddressBookEntity
+    version = 17,  // Bumped to add group support columns to ContactEntity
     autoMigrations = [
         AutoMigration(from = 14, to = 15)
     ],
@@ -133,6 +133,20 @@ abstract class DavyDatabase : RoomDatabase() {
                 // Initialize last_synced with updated_at for existing address books that have been synced (have ctag)
                 // This preserves the existing sync history
                 db.execSQL("UPDATE address_books SET last_synced = updated_at WHERE ctag IS NOT NULL")
+            }
+        }
+        
+        /**
+         * Manual migration from version 16 to 17.
+         * Adds group support columns to contacts table.
+         * Adds categories (JSON array of group names), is_group (boolean), and group_members (JSON array of UIDs).
+         */
+        val MIGRATION_16_17 = object : Migration(16, 17) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add group support columns to contacts table
+                db.execSQL("ALTER TABLE contacts ADD COLUMN categories TEXT")
+                db.execSQL("ALTER TABLE contacts ADD COLUMN is_group INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE contacts ADD COLUMN group_members TEXT")
             }
         }
     }
