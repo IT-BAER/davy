@@ -88,14 +88,19 @@ class AccountSyncConfigurationManager @Inject constructor(
     /**
      * Apply sync configuration for all accounts, preserving existing schedules.
      * Used on app startup to avoid resetting sync timers.
+     * 
+     * NOTE: We use UPDATE policy instead of KEEP to ensure jobs are rescheduled
+     * even if WorkManager lost runtime state when the app was killed by Android.
+     * UPDATE preserves the next-run time while ensuring the job is active.
      */
     suspend fun applyAllSyncConfigurationsPreserving() {
-        Timber.d("Applying sync configurations for all accounts (preserving existing) - using service-specific scheduling")
+        Timber.d("Applying sync configurations for all accounts (preserving existing) - using service-specific scheduling with UPDATE policy")
         
         val accounts = accountRepository.getAll()
         for (account in accounts) {
-            // Use service-specific scheduling instead of old single-job approach
-            scheduleServiceSpecificSync(account.id, preserve = true)
+            // Use service-specific scheduling with preserve=false to use UPDATE policy
+            // This ensures jobs run even after app process was killed
+            scheduleServiceSpecificSync(account.id, preserve = false)
         }
     }
     
