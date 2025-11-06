@@ -77,6 +77,14 @@ class CalDAVSyncService @Inject constructor(
             }
             Timber.d("========================================")
             
+            // Demo account handling - just update timestamp without actual sync
+            if (account.serverUrl.equals("https://demo.local", ignoreCase = true)) {
+                Timber.d("Demo account detected - updating lastSyncedAt for calendar: ${calendar.displayName}")
+                val currentTime = System.currentTimeMillis()
+                calendarRepository.update(calendar.copy(lastSyncedAt = currentTime))
+                return@withLock SyncResult.Success(0, 0, 0)
+            }
+            
             val password = credentialStore.getPassword(account.id)
             if (password == null) {
                 Timber.e("No credentials found for account: ${account.id}")
@@ -132,6 +140,17 @@ class CalDAVSyncService @Inject constructor(
     
     private suspend fun syncAccountInternal(account: Account): SyncResult {
         Timber.d("Starting CalDAV sync for account: ${account.accountName}")
+        
+        // Demo account handling - just update timestamps without actual sync
+        if (account.serverUrl.equals("https://demo.local", ignoreCase = true)) {
+            Timber.d("Demo account detected - updating lastSyncedAt for all calendars")
+            val calendars = calendarRepository.getByAccountId(account.id)
+            val currentTime = System.currentTimeMillis()
+            calendars.forEach { calendar ->
+                calendarRepository.update(calendar.copy(lastSyncedAt = currentTime))
+            }
+            return SyncResult.Success(0, 0, 0)
+        }
         
         val password = credentialStore.getPassword(account.id)
         if (password == null) {

@@ -12,13 +12,24 @@
     public static int w(...);
 }
 
-# Keep Timber completely
+# Strip VERBOSE and DEBUG Timber logs in release builds for security and performance
+# This removes calls at compile time, making them completely absent from release APK
+-assumenosideeffects class timber.log.Timber {
+    public static void v(...);
+    public static void d(...);
+}
+
+# Keep Timber framework classes (but allow stripping of v/d calls above)
 -keep class timber.log.Timber { *; }
 -keep class timber.log.Timber$Tree { *; }
 -keep class timber.log.Timber$DebugTree { *; }
 -keep class ** extends timber.log.Timber$Tree { *; }
 
-# Note: Allow R8 to remove unused logging where applicable (see assumenosideeffects above)
+# Keep custom DebugLogger utility
+-keep class com.davy.util.DebugLogger { *; }
+-keep class com.davy.util.DebugLogger$** { *; }
+
+# Note: INFO, WARN, and ERROR logs are kept for production diagnostics
 
 # Keep classes that use logging
 -keepclasseswithmembers class * {

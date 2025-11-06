@@ -119,6 +119,18 @@ class CardDAVSyncService @Inject constructor(
         Timber.d("========================================")
         
         try {
+            // Demo account handling - just update timestamp without actual sync
+            if (account.serverUrl.equals("https://demo.local", ignoreCase = true)) {
+                Timber.d("Demo account detected - updating lastSynced for address book: ${addressBook.displayName}")
+                val currentTime = System.currentTimeMillis()
+                addressBookRepository.update(addressBook.copy(
+                    ctag = "demo-${addressBook.url}-${currentTime}",
+                    lastSynced = currentTime,
+                    updatedAt = currentTime
+                ))
+                return@withContext SyncResult()
+            }
+            
             val password = credentialStore.getPassword(account.id)
             if (password == null) {
                 Timber.e("No credentials found for account: ${account.id}")
@@ -140,6 +152,21 @@ class CardDAVSyncService @Inject constructor(
         }
     }
     private suspend fun syncAccountInternal(account: Account, pushOnly: Boolean): SyncResult {
+        // Demo account handling - just update timestamps without actual sync
+        if (account.serverUrl.equals("https://demo.local", ignoreCase = true)) {
+            Timber.d("Demo account detected - updating lastSynced for all address books")
+            val addressBooks = addressBookRepository.getByAccountId(account.id)
+            val currentTime = System.currentTimeMillis()
+            addressBooks.forEach { addressBook ->
+                addressBookRepository.update(addressBook.copy(
+                    ctag = "demo-${addressBook.url}-${currentTime}",
+                    lastSynced = currentTime,
+                    updatedAt = currentTime
+                ))
+            }
+            return SyncResult()
+        }
+        
         // Get password from credential store
         val password = credentialStore.getPassword(account.id)
         if (password == null) {

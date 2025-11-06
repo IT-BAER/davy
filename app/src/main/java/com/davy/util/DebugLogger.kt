@@ -6,14 +6,48 @@ import timber.log.Timber
 
 /**
  * Debug logger utility that can be enabled/disabled at runtime.
- * Provides detailed logging for troubleshooting without exposing sensitive data.
+ * Implements Android logging best practices with runtime configuration.
  * 
- * When debug logging is disabled:
+ * ANDROID LOGGING BEST PRACTICES:
+ * ================================
+ * 1. Runtime Control: User can toggle debug logging in app settings
+ * 2. Sensitive Data Filtering: Passwords, tokens, etc. are automatically filtered
+ * 3. Level-based Filtering: Different log levels for development vs production
+ * 4. ProGuard Integration: VERBOSE and DEBUG calls are stripped at compile time in release
+ * 5. Performance: Minimal overhead when debug logging is disabled
+ * 
+ * LOG LEVELS:
+ * -----------
+ * - VERBOSE: Development only, most detailed (stripped in release builds)
+ * - DEBUG: Development only, debugging information (stripped in release builds)
+ * - INFO: Production-safe, general information
+ * - WARN: Production, potential issues that should be monitored
+ * - ERROR: Production, errors that need attention
+ * 
+ * When debug logging is disabled (production mode):
  * - Only WARNING and ERROR level logs are shown
  * - VERBOSE, DEBUG, and INFO logs are suppressed
+ * - Reduces logcat noise and performance overhead
  * 
- * When debug logging is enabled:
+ * When debug logging is enabled (debug mode):
  * - All log levels are shown (with sensitive data filtering)
+ * - Full diagnostics for troubleshooting
+ * - Automatically filters passwords, tokens, credentials
+ * 
+ * USAGE:
+ * ------
+ * // In Application.onCreate()
+ * DebugLogger.init(context)
+ * 
+ * // In Settings
+ * DebugLogger.setDebugLoggingEnabled(enabled)
+ * 
+ * // In code - use Timber as normal
+ * Timber.v("Verbose message") // Stripped in release builds
+ * Timber.d("Debug message")   // Stripped in release builds
+ * Timber.i("Info message")    // Kept, but filtered by runtime setting
+ * Timber.w("Warning")         // Always logged
+ * Timber.e("Error")           // Always logged
  */
 object DebugLogger {
     
@@ -67,9 +101,12 @@ object DebugLogger {
     /**
      * Custom debug tree that filters out sensitive data like passwords.
      * Logs all levels when debug logging is enabled.
+     * 
+     * SECURITY: Automatically redacts sensitive information to prevent credential leaks.
      */
     private class FilteredDebugTree : Timber.DebugTree() {
         
+        // Patterns to detect and filter sensitive data in log messages
         private val sensitivePatterns = listOf(
             Regex("password[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
             Regex("passwd[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
@@ -77,8 +114,18 @@ object DebugLogger {
             Regex("token[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
             Regex("secret[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
             Regex("authorization[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
-            Regex("auth[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE)
+            Regex("auth[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
+            Regex("api[_-]?key[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
+            Regex("client[_-]?secret[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
+            Regex("access[_-]?token[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
+            Regex("refresh[_-]?token[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE),
+            Regex("bearer[\\s=:]+[\\S]+", RegexOption.IGNORE_CASE)
         )
+        
+        override fun createStackElementTag(element: StackTraceElement): String {
+            // Add line number to tag for easier debugging
+            return super.createStackElementTag(element) + ":" + element.lineNumber
+        }
         
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             // Filter sensitive data from message
@@ -107,6 +154,9 @@ object DebugLogger {
     /**
      * Production tree that only logs warnings and errors.
      * Suppresses VERBOSE, DEBUG, and INFO logs to reduce overhead when debug logging is disabled.
+     * 
+     * PERFORMANCE: Minimizes logging overhead in production by filtering at runtime.
+     * SECURITY: Combined with ProGuard rules that strip v() and d() calls at compile time.
      */
     private class ProductionTree : Timber.Tree() {
         
@@ -127,8 +177,28 @@ object DebugLogger {
                         Log.e(tag, message)
                     }
                 }
+                
+                // TODO: Send ERROR level to crash reporting (Firebase Crashlytics, Sentry, etc.)
+                if (priority == Log.ERROR && t != null) {
+                    // Example: FirebaseCrashlytics.getInstance().recordException(t)
+                    // Example: Sentry.captureException(t)
+                }
             }
             // VERBOSE, DEBUG, and INFO are silently discarded
         }
     }
+    
+    /**
+     * Check if debug logging is currently enabled.
+     * Useful for conditional expensive log operations.
+     * 
+     * Example:
+     * ```
+     * if (DebugLogger.isEnabled()) {
+     *     val expensiveData = computeExpensiveDebugInfo()
+     *     Timber.d("Debug info: $expensiveData")
+     * }
+     * ```
+     */
+    fun isEnabled(): Boolean = isDebugLoggingEnabled
 }

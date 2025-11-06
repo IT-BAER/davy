@@ -26,9 +26,14 @@ import javax.inject.Singleton
  * - Retrofit instance
  * - Moshi JSON converter
  * 
+ * LOGGING BEST PRACTICES:
+ * ======================
  * HTTP logging respects user's debug logging preference:
- * - When debug logging is enabled: Full request/response body logging
- * - When debug logging is disabled: No HTTP logging (reduces overhead)
+ * - When debug logging is enabled: Full request/response body logging (BODY level)
+ * - When debug logging is disabled: No HTTP logging (NONE level) to reduce overhead
+ * 
+ * Note: In release builds, even if enabled, sensitive data is filtered by Timber.
+ * ProGuard rules also strip Timber.d() calls at compile time for additional security.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -46,22 +51,30 @@ object NetworkModule {
     @Singleton
     fun provideHttpLoggingInterceptor(@ApplicationContext context: Context): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message ->
+            // Log to Timber with OkHttp tag for filtering
+            // In release builds with ProGuard, Timber.d() calls are stripped entirely
             Timber.tag("OkHttp").d(message)
         }.apply {
-            // Check user's debug logging preference
+            // Check user's debug logging preference from SharedPreferences
             val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
             val debugEnabled = if (prefs.contains("debug_logging")) {
                 prefs.getBoolean("debug_logging", false)
             } else {
                 // Default to BuildConfig.DEBUG if user hasn't set preference
+                // This ensures debug builds log by default, release builds don't
                 com.davy.BuildConfig.DEBUG
             }
             
+            // Set logging level based on debug setting
+            // BODY: Logs headers and body (verbose, for debugging)
+            // NONE: No logging (production, reduces overhead)
             level = if (debugEnabled) {
                 HttpLoggingInterceptor.Level.BODY
             } else {
                 HttpLoggingInterceptor.Level.NONE
             }
+            
+            // Note: Even in BODY mode, sensitive data is filtered by DebugLogger's FilteredDebugTree
         }
     }
     

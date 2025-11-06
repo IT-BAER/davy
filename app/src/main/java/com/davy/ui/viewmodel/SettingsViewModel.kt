@@ -191,12 +191,18 @@ class SettingsViewModel @Inject constructor(
     
     fun updateDebugLogging(enabled: Boolean) {
         viewModelScope.launch {
-            Timber.d("updateDebugLogging: enabled=$enabled")
+            Timber.i("Debug logging %s by user", if (enabled) "enabled" else "disabled")
             _debugLoggingEnabled.value = enabled
             prefs.edit().putBoolean("debug_logging", enabled).apply()
             
             // Apply logging configuration immediately
+            // This switches between ProductionTree (WARN/ERROR only) and FilteredDebugTree (all levels)
+            // Also affects HTTP logging level in NetworkModule
             com.davy.util.DebugLogger.setDebugLoggingEnabled(enabled)
+            
+            // Note: In release builds, Timber.d() and Timber.v() calls are stripped by ProGuard
+            // so enabling debug logging will show INFO/WARN/ERROR only in release
+            Timber.d("Debug logging is now active - this message only visible in debug builds")
         }
     }
 }
