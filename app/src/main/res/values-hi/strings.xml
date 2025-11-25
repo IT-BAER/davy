@@ -146,6 +146,10 @@
     <string name="dark_mode_subtitle">डार्क थीम का उपयोग करें</string>
     <string name="debug_logging">डीबग लॉगिंग</string>
     <string name="debug_logging_subtitle">समस्या निवारण के लिए विस्तृत लॉग सक्षम करें (पासवर्ड शामिल नहीं)</string>
+    <string name="replay_onboarding">परिचय फिर से देखें</string>
+    <string name="replay_onboarding_subtitle">स्वागत टूर फिर से दिखाएं</string>
+    <string name="show_whats_new">नया क्या है दिखाएं</string>
+    <string name="show_whats_new_subtitle">अपडेट चेंजलॉग का पूर्वावलोकन करें</string>
     <string name="battery_optimization">बैटरी अनुकूलन</string>
     <string name="battery_optimization_disabled">अक्षम</string>
     <string name="battery_optimization_enabled">सक्षम (अनुशंसित)</string>
@@ -213,6 +217,10 @@
     <string name="faq_battery_optimization_answer">Android की बैटरी ऑप्टिमाइज़ेशन पृष्ठभूमि सिंकिंग को रोक सकती है। इसे अक्षम करने से सुनिश्चित होता है कि DAVy आपके शेड्यूल पर विश्वसनीय रूप से सिंक कर सकता है। खाता सेटिंग्स में आपको इसे अक्षम करने के लिए प्रेरित किया जाएगा। DAVy न्यूनतम बैटरी उपयोग के लिए डिज़ाइन किया गया है।</string>
     <string name="faq_batch_operations">बैच ऑपरेशन कैसे काम करते हैं?</string>
     <string name="faq_batch_operations_answer">बैच चयन मोड में प्रवेश करने के लिए किसी भी कैलेंडर, एड्रेस बुक, या WebCal सदस्यता को लंबे समय तक दबाएं। कई आइटम चुनें, फिर एक बार में सभी को हटाने के लिए मेनू में हटाएं बटन का उपयोग करें। बैच मोड से बाहर निकलने के लिए बाहर टैप करें या बैक जेस्चर का उपयोग करें।</string>
+    <string name="faq_open_source">क्या DAVy ओपन सोर्स है?</string>
+    <string name="faq_open_source_answer">हाँ! DAVy Apache 2.0 लाइसेंस के तहत मुफ्त और ओपन-सोर्स सॉफ्टवेयर है। आप github.com/IT-BAER/davy पर सोर्स कोड देख सकते हैं, समस्याओं की रिपोर्ट कर सकते हैं और योगदान कर सकते हैं।</string>
+    <string name="faq_get_help">मैं मदद कैसे प्राप्त करूं या बग कैसे रिपोर्ट करूं?</string>
+    <string name="faq_get_help_answer">• पहले इस FAQ और गाइड सेक्शन को देखें\n• GitHub पर बग रिपोर्ट करें या फीचर अनुरोध करें: github.com/IT-BAER/davy/issues\n• सेटिंग्स → फीडबैक भेजें के माध्यम से फीडबैक भेजें\n• हमसे सीधे admin@it-baer.net पर संपर्क करें</string>
     
     <!-- Guides Screen -->
     <string name="guides">गाइड</string>
@@ -590,4 +598,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">कानूनी</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="privacy_policy_title">गोपनीयता नीति</string>
+    <string name="privacy_policy_effective_date">प्रभावी तिथि: 1 नवंबर 2025</string>
+    <string name="privacy_policy_intro_title">परिचय</string>
+    <string name="privacy_policy_intro">DAVy CalDAV और CardDAV सिंक के लिए एक गोपनीयता-केंद्रित, ओपन-सोर्स एप्लिकेशन है। हम आपकी गोपनीयता को गंभीरता से लेते हैं। यह दस्तावेज़ बताता है कि एप्लिकेशन आपके डेटा को कैसे संभालता है।</string>
+    <string name="privacy_policy_info_title">हम कौन सी जानकारी एकत्र करते हैं</string>
+    <string name="privacy_policy_info">DAVy कोई भी व्यक्तिगत डेटा एकत्र या ऐप डेवलपर्स या तृतीय पक्षों को नहीं भेजता है। सभी डेटा आपके डिवाइस पर रहता है या सीधे आपके चुने हुए CalDAV/CardDAV सर्वर के साथ सिंक होता है।</string>
+    <string name="privacy_policy_storage_title">डेटा संग्रहण</string>
+    <string name="privacy_policy_storage">खाता क्रेडेंशियल सुरक्षित रूप से Android के खाता प्रबंधक में संग्रहीत होते हैं। कैलेंडर इवेंट और संपर्क आपके डिवाइस पर स्थानीय रूप से संग्रहीत होते हैं और आपके निर्दिष्ट सर्वर के साथ सिंक होते हैं।</string>
+    <string name="privacy_policy_permissions_title">अनुमतियाँ</string>
+    <string name="privacy_policy_permissions">एप्लिकेशन केवल कैलेंडर, संपर्क और सिंक के लिए आवश्यक अनुमतियों का अनुरोध करता है। हम इन अनुमतियों के बाहर किसी भी डेटा तक नहीं पहुंचते।</string>
+    <string name="privacy_policy_third_party_title">तृतीय-पक्ष सेवाएं</string>
+    <string name="privacy_policy_third_party">DAVy में कोई तृतीय-पक्ष ट्रैकिंग, एनालिटिक्स या विज्ञापन शामिल नहीं है। एकमात्र नेटवर्क संचार आपके CalDAV/CardDAV सर्वरों के साथ है।</string>
+    <string name="privacy_policy_changes_title">इस नीति में परिवर्तन</string>
+    <string name="privacy_policy_changes">हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। कोई भी परिवर्तन इस पृष्ठ पर अपडेटेड प्रभावी तिथि के साथ पोस्ट किया जाएगा।</string>
+    <string name="privacy_policy_contact_title">हमसे संपर्क करें</string>
+    <string name="privacy_policy_contact">यदि इस गोपनीयता नीति के बारे में आपके कोई प्रश्न हैं, तो कृपया हमारे GitHub रिपॉजिटरी के माध्यम से हमसे संपर्क करें।</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">सेवा की शर्तें</string>
+    <string name="terms_of_service_title">सेवा की शर्तें</string>
+    <string name="terms_of_service_effective_date">प्रभावी तिथि: 1 नवंबर 2025</string>
+    <string name="terms_of_service_acceptance_title">शर्तों की स्वीकृति</string>
+    <string name="terms_of_service_acceptance">DAVy का उपयोग करके, आप इन शर्तों से बंधे होने के लिए सहमत हैं। यदि आप इन शर्तों के किसी भी भाग से असहमत हैं, तो कृपया एप्लिकेशन का उपयोग न करें।</string>
+    <string name="terms_of_service_license_title">लाइसेंस</string>
+    <string name="terms_of_service_license">DAVy GNU General Public License संस्करण 3 (GPLv3) के तहत लाइसेंस प्राप्त ओपन-सोर्स सॉफ्टवेयर है। आप इस लाइसेंस की शर्तों के अनुसार सॉफ्टवेयर का उपयोग, संशोधन और वितरण करने के लिए स्वतंत्र हैं।</string>
+    <string name="terms_of_service_disclaimer_title">अस्वीकरण</string>
+    <string name="terms_of_service_disclaimer">DAVy किसी भी प्रकार की वारंटी के बिना \"जैसा है\" प्रदान किया गया है। इस सॉफ्टवेयर के उपयोग से उत्पन्न किसी भी क्षति के लिए डेवलपर्स उत्तरदायी नहीं होंगे।</string>
+    <string name="terms_of_service_user_responsibilities_title">उपयोगकर्ता की जिम्मेदारियां</string>
+    <string name="terms_of_service_user_responsibilities">आप अपने खाता क्रेडेंशियल की सुरक्षा बनाए रखने, विश्वसनीय CalDAV/CardDAV सर्वर चुनने और यह सुनिश्चित करने के लिए जिम्मेदार हैं कि आपका उपयोग लागू कानूनों का अनुपालन करता है।</string>
+    <string name="terms_of_service_limitations_title">सीमाएं</string>
+    <string name="terms_of_service_limitations">डेवलपर्स सेवा की निरंतरता या सभी सर्वरों के साथ संगतता की गारंटी नहीं देते। सर्वर कार्यान्वयन के आधार पर कार्यक्षमता भिन्न हो सकती है।</string>
+    <string name="terms_of_service_changes_title">शर्तों में परिवर्तन</string>
+    <string name="terms_of_service_changes">हम समय-समय पर इन शर्तों को अपडेट कर सकते हैं। परिवर्तनों के बाद एप्लिकेशन का निरंतर उपयोग नई शर्तों की स्वीकृति माना जाता है।</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">छोड़ें</string>
+    <string name="onboarding_back">पीछे</string>
+    <string name="onboarding_next">अगला</string>
+    <string name="onboarding_get_started">शुरू करें</string>
+    <string name="onboarding_welcome_title">DAVy में आपका स्वागत है</string>
+    <string name="onboarding_welcome_description">Android के लिए आपका गोपनीयता-केंद्रित CalDAV और CardDAV सिंक समाधान</string>
+    <string name="onboarding_add_account_title">अपना खाता जोड़ें</string>
+    <string name="onboarding_add_account_description">Nextcloud, ownCloud, Radicale या किसी भी CalDAV/CardDAV सर्वर से कनेक्ट करें</string>
+    <string name="onboarding_sync_title">सिंक कॉन्फ़िगर करें</string>
+    <string name="onboarding_sync_description">चुनें कि क्या सिंक करना है और स्वचालित पृष्ठभूमि सिंक के लिए अपनी प्राथमिकताएं सेट करें</string>
+    <string name="onboarding_calendar_title">अपने कैलेंडर देखें</string>
+    <string name="onboarding_calendar_description">आपके सभी इवेंट स्वचालित रूप से Android के कैलेंडर ऐप में सिंक होते हैं</string>
+    <string name="onboarding_contacts_title">अपने संपर्क प्रबंधित करें</string>
+    <string name="onboarding_contacts_description">आपके संपर्क Android के संपर्क ऐप में सिंक होते हैं, हर जगह उपयोग के लिए तैयार</string>
 </resources>

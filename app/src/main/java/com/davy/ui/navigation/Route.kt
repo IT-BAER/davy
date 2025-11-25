@@ -89,4 +89,19 @@ sealed class Route(val route: String) {
      * About screen
      */
     object About : Route("about")
+    
+    /**
+     * Privacy Policy screen
+     */
+    object PrivacyPolicy : Route("privacy_policy")
+    
+    /**
+     * Terms of Service screen
+     */
+    object TermsOfService : Route("terms_of_service")
+    
+    /**
+     * First-time user onboarding tour
+     */
+    object OnboardingTour : Route("onboarding_tour")
 }

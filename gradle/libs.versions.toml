@@ -1,7 +1,7 @@
 [versions]
 # Kotlin and Build Tools
 kotlin = "1.9.24"
-agp = "8.13.0"
+agp = "8.13.1"
 ksp = "1.9.24-1.0.20"
 
 # Android SDK

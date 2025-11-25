@@ -112,7 +112,7 @@
     <string name="contact_details">Kontaktdetails</string>
     <string name="add_contact">Kontakt hinzufügen</string>
     <string name="no_contacts">Keine Kontakte</string>
-    <string name="add_account_to_sync_contacts">Fügen Sie ein Konto hinzu, um Kontakte zu synchronisieren</string>
+    <string name="add_account_to_sync_contacts">Füge ein Konto hinzu, um Kontakte zu synchronisieren</string>
     <string name="contact_creation_future_update">Das Erstellen von Kontakten wird in einem zukünftigen Update implementiert.</string>
     <!-- Kontaktdetails (neu) -->
     <string name="phone_numbers">Telefonnummern</string>
@@ -145,6 +145,10 @@
     <string name="dark_mode_subtitle">Dunkles Thema verwenden</string>
     <string name="debug_logging">Debug-Protokollierung</string>
     <string name="debug_logging_subtitle">Detailliertes Logging für die Fehlersuche aktivieren (Passwörter ausgeschlossen)</string>
+    <string name="replay_onboarding">Einführung wiederholen</string>
+    <string name="replay_onboarding_subtitle">Die Willkommens-Tour erneut anzeigen</string>
+    <string name="show_whats_new">Neuigkeiten anzeigen</string>
+    <string name="show_whats_new_subtitle">Update-Änderungsprotokoll-Dialog anzeigen</string>
     <string name="battery_optimization">Batterieoptimierung</string>
     <string name="battery_optimization_disabled">Deaktiviert</string>
     <string name="battery_optimization_enabled">Aktiviert (Empfohlen)</string>
@@ -191,23 +195,23 @@
     <!-- FAQ Screen -->
     <string name="faq">FAQ</string>
     <string name="faq_what_is_davy">Was ist DAVy?</string>
-    <string name="faq_what_is_davy_answer">DAVy ist ein CalDAV/CardDAV-Sync-Client für Android, der Kalender, Kontakte und Aufgaben mit Ihrem Server synchronisiert.</string>
+    <string name="faq_what_is_davy_answer">DAVy ist ein CalDAV/CardDAV-Sync-Client für Android, der Kalender, Kontakte und Aufgaben mit deinem Server synchronisiert.</string>
     <string name="faq_which_servers">Welche Server werden unterstützt?</string>
     <string name="faq_which_servers_answer">DAVy funktioniert mit jedem CalDAV/CardDAV-kompatiblen Server, einschließlich Nextcloud, ownCloud, Radicale, Baïkal und mehr.</string>
     <string name="faq_sync_not_working">Warum funktioniert meine Synchronisierung nicht?</string>
-    <string name="faq_sync_not_working_answer">Prüfen Sie diese häufigen Ursachen:\n\n• Server-URL ist korrekt (einschließlich https://)\n• Benutzername und Passwort sind gültig\n• Synchronisierung für Kalender/Adressbuch ist aktiviert (Schalter)\n• Nur‑WLAN‑Synchronisierung ist deaktiviert oder WLAN ist verbunden\n• Akkuoptimierung ist für DAVy deaktiviert\n• App hat Kalender‑ und Kontakte‑Berechtigungen</string>
+    <string name="faq_sync_not_working_answer">Prüfe diese häufigen Ursachen:\n\n• Server-URL ist korrekt (einschließlich https://)\n• Benutzername und Passwort sind gültig\n• Synchronisierung für Kalender/Adressbuch ist aktiviert (Schalter)\n• Nur‑WLAN‑Synchronisierung ist deaktiviert oder WLAN ist verbunden\n• Akkuoptimierung ist für DAVy deaktiviert\n• App hat Kalender‑ und Kontakte‑Berechtigungen</string>
     <string name="faq_enable_auto_sync">Wie aktiviere ich die automatische Synchronisierung?</string>
-    <string name="faq_enable_auto_sync_answer">Die automatische Synchronisierung wird in den DAVy‑Einstellungen gesteuert – Android‑Systemeinstellungen sind nicht erforderlich.\n\n1. Kontodetails öffnen, indem Sie ein Konto antippen\n\n2. Sicherstellen, dass bei Kalendern/Adressbüchern die Synchronisierung aktiviert ist (Schalter)\n\n3. Bei Aufforderung die Akkuoptimierung deaktivieren (wichtig für zuverlässige Hintergrund‑Syncs)\n\n4. Optional das Synchronisierungsintervall im Kontomenü konfigurieren</string>
+    <string name="faq_enable_auto_sync_answer">Die automatische Synchronisierung wird in den DAVy‑Einstellungen gesteuert – Android‑Systemeinstellungen sind nicht erforderlich.\n\n1. Kontodetails öffnen, indem du ein Konto antippst\n\n2. Sicherstellen, dass bei Kalendern/Adressbüchern die Synchronisierung aktiviert ist (Schalter)\n\n3. Bei Aufforderung die Akkuoptimierung deaktivieren (wichtig für zuverlässige Hintergrund‑Syncs)\n\n4. Optional das Synchronisierungsintervall im Kontomenü konfigurieren</string>
     <string name="faq_multiple_accounts">Kann ich mehrere Konten synchronisieren?</string>
-    <string name="faq_multiple_accounts_answer">Ja, Sie können mehrere CalDAV/CardDAV-Konten gleichzeitig hinzufügen und synchronisieren.</string>
+    <string name="faq_multiple_accounts_answer">Ja, du kannst mehrere CalDAV/CardDAV-Konten gleichzeitig hinzufügen und synchronisieren.</string>
     <string name="faq_where_are_my_data">Wo sind meine synchronisierten Ereignisse/Kontakte?</string>
-    <string name="faq_where_are_my_data_answer">Kalendertermine erscheinen in der Android‑Kalender‑App. Kontakte erscheinen in der Android‑Kontakte‑App. DAVy synchronisiert im Hintergrund, Ihre Standard‑Apps zeigen die Daten an.\n\nWenn keine Termine angezeigt werden: Kalender‑App öffnen → Einstellungen → Sicherstellen, dass das DAVy‑Konto aktiviert/sichtbar ist.</string>
+    <string name="faq_where_are_my_data_answer">Kalendertermine erscheinen in der Android‑Kalender‑App. Kontakte erscheinen in der Android‑Kontakte‑App. DAVy synchronisiert im Hintergrund, deine Standard‑Apps zeigen die Daten an.\n\nWenn keine Termine angezeigt werden: Kalender‑App öffnen → Einstellungen → Sicherstellen, dass das DAVy‑Konto aktiviert/sichtbar ist.</string>
     <string name="faq_how_delete_account">Wie lösche ich ein Konto?</string>
     <string name="faq_how_delete_account_answer">Kontolöschung:\n• Auf der Hauptseite die Konto‑Karte lange drücken\n• Zum Ende der Detailseite scrollen\n• Auf „Konto löschen“ tippen\n\nLöschen einzelner Elemente:\n• Kalender/Adressbuch/WebCal einmal antippen\n• Zum Ende der Detailseite scrollen\n• Auf „Löschen“ tippen\n\nLöschen mehrerer Elemente:\n• Beliebigen Kalender/Adressbuch/WebCal lange drücken, um den Stapelmodus zu öffnen\n• Mehrere Elemente auswählen\n• Dreipunkt‑Menü (oben rechts) → Löschen\n\nDas Löschen eines Kontos entfernt alle zugehörigen Daten.</string>
     <string name="faq_what_is_wifi_only">Was ist die Nur-WLAN-Synchronisierung?</string>
     <string name="faq_what_is_wifi_only_answer">Aktiviere dies in den Kontoeinstellungen, damit nur bei bestehender WLAN-Verbindung synchronisiert wird. Das spart mobile Daten.</string>
     <string name="faq_rename_account">Was passiert, wenn ich ein Konto umbenenne?</string>
-    <string name="faq_rename_account_answer">Das Umbenennen eines Kontos kann dazu führen, dass es in der Android-Kalender-App deaktiviert wird, da Android den Kontonamen als Kennung verwendet. Sie können das Konto in Ihrer Kalender-App wieder aktivieren.</string>
+    <string name="faq_rename_account_answer">Das Umbenennen eines Kontos kann dazu führen, dass es in der Android-Kalender-App deaktiviert wird, da Android den Kontonamen als Kennung verwendet. Du kannst das Konto in deiner Kalender-App wieder aktivieren.</string>
     <string name="faq_what_is_webcal">Was sind WebCal-Abonnements?</string>
     <string name="faq_what_is_webcal_answer">WebCal-Abonnements sind schreibgeschützte Kalender-Feeds (webcal://-URLs), die DAVy regelmäßig abruft und auf dein Gerät synchronisiert. Perfekt für öffentliche Kalender, Spielpläne, Feiertage usw. Du findest sie im WebCal-Tab der Kontodetails.</string>
     <string name="faq_permissions_needed">Warum benötigt DAVy Berechtigungen?</string>
@@ -216,6 +220,10 @@
     <string name="faq_battery_optimization_answer">Androids Batterieoptimierung kann die Hintergrundsynchronisierung verhindern. Wenn du sie deaktivierst, kann DAVy zuverlässig nach Zeitplan synchronisieren. Du wirst in den Kontoeinstellungen dazu aufgefordert. DAVy ist auf minimalen Batterieverbrauch ausgelegt.</string>
     <string name="faq_batch_operations">Wie funktionieren Stapeloperationen?</string>
     <string name="faq_batch_operations_answer">Halte einen beliebigen Kalender, ein Adressbuch oder ein WebCal-Abonnement lange gedrückt, um den Stapelauswahlmodus zu aktivieren. Wähle mehrere Elemente aus und verwende dann die Löschen-Schaltfläche im Menü, um sie alle auf einmal zu entfernen. Tippe außerhalb oder verwende die Zurück-Geste, um den Stapelmodus zu verlassen.</string>
+    <string name="faq_open_source">Ist DAVy Open Source?</string>
+    <string name="faq_open_source_answer">Ja! DAVy ist freie und quelloffene Software unter der Apache 2.0 Lizenz. Du kannst den Quellcode ansehen, Probleme melden und auf GitHub unter github.com/IT-BAER/davy beitragen.</string>
+    <string name="faq_get_help">Wie bekomme ich Hilfe oder melde einen Fehler?</string>
+    <string name="faq_get_help_answer">• Prüfe zuerst diese FAQ und den Anleitungen-Bereich\n• Melde Fehler oder Feature-Anfragen auf GitHub: github.com/IT-BAER/davy/issues\n• Sende Feedback über Einstellungen → Feedback senden\n• Kontaktiere uns direkt unter admin@it-baer.net</string>
     
     <!-- Guides Screen -->
     <string name="guides">Anleitungen</string>
@@ -227,7 +235,7 @@
     <string name="error_generic">Ein Fehler ist aufgetreten</string>
     <string name="error_network">Netzwerkfehler. Bitte überprüfe deine Verbindung.</string>
     <string name="error_authentication">Authentifizierung fehlgeschlagen. Bitte überprüfe deine Anmeldedaten.</string>
-    <string name="error_server">Serverfehler. Bitte versuchen Sie es später erneut.</string>
+    <string name="error_server">Serverfehler. Bitte versuche es später erneut.</string>
     <string name="success">Erfolg</string>
     
     <!-- Accessibility -->
@@ -626,14 +634,102 @@
     <string name="guides_calendars_title">Kalender &amp; WebCal‑Abonnements verwalten</string>
     <string name="guides_calendars_body">• Ein Konto antippen, um dessen Kalender und Abonnements zu sehen\n\n• Über Tabs zwischen CalDAV‑Kalendern, Adressbüchern und WebCal‑Abonnements wechseln\n\n• „Liste aktualisieren“ holt verfügbare Sammlungen vom Server\n\n• Neue Kalender über die +‑Schaltfläche im Menü erstellen\n\n• Über den WebCal‑Tab schreibgeschützte WebCal‑Feeds (webcal://) abonnieren\n\n• Synchronisierung pro Kalender mit den Schaltern aktivieren/deaktivieren\n\n• Einen Kalender antippen, um zu konfigurieren: Nur‑WLAN‑Sync, Schreibschutz erzwingen, benutzerdefiniertes Intervall oder umbenennen\n\n• Auf den farbigen Kreis tippen, um die Kalenderfarbe zu ändern\n\n• Kalender per Langdruck im Stapel auswählen und mehrere auf einmal löschen\n\n• Einzel- oder Stapelsynchronisierung über die „Sync“-Schaltflächen</string>
     <string name="guides_contacts_title">Kontakte verwalten</string>
-    <string name="guides_contacts_body">• In den Kontodetails zum Tab „Adressbücher“ wechseln\n\n• Adressbücher synchronisieren automatisch gemäß Ihren Einstellungen\n\n• Synchronisierung pro Adressbuch mit den Schaltern aktivieren/deaktivieren\n\n• Ein Adressbuch antippen, um zu konfigurieren: Nur‑WLAN‑Sync, Schreibschutz erzwingen, benutzerdefiniertes Intervall oder umbenennen\n\n• Neue Adressbücher mit der +‑Schaltfläche im Menü erstellen\n\n• Adressbücher per Langdruck im Stapel auswählen und löschen\n\n• Alle synchronisierten Kontakte erscheinen in der Android‑Kontakte‑App</string>
+<string name="guides_contacts_body">• In den Kontodetails zum Tab „Adressbücher" wechseln\n\n• Adressbücher synchronisieren automatisch gemäß deinen Einstellungen\n\n• Synchronisierung pro Adressbuch mit den Schaltern aktivieren/deaktivieren\n\n• Ein Adressbuch antippen, um zu konfigurieren: Nur‑WLAN‑Sync, Schreibschutz erzwingen, benutzerdefiniertes Intervall oder umbenennen\n\n• Neue Adressbücher mit der +‑Schaltfläche im Menü erstellen\n\n• Adressbücher per Langdruck im Stapel auswählen und löschen\n\n• Alle synchronisierten Kontakte erscheinen in der Android‑Kontakte‑App</string>
     <string name="guides_account_settings_title">Kontoeinstellungen</string>
     <string name="guides_account_settings_body">• Zugriff auf die Einstellungen über das Menüsymbol in den Kontodetails\n\n• Server‑URL und Anmeldedaten aktualisieren\n\n• „Nur‑WLAN‑Sync“ aktivieren, um mobile Daten zu sparen (gilt als Konto‑Standard)\n\n• Separate Synchronisierungsintervalle für CalDAV‑Kalender, CardDAV‑Kontakte und WebCal‑Abonnements festlegen\n\n• Standard‑Kalenderfarbe für neue Kalender setzen\n\n• Kontaktgruppenmethode konfigurieren (Kategorien oder Gruppen)\n\n• Alte Ereignisse überspringen, um die erste Synchronisierung zu verkürzen\n\n• Akkuoptimierung deaktivieren für zuverlässige Hintergrund‑Synchronisierung</string>
     <string name="guides_sync_title">Synchronisierung</string>
-    <string name="guides_sync_body">• „Alle synchronisieren“ auf der Hauptseite synchronisiert alle Konten\n\n• Konto‑weise Synchronisierung in den Kontodetails verfügbar\n\n• Eigene Sync‑Schaltflächen für Kalender, Kontakte und WebCal‑Abonnements\n\n• Auto‑Sync ist in den Kontoeinstellungen konfigurierbar\n\n• Nur‑WLAN‑Option verhindert mobile Datennutzung\n\n• Hintergrundsynchronisierung läuft automatisch gemäß Ihrem Intervall\n\n• Manuelle Synchronisierung jederzeit über die Sync‑Schaltflächen möglich\n\n• Synchronisierte Daten erscheinen in Android‑Kalender‑ und Kontakte‑Apps</string>
+    <string name="guides_sync_body">• „Alle synchronisieren“ auf der Hauptseite synchronisiert alle Konten\n\n• Konto‑weise Synchronisierung in den Kontodetails verfügbar\n\n• Eigene Sync‑Schaltflächen für Kalender, Kontakte und WebCal‑Abonnements\n\n• Auto‑Sync ist in den Kontoeinstellungen konfigurierbar\n\n• Nur‑WLAN‑Option verhindert mobile Datennutzung\n\n• Hintergrundsynchronisierung läuft automatisch gemäß deinem Intervall\n\n• Manuelle Synchronisierung jederzeit über die Sync‑Schaltflächen möglich\n\n• Synchronisierte Daten erscheinen in Android‑Kalender‑ und Kontakte‑Apps</string>
 
     <!-- Intervallbezeichnungen (neu) -->
     <string name="every_duration">Alle %1$s</string>
     <string name="every_hour">Jede Stunde</string>
     <string name="once_a_day">Einmal täglich</string>
+    
+    <!-- Legal -->
+    <string name="legal">Rechtliches</string>
+    
+    <!-- Privacy Policy Screen -->
+    <string name="privacy_policy">Datenschutzrichtlinie</string>
+    <string name="privacy_policy_subtitle">Unsere Datenschutzpraktiken ansehen</string>
+    <string name="privacy_effective_date">Gültig ab: 1. November 2025</string>
+    <string name="privacy_introduction_title">Einführung</string>
+<string name="privacy_introduction_content">DAVy („die App“) ist eine CalDAV-, CardDAV- und WebCal-Synchronisationsanwendung für Android. Diese Datenschutzrichtlinie erklärt, welche Informationen die App sammelt, wie sie verwendet werden und deine Rechte bezüglich deiner Daten.\n\nWir sind dem Schutz deiner Privatsphäre verpflichtet. DAVy ist so konzipiert, dass deine Kalender-, Kontakt- und Aufgabendaten mit deinen eigenen Servern synchronisiert werden – wir erfassen, speichern oder übertragen keine deiner persönlichen Daten an unsere Server.</string>
+    <string name="privacy_info_collect_title">Informationen, die wir erfassen</string>
+    <string name="privacy_info_collect_content">DAVy erfasst und speichert die folgenden Informationen lokal auf deinem Gerät:\n\n• Server-Zugangsdaten (URL, Benutzername, Passwort/OAuth-Token)\n• Kalenderereignisse, Kontakte und Aufgaben von deinen Servern\n• App-Einstellungen und Präferenzen\n• Synchronisierungsstatus und Fehlerprotokolle\n\nDiese Daten werden sicher auf deinem Gerät gespeichert und nur an die von dir konfigurierten Server übertragen.</string>
+    <string name="privacy_how_use_title">Wie wir Informationen verwenden</string>
+    <string name="privacy_how_use_content">Die erfassten Informationen werden ausschließlich verwendet für:\n\n• Authentifizierung bei deinen CalDAV/CardDAV/WebCal-Servern\n• Synchronisierung von Kalendern, Kontakten und Aufgaben\n• Speicherung deiner Einstellungen\n• Anzeige des Synchronisierungsstatus und Fehlerbehebung</string>
+    <string name="privacy_data_storage_title">Datenspeicherung und Sicherheit</string>
+    <string name="privacy_data_storage_content">• Alle Daten werden lokal auf deinem Android-Gerät gespeichert\n• Passwörter werden mit Androids sicherem Speicher verschlüsselt\n• Daten werden über HTTPS übertragen, wenn deine Server dies unterstützen\n• Keine Daten werden an DAVy-Entwickler oder Dritte gesendet</string>
+    <string name="privacy_data_sharing_title">Datenweitergabe</string>
+    <string name="privacy_data_sharing_content">DAVy gibt deine Daten nicht an Dritte weiter. Deine Daten werden nur an die Server übertragen, die du explizit konfigurierst.</string>
+    <string name="privacy_your_rights_title">Deine Rechte</string>
+    <string name="privacy_your_rights_content">Du hast volle Kontrolle über deine Daten:\n\n• Konten und zugehörige Daten jederzeit löschen\n• Daten über Backup-Funktionen exportieren\n• Alle App-Daten über Android-Einstellungen löschen\n• Berechtigungen jederzeit widerrufen</string>
+    <string name="privacy_permissions_title">Berechtigungen</string>
+    <string name="privacy_permissions_content">DAVy fordert folgende Berechtigungen an:\n\n• Kalender: Lesen/Schreiben zur Synchronisierung von Kalenderereignissen\n• Kontakte: Lesen/Schreiben zur Synchronisierung von Kontakten\n• Internet: Verbindung zu deinen CalDAV/CardDAV-Servern\n• Benachrichtigungen: Anzeige von Synchronisierungsstatus und Fehlern</string>
+    <string name="privacy_third_party_title">Dienste Dritter</string>
+    <string name="privacy_third_party_content">DAVy enthält keine Analyse-, Werbe- oder Tracking-Dienste von Drittanbietern. Die App kommuniziert nur mit den von dir konfigurierten Servern.</string>
+    <string name="privacy_children_title">Datenschutz für Kinder</string>
+    <string name="privacy_children_content">DAVy erfasst wissentlich keine Informationen von Kindern unter 13 Jahren. Die App richtet sich an ein allgemeines Publikum und ist nicht für Kinder bestimmt.</string>
+    <string name="privacy_contact_title">Kontaktinformationen</string>
+    <string name="privacy_contact_content">Bei Fragen oder Bedenken zu dieser Datenschutzrichtlinie kontaktiere uns bitte über die Support-Kanäle der App oder das GitHub-Repository.</string>
+    <string name="privacy_last_updated">Zuletzt aktualisiert: 29. Oktober 2025</string>
+    
+    <!-- Terms of Service Screen -->
+    <string name="terms_of_service">Nutzungsbedingungen</string>
+    <string name="terms_of_service_subtitle">Unsere Bedingungen und Konditionen ansehen</string>
+    <string name="tos_effective_date">Gültig ab: 1. November 2025</string>
+    <string name="tos_acceptance_title">Annahme der Bedingungen</string>
+<string name="tos_acceptance_content">Durch das Herunterladen, Installieren oder Verwenden von DAVy („die App“) stimmst du diesen Nutzungsbedingungen zu. Wenn du diesen Bedingungen nicht zustimmst, verwende die App bitte nicht.</string>
+    <string name="tos_service_title">Beschreibung des Dienstes</string>
+    <string name="tos_service_content">DAVy ist eine CalDAV-, CardDAV- und WebCal-Synchronisationsanwendung, mit der du Kalender, Kontakte und Aufgaben zwischen deinem Android-Gerät und kompatiblen Servern synchronisieren kannst. Die App fungiert als Client für deine Server und bietet keine Hosting-Dienste an.</string>
+    <string name="tos_responsibilities_title">Verantwortlichkeiten des Nutzers</string>
+    <string name="tos_responsibilities_content">Du bist verantwortlich für:\n\n• Die Sicherheit deiner Server-Zugangsdaten\n• Die Sicherstellung, dass du zur Nutzung der konfigurierten Server berechtigt bist\n• Die Sicherung deiner wichtigen Daten\n• Die Nutzung der App in Übereinstimmung mit geltendem Recht</string>
+    <string name="tos_security_title">Kontosicherheit</string>
+    <string name="tos_security_content">Du bist für die Vertraulichkeit deiner Server-Zugangsdaten verantwortlich. DAVy speichert Zugangsdaten sicher auf deinem Gerät mit Androids verschlüsseltem Speicher, aber du solltest zusätzliche Vorsichtsmaßnahmen treffen, wie starke Passwörter und Geräteverschlüsselung.</string>
+    <string name="tos_ip_title">Geistiges Eigentum</string>
+    <string name="tos_ip_content">DAVy ist Open-Source-Software, lizenziert unter der Apache License 2.0. Du darfst die App gemäß dieser Lizenz verwenden, modifizieren und verbreiten. Von der App verwendete Drittanbieter-Bibliotheken unterliegen ihren jeweiligen Lizenzen.</string>
+    <string name="tos_disclaimer_title">Gewährleistungsausschluss</string>
+    <string name="tos_disclaimer_content">DIE APP WIRD „WIE BESEHEN" OHNE JEGLICHE GEWÄHRLEISTUNG BEREITGESTELLT. WIR GARANTIEREN NICHT, DASS DIE APP FEHLERFREI, UNUNTERBROCHEN ODER FREI VON SCHÄDLICHEN KOMPONENTEN IST. DIE NUTZUNG DER APP ERFOLGT AUF EIGENE GEFAHR.</string>
+    <string name="tos_liability_title">Haftungsbeschränkung</string>
+    <string name="tos_liability_content">SOWEIT GESETZLICH ZULÄSSIG, HAFTEN DIE ENTWICKLER NICHT FÜR INDIREKTE, ZUFÄLLIGE, BESONDERE, FOLGE- ODER STRAFSCHÄDEN, EINSCHLIESSLICH DATENVERLUST, GEWINNENTGANG ODER GESCHÄFTSMÖGLICHKEITEN.</string>
+    <string name="tos_modifications_title">Änderungen der Bedingungen</string>
+    <string name="tos_modifications_content">Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit zu ändern. Änderungen werden mit der Veröffentlichung der aktualisierten Bedingungen wirksam. Die weitere Nutzung der App nach Änderungen bedeutet die Annahme der neuen Bedingungen.</string>
+    <string name="tos_termination_title">Beendigung</string>
+    <string name="tos_termination_content">Du kannst die Nutzung der App jederzeit durch Deinstallation beenden. Diese Bedingungen bezüglich Haftungsbeschränkungen und geistigem Eigentum bleiben auch nach Beendigung bestehen.</string>
+    <string name="tos_contact_title">Kontaktinformationen</string>
+    <string name="tos_contact_content">Bei Fragen zu diesen Nutzungsbedingungen kontaktiere uns bitte über die Support-Kanäle der App oder das GitHub-Repository.</string>
+    <string name="tos_last_updated">Zuletzt aktualisiert: 29. Oktober 2025</string>
+    
+    <!-- Onboarding Screen -->
+    <string name="onboarding_welcome_title">Willkommen bei DAVy</string>
+    <string name="onboarding_welcome_description">DAVy ist dein datenschutzfreundlicher Sync-Begleiter für Kalender, Kontakte und Aufgaben. Halte deine Daten auf allen Geräten synchron.</string>
+    <string name="onboarding_add_account_title">Konto hinzufügen</string>
+    <string name="onboarding_add_account_description">Verbinde dich mit Nextcloud, ownCloud, iCloud, Fastmail oder einem beliebigen CalDAV/CardDAV-Server. Deine Zugangsdaten werden sicher auf deinem Gerät gespeichert.</string>
+    <string name="onboarding_sync_title">Synchronisierung konfigurieren</string>
+    <string name="onboarding_sync_description">Wähle, welche Kalender und Adressbücher synchronisiert werden sollen. Richte automatische Sync-Intervalle und den Nur-WLAN-Modus ein, um mobile Daten zu sparen.</string>
+    <string name="onboarding_calendar_title">Kalender anzeigen</string>
+    <string name="onboarding_calendar_description">Deine synchronisierten Termine erscheinen in deiner Android-Kalender-App. Erstelle, bearbeite und lösche Termine – Änderungen werden automatisch mit deinem Server synchronisiert.</string>
+    <string name="onboarding_contacts_title">Kontakte verwalten</string>
+    <string name="onboarding_contacts_description">Synchronisierte Kontakte erscheinen in deiner Android-Kontakte-App. Halte deine Adressbücher auf allen Geräten aktuell.</string>
+    <string name="onboarding_skip">Überspringen</string>
+    <string name="onboarding_back">Zurück</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_get_started">Los geht\'s</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">Feedback senden</string>
+    <string name="send_feedback_subtitle">Probleme melden oder Verbesserungen vorschlagen</string>
+    <string name="feedback_email_subject">DAVy Feedback (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">Quellcode ansehen und Probleme melden</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">Neuigkeiten</string>
+    <string name="whats_new_title">Neu in v%1$s</string>
+    <string name="whats_new_dismiss">Verstanden</string>
+    <string name="whats_new_v1_0_0">• Erste Veröffentlichung\n• CalDAV Kalendersynchronisation\n• CardDAV Kontaktsynchronisation\n• WebCal-Abonnement-Unterstützung\n• Unterstützung mehrerer Konten\n• Hintergrundsynchronisation mit konfigurierbaren Intervallen\n• Nur-WLAN-Synchronisation\n• Material 3 Design\n• Dunkelmodus-Unterstützung</string>
+    <string name="whats_new_v1_0_1">• Datenschutzrichtlinie und Nutzungsbedingungen hinzugefügt\n• Neue Einführung für Erstbenutzer\n• Neuigkeiten-Dialog nach Updates\n• Feedback senden Option in Einstellungen\n• GitHub-Links in Über und FAQ\n• Erweiterte FAQ mit Open Source und Hilfe-Bereichen\n• Anklickbare URLs in FAQ-Antworten\n• Entwickler-Testoptionen für Einführung und Neuigkeiten\n• Vollständige Übersetzungen für alle 15 Sprachen\n• Deutsche Übersetzungen jetzt in informeller „Du"-Form</string>
 </resources>

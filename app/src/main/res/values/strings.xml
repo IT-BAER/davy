@@ -147,6 +147,10 @@
     <string name="dark_mode_subtitle">Use dark theme</string>
     <string name="debug_logging">Debug Logging</string>
     <string name="debug_logging_subtitle">Enable detailed logging for troubleshooting (excludes passwords)</string>
+    <string name="replay_onboarding">Replay Onboarding</string>
+    <string name="replay_onboarding_subtitle">Show the welcome tour again</string>
+    <string name="show_whats_new">Show What\'s New</string>
+    <string name="show_whats_new_subtitle">Preview the update changelog dialog</string>
     <string name="battery_optimization">Battery Optimization</string>
     <string name="battery_optimization_disabled">Disabled</string>
     <string name="battery_optimization_enabled">Enabled (Recommended)</string>
@@ -218,6 +222,10 @@
     <string name="faq_battery_optimization_answer">Android\'s battery optimization can prevent background sync. Disabling it ensures DAVy can sync reliably on schedule.\n\nYou\'ll be prompted to disable it in account settings. DAVy is designed for minimal battery usage.</string>
     <string name="faq_batch_operations">How do batch operations work?</string>
     <string name="faq_batch_operations_answer">Long-press any calendar, address book, or WebCal subscription to enter batch selection mode. Select multiple items, then use the delete button in the menu to remove them all at once. Tap outside or use back gesture to exit batch mode.</string>
+    <string name="faq_open_source">Is DAVy open source?</string>
+    <string name="faq_open_source_answer">Yes! DAVy is free and open-source software licensed under Apache 2.0. You can view the source code, report issues, and contribute on GitHub at github.com/IT-BAER/davy.</string>
+    <string name="faq_get_help">How can I get help or report a bug?</string>
+    <string name="faq_get_help_answer">• Check this FAQ and the Guides section first\n• Report bugs or request features on GitHub: github.com/IT-BAER/davy/issues\n• Send feedback via Settings → Send Feedback\n• Contact us directly at admin@it-baer.net</string>
     
     <!-- Guides Screen -->
     <string name="guides">Guides</string>
@@ -637,4 +645,92 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+    
+    <!-- Legal -->
+    <string name="legal">Legal</string>
+    
+    <!-- Privacy Policy Screen -->
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_subtitle">View our privacy practices</string>
+    <string name="privacy_effective_date">Effective Date: November 01, 2025</string>
+    <string name="privacy_introduction_title">Introduction</string>
+    <string name="privacy_introduction_content">DAVy (\"the App\") is a CalDAV, CardDAV, and WebCal synchronization application for Android. This Privacy Policy explains what information the App collects, how it is used, and your rights regarding your data.\n\nWe are committed to protecting your privacy. DAVy is designed to sync your calendar, contact, and task data with your own servers — we do not collect, store, or transmit any of your personal data to our servers.</string>
+    <string name="privacy_info_collect_title">Information We Collect</string>
+    <string name="privacy_info_collect_content">DAVy collects and stores the following information locally on your device:\n\n• Server credentials (URL, username, password/OAuth tokens)\n• Calendar events, contacts, and tasks from your servers\n• App preferences and settings\n• Sync status and error logs\n\nThis data is stored securely on your device and transmitted only to the servers you configure.</string>
+    <string name="privacy_how_use_title">How We Use Information</string>
+    <string name="privacy_how_use_content">The information collected is used solely for:\n\n• Authenticating with your CalDAV/CardDAV/WebCal servers\n• Synchronizing calendars, contacts, and tasks\n• Storing your preferences\n• Displaying sync status and troubleshooting errors</string>
+    <string name="privacy_data_storage_title">Data Storage and Security</string>
+    <string name="privacy_data_storage_content">• All data is stored locally on your Android device\n• Passwords are encrypted using Android\'s secure storage\n• Data is transmitted over HTTPS when your servers support it\n• No data is sent to DAVy developers or third parties</string>
+    <string name="privacy_data_sharing_title">Data Sharing</string>
+    <string name="privacy_data_sharing_content">DAVy does not share your data with any third parties. Your data is only transmitted to the servers you explicitly configure.</string>
+    <string name="privacy_your_rights_title">Your Rights</string>
+    <string name="privacy_your_rights_content">You have full control over your data:\n\n• Delete accounts and their associated data at any time\n• Export your data via backup features\n• Clear all app data through Android settings\n• Revoke permissions at any time</string>
+    <string name="privacy_permissions_title">Permissions</string>
+    <string name="privacy_permissions_content">DAVy requests the following permissions:\n\n• Calendar: Read/write to sync calendar events\n• Contacts: Read/write to sync contacts\n• Internet: Connect to your CalDAV/CardDAV servers\n• Notifications: Show sync status and errors</string>
+    <string name="privacy_third_party_title">Third-Party Services</string>
+    <string name="privacy_third_party_content">DAVy does not include any third-party analytics, advertising, or tracking services. The App communicates only with servers you configure.</string>
+    <string name="privacy_children_title">Children\'s Privacy</string>
+    <string name="privacy_children_content">DAVy does not knowingly collect information from children under 13. The App is intended for general audiences and does not target children.</string>
+    <string name="privacy_contact_title">Contact Information</string>
+    <string name="privacy_contact_content">For questions or concerns about this Privacy Policy, please contact us through the app\'s support channels or GitHub repository.</string>
+    <string name="privacy_last_updated">Last Updated: October 29, 2025</string>
+    
+    <!-- Terms of Service Screen -->
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="terms_of_service_subtitle">View our terms and conditions</string>
+    <string name="tos_effective_date">Effective Date: November 01, 2025</string>
+    <string name="tos_acceptance_title">Acceptance of Terms</string>
+    <string name="tos_acceptance_content">By downloading, installing, or using DAVy (\"the App\"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the App.</string>
+    <string name="tos_service_title">Description of Service</string>
+    <string name="tos_service_content">DAVy is a CalDAV, CardDAV, and WebCal synchronization application that allows you to sync calendars, contacts, and tasks between your Android device and compatible servers. The App acts as a client to your servers and does not provide hosting services.</string>
+    <string name="tos_responsibilities_title">User Responsibilities</string>
+    <string name="tos_responsibilities_content">You are responsible for:\n\n• Maintaining the security of your server credentials\n• Ensuring you have authorization to access configured servers\n• Backing up your important data\n• Using the App in compliance with applicable laws</string>
+    <string name="tos_security_title">Account Security</string>
+    <string name="tos_security_content">You are responsible for maintaining the confidentiality of your server credentials. DAVy stores credentials securely on your device using Android\'s encrypted storage, but you should take additional precautions such as using strong passwords and enabling device encryption.</string>
+    <string name="tos_ip_title">Intellectual Property</string>
+    <string name="tos_ip_content">DAVy is open source software licensed under the Apache License 2.0. You may use, modify, and distribute the App in accordance with that license. Third-party libraries used by the App are subject to their respective licenses.</string>
+    <string name="tos_disclaimer_title">Disclaimer of Warranties</string>
+    <string name="tos_disclaimer_content">THE APP IS PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND. WE DO NOT GUARANTEE THAT THE APP WILL BE ERROR-FREE, UNINTERRUPTED, OR FREE FROM HARMFUL COMPONENTS. USE THE APP AT YOUR OWN RISK.</string>
+    <string name="tos_liability_title">Limitation of Liability</string>
+    <string name="tos_liability_content">TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE DEVELOPERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF DATA, PROFITS, OR BUSINESS OPPORTUNITIES.</string>
+    <string name="tos_modifications_title">Modifications to Terms</string>
+    <string name="tos_modifications_content">We reserve the right to modify these Terms of Service at any time. Changes will be effective upon posting the updated terms. Continued use of the App after changes constitutes acceptance of the new terms.</string>
+    <string name="tos_termination_title">Termination</string>
+    <string name="tos_termination_content">You may stop using the App at any time by uninstalling it. These terms will survive any termination regarding limitations of liability and intellectual property provisions.</string>
+    <string name="tos_contact_title">Contact Information</string>
+    <string name="tos_contact_content">For questions about these Terms of Service, please contact us through the app\'s support channels or GitHub repository.</string>
+    <string name="tos_last_updated">Last Updated: October 29, 2025</string>
+    
+    <!-- Onboarding Screen -->
+    <string name="onboarding_welcome_title">Welcome to DAVy</string>
+    <string name="onboarding_welcome_description">DAVy is your privacy-focused sync companion for calendars, contacts, and tasks. Keep your data in sync across all your devices.</string>
+    <string name="onboarding_add_account_title">Add Your Account</string>
+    <string name="onboarding_add_account_description">Connect to Nextcloud, ownCloud, iCloud, Fastmail, or any CalDAV/CardDAV server. Your credentials are stored securely on your device.</string>
+    <string name="onboarding_sync_title">Configure Sync</string>
+    <string name="onboarding_sync_description">Choose which calendars and address books to sync. Set up automatic sync intervals and WiFi-only mode to save mobile data.</string>
+    <string name="onboarding_calendar_title">View Calendars</string>
+    <string name="onboarding_calendar_description">Your synced events appear in your Android Calendar app. Create, edit, and delete events — changes sync automatically with your server.</string>
+    <string name="onboarding_contacts_title">Manage Contacts</string>
+    <string name="onboarding_contacts_description">Synced contacts appear in your Android Contacts app. Keep your address books up to date across all your devices.</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">Send Feedback</string>
+    <string name="send_feedback_subtitle">Report issues or suggest improvements</string>
+    <string name="feedback_email_subject">DAVy Feedback (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">View source code and report issues</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">What\'s New</string>
+    <string name="whats_new_title">What\'s New in v%1$s</string>
+    <string name="whats_new_dismiss">Got it</string>
+    <string name="whats_new_v1_0_0">• Initial release\n• CalDAV calendar synchronization\n• CardDAV contact synchronization\n• WebCal subscription support\n• Multiple account support\n• Background sync with configurable intervals\n• WiFi-only sync option\n• Material 3 design\n• Dark mode support</string>
+    <string name="whats_new_v1_0_1">• Added Privacy Policy and Terms of Service\n• New onboarding experience for first-time users\n• What\'s New dialog after updates\n• Send Feedback option in Settings\n• GitHub links in About and FAQ\n• Expanded FAQ with Open Source and Help sections\n• Clickable URLs in FAQ answers\n• Developer testing options for Onboarding and What\'s New\n• Complete translations for all 15 languages\n• German translations now use informal \"Du\" style</string>
 </resources>

@@ -419,7 +419,13 @@ fun NavGraph(
         
         composable("about") {
             AboutScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate("privacy_policy")
+                },
+                onNavigateToTermsOfService = {
+                    navController.navigate("terms_of_service")
+                }
             )
         }
         
@@ -437,7 +443,38 @@ fun NavGraph(
         
         composable("settings") {
             com.davy.ui.screens.SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate("privacy_policy")
+                },
+                onNavigateToTermsOfService = {
+                    navController.navigate("terms_of_service")
+                },
+                onNavigateToOnboarding = {
+                    navController.navigate("onboarding_tour")
+                }
+            )
+        }
+        
+        composable("privacy_policy") {
+            com.davy.ui.screens.PrivacyPolicyScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("terms_of_service") {
+            com.davy.ui.screens.TermsOfServiceScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("onboarding_tour") {
+            com.davy.ui.screens.OnboardingScreen(
+                onComplete = {
+                    navController.navigate("accounts") {
+                        popUpTo("onboarding_tour") { inclusive = true }
+                    }
+                }
             )
         }
     }

@@ -36,8 +36,8 @@ android {
         applicationId = "com.davy"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 3
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -52,7 +52,7 @@ android {
     signingConfigs {
         create("release") {
             if (hasSigningProps) {
-                storeFile = file(storeFilePathProp!!)
+                storeFile = rootProject.file(storeFilePathProp!!)
                 storePassword = storePasswordProp
                 keyAlias = keyAliasProp
                 keyPassword = keyPasswordProp

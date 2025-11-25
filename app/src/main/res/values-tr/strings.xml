@@ -147,6 +147,10 @@
     <string name="dark_mode_subtitle">Karanlık temayı kullan</string>
     <string name="debug_logging">Hata ayıklama günlüğü</string>
     <string name="debug_logging_subtitle">Sorun gidermek için ayrıntılı günlüklemeyi etkinleştir (parolalar hariç)</string>
+    <string name="replay_onboarding">Tanıtımı Tekrarla</string>
+    <string name="replay_onboarding_subtitle">Karşılama turunu tekrar göster</string>
+    <string name="show_whats_new">Yenilikleri Göster</string>
+    <string name="show_whats_new_subtitle">Güncelleme değişiklik günlüğünü önizle</string>
     <string name="battery_optimization">Pil optimizasyonu</string>
     <string name="battery_optimization_disabled">Devre dışı</string>
     <string name="battery_optimization_enabled">Etkin (Önerilen)</string>
@@ -214,6 +218,10 @@
     <string name="faq_battery_optimization_answer">Android\'in pil optimizasyonu arka plan senkronizasyonunu engelleyebilir. Devre dışı bırakmak, DAVy\'nin programlı olarak güvenilir şekilde senkronize olmasını sağlar. Hesap ayarlarında devre dışı bırakmanız istenecektir. DAVy minimal pil kullanımı için tasarlanmıştır.</string>
     <string name="faq_batch_operations">Toplu işlemler nasıl çalışır?</string>
     <string name="faq_batch_operations_answer">Toplu seçim moduna girmek için herhangi bir takvime, adres defterine veya WebCal aboneliğine uzun basın. Birden fazla öğe seçin, ardından hepsini bir kerede kaldırmak için menüdeki sil düğmesini kullanın. Toplu moddan çıkmak için dışarıya dokunun veya geri hareketini kullanın.</string>
+    <string name="faq_open_source">DAVy açık kaynak mı?</string>
+    <string name="faq_open_source_answer">Evet! DAVy, Apache 2.0 lisansı altında ücretsiz ve açık kaynaklı bir yazılımdır. Kaynak kodunu görebilir, sorunları bildirebilir ve github.com/IT-BAER/davy adresindeki GitHub\'da katkıda bulunabilirsiniz.</string>
+    <string name="faq_get_help">Nasıl yardım alabilirim veya hata bildirebilirim?</string>
+    <string name="faq_get_help_answer">• Önce bu SSS\'yi ve Kılavuzlar bölümünü kontrol edin\n• Hataları bildirin veya özellikleri GitHub\'da isteyin: github.com/IT-BAER/davy/issues\n• Ayarlar → Geri Bildirim Gönder üzerinden geri bildirim gönderin\n• Bize doğrudan admin@it-baer.net adresinden ulaşın</string>
     
     <!-- Guides Screen -->
     <string name="guides">Kılavuzlar</string>
@@ -591,4 +599,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">Yasal</string>
+    <string name="privacy_policy">Gizlilik Politikası</string>
+    <string name="privacy_policy_title">Gizlilik Politikası</string>
+    <string name="privacy_policy_effective_date">Yürürlük Tarihi: 1 Kasım 2025</string>
+    <string name="privacy_policy_intro_title">Giriş</string>
+    <string name="privacy_policy_intro">DAVy, CalDAV ve CardDAV senkronizasyonu için gizlilik odaklı, açık kaynaklı bir uygulamadır. Gizliliğinizi ciddiye alıyoruz. Bu belge, uygulamanın verilerinizi nasıl işlediğini açıklar.</string>
+    <string name="privacy_policy_info_title">Topladığımız Bilgiler</string>
+    <string name="privacy_policy_info">DAVy, uygulama geliştiricilerine veya üçüncü taraflara herhangi bir kişisel veri toplamaz veya göndermez. Tüm veriler cihazınızda kalır veya doğrudan seçtiğiniz CalDAV/CardDAV sunucusuyla senkronize edilir.</string>
+    <string name="privacy_policy_storage_title">Veri Depolama</string>
+    <string name="privacy_policy_storage">Hesap kimlik bilgileri Android\'in hesap yöneticisinde güvenli bir şekilde saklanır. Takvim etkinlikleri ve kişiler cihazınızda yerel olarak saklanır ve belirttiğiniz sunucuyla senkronize edilir.</string>
+    <string name="privacy_policy_permissions_title">İzinler</string>
+    <string name="privacy_policy_permissions">Uygulama yalnızca takvim, kişiler ve senkronizasyon için gerekli izinleri ister. Bu izinlerin dışında hiçbir veriye erişmiyoruz.</string>
+    <string name="privacy_policy_third_party_title">Üçüncü Taraf Hizmetleri</string>
+    <string name="privacy_policy_third_party">DAVy, herhangi bir üçüncü taraf izleme, analitik veya reklam içermez. Tek ağ iletişimi CalDAV/CardDAV sunucularınızla yapılır.</string>
+    <string name="privacy_policy_changes_title">Bu Politikadaki Değişiklikler</string>
+    <string name="privacy_policy_changes">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Herhangi bir değişiklik, güncellenmiş bir yürürlük tarihi ile bu sayfada yayınlanacaktır.</string>
+    <string name="privacy_policy_contact_title">Bize Ulaşın</string>
+    <string name="privacy_policy_contact">Bu gizlilik politikası hakkında sorularınız varsa, lütfen GitHub depomuz aracılığıyla bizimle iletişime geçin.</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">Hizmet Şartları</string>
+    <string name="terms_of_service_title">Hizmet Şartları</string>
+    <string name="terms_of_service_effective_date">Yürürlük Tarihi: 1 Kasım 2025</string>
+    <string name="terms_of_service_acceptance_title">Şartların Kabulü</string>
+    <string name="terms_of_service_acceptance">DAVy\'yi kullanarak bu şartlara bağlı olmayı kabul etmiş olursunuz. Bu şartların herhangi bir kısmına katılmıyorsanız, lütfen uygulamayı kullanmayın.</string>
+    <string name="terms_of_service_license_title">Lisans</string>
+    <string name="terms_of_service_license">DAVy, GNU Genel Kamu Lisansı sürüm 3 (GPLv3) altında lisanslanmış açık kaynaklı yazılımdır. Bu lisansın şartlarına uygun olarak yazılımı kullanma, değiştirme ve dağıtma özgürlüğüne sahipsiniz.</string>
+    <string name="terms_of_service_disclaimer_title">Sorumluluk Reddi</string>
+    <string name="terms_of_service_disclaimer">DAVy, hiçbir garanti olmaksızın \"olduğu gibi\" sağlanmaktadır. Geliştiriciler, bu yazılımın kullanımından kaynaklanan herhangi bir zarardan sorumlu tutulamaz.</string>
+    <string name="terms_of_service_user_responsibilities_title">Kullanıcı Sorumlulukları</string>
+    <string name="terms_of_service_user_responsibilities">Hesap kimlik bilgilerinizin güvenliğini korumak, güvenilir CalDAV/CardDAV sunucuları seçmek ve kullanımınızın geçerli yasalara uygun olmasını sağlamak sizin sorumluluğunuzdadır.</string>
+    <string name="terms_of_service_limitations_title">Sınırlamalar</string>
+    <string name="terms_of_service_limitations">Geliştiriciler hizmet sürekliliği veya tüm sunucularla uyumluluk garantisi vermez. İşlevsellik, sunucu uygulamasına bağlı olarak değişebilir.</string>
+    <string name="terms_of_service_changes_title">Şartlardaki Değişiklikler</string>
+    <string name="terms_of_service_changes">Bu şartları zaman zaman güncelleyebiliriz. Değişikliklerden sonra uygulamayı kullanmaya devam etmeniz, yeni şartları kabul ettiğiniz anlamına gelir.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Atla</string>
+    <string name="onboarding_back">Geri</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_get_started">Başla</string>
+    <string name="onboarding_welcome_title">DAVy\'ye Hoş Geldiniz</string>
+    <string name="onboarding_welcome_description">Android için gizlilik odaklı CalDAV ve CardDAV senkronizasyon çözümünüz</string>
+    <string name="onboarding_add_account_title">Hesabınızı Ekleyin</string>
+    <string name="onboarding_add_account_description">Nextcloud, ownCloud, Radicale veya herhangi bir CalDAV/CardDAV sunucusuna bağlanın</string>
+    <string name="onboarding_sync_title">Senkronizasyonu Yapılandırın</string>
+    <string name="onboarding_sync_description">Ne senkronize edeceğinizi seçin ve otomatik arka plan senkronizasyonu tercihlerinizi ayarlayın</string>
+    <string name="onboarding_calendar_title">Takvimlerinizi Görüntüleyin</string>
+    <string name="onboarding_calendar_description">Tüm etkinlikleriniz Android\'in Takvim uygulamasına otomatik olarak senkronize edilir</string>
+    <string name="onboarding_contacts_title">Kişilerinizi Yönetin</string>
+    <string name="onboarding_contacts_description">Kişileriniz Android\'in Kişiler uygulamasına senkronize edilir, her yerde kullanıma hazır</string>
 </resources>

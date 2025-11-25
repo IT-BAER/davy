@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.davy.R
+import com.davy.ui.components.LinkifyText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -238,6 +239,38 @@ fun FaqScreen(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = stringResource(id = R.string.faq_batch_operations_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q14
+            Text(
+                text = stringResource(id = R.string.faq_open_source),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            LinkifyText(
+                text = stringResource(id = R.string.faq_open_source_answer),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Q15
+            Text(
+                text = stringResource(id = R.string.faq_get_help),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            LinkifyText(
+                text = stringResource(id = R.string.faq_get_help_answer),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

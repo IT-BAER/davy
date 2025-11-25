@@ -24,6 +24,8 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davy.BuildConfig
 import com.davy.R
+import com.davy.ui.components.WhatsNewDialog
+import com.davy.ui.components.resetWhatsNewVersion
 import com.davy.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -53,10 +55,14 @@ object IgnoreBatteryOptimizationsContract : ActivityResultContract<String, Unit?
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {},
+    onNavigateToTermsOfService: () -> Unit = {},
+    onNavigateToOnboarding: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
     backupRestoreViewModel: com.davy.ui.viewmodel.BackupRestoreViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    var showWhatsNewDialog by remember { mutableStateOf(false) }
     val autoSyncEnabled by viewModel.autoSyncEnabled.collectAsState()
     val syncOnWifiOnly by viewModel.syncOnWifiOnly.collectAsState()
     val debugLoggingEnabled by viewModel.debugLoggingEnabled.collectAsState()
@@ -197,6 +203,25 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::updateDebugLogging
             )
             
+            ClickableSettingItem(
+                icon = Icons.Default.Refresh,
+                title = stringResource(id = R.string.replay_onboarding),
+                subtitle = stringResource(id = R.string.replay_onboarding_subtitle),
+                onClick = {
+                    resetOnboarding(context)
+                    onNavigateToOnboarding()
+                }
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.NewReleases,
+                title = stringResource(id = R.string.show_whats_new),
+                subtitle = stringResource(id = R.string.show_whats_new_subtitle),
+                onClick = {
+                    showWhatsNewDialog = true
+                }
+            )
+            
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             
             // About
@@ -216,6 +241,55 @@ fun SettingsScreen(
                 onClick = { 
                     android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
                         data = android.net.Uri.parse("https://www.apache.org/licenses/LICENSE-2.0")
+                        try {
+                            context.startActivity(this)
+                        } catch (e: Exception) {
+                            // Handle error
+                        }
+                    }
+                }
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.PrivacyTip,
+                title = stringResource(id = R.string.privacy_policy),
+                subtitle = stringResource(id = R.string.privacy_policy_subtitle),
+                onClick = onNavigateToPrivacyPolicy
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.Gavel,
+                title = stringResource(id = R.string.terms_of_service),
+                subtitle = stringResource(id = R.string.terms_of_service_subtitle),
+                onClick = onNavigateToTermsOfService
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.Feedback,
+                title = stringResource(id = R.string.send_feedback),
+                subtitle = stringResource(id = R.string.send_feedback_subtitle),
+                onClick = {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                        data = android.net.Uri.parse("mailto:admin@it-baer.net")
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, 
+                            context.getString(R.string.feedback_email_subject, BuildConfig.VERSION_NAME))
+                    }
+                    try {
+                        val chooser = android.content.Intent.createChooser(intent, context.getString(R.string.send_feedback))
+                        context.startActivity(chooser)
+                    } catch (e: Exception) {
+                        // Handle error silently
+                    }
+                }
+            )
+            
+            ClickableSettingItem(
+                icon = Icons.Default.Code,
+                title = stringResource(id = R.string.github),
+                subtitle = stringResource(id = R.string.github_subtitle),
+                onClick = {
+                    android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                        data = android.net.Uri.parse(context.getString(R.string.github_url))
                         try {
                             context.startActivity(this)
                         } catch (e: Exception) {
@@ -602,6 +676,13 @@ fun SettingsScreen(
                     }
                 }
             }
+        )
+    }
+    
+    // What's New dialog
+    if (showWhatsNewDialog) {
+        WhatsNewDialog(
+            onDismiss = { showWhatsNewDialog = false }
         )
     }
 }

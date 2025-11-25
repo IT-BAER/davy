@@ -101,6 +101,7 @@ fun DavyApp(startDestination: String? = null) {
     val context = LocalContext.current
     var hasPermissions by remember { mutableStateOf(hasAllPermissions(context)) }
     var showBatteryOptDialog by remember { mutableStateOf(false) }
+    var showWhatsNewDialog by remember { mutableStateOf(false) }
     
     // Observe theme preference reactively
     val prefs = remember { context.getSharedPreferences("app_settings", android.content.Context.MODE_PRIVATE) }
@@ -142,14 +143,39 @@ fun DavyApp(startDestination: String? = null) {
                 )
             }
             
+            // What's New dialog (shown after app update)
+            if (showWhatsNewDialog) {
+                com.davy.ui.components.WhatsNewDialog(
+                    onDismiss = { showWhatsNewDialog = false }
+                )
+            }
+            
             if (hasPermissions) {
                 // Permissions granted - show main app
                 val navController = rememberNavController()
                 
-                // Navigate to deep link destination if provided
-                LaunchedEffect(startDestination) {
+                // Check if onboarding has been completed
+                val onboardingComplete = remember { 
+                    com.davy.ui.screens.isOnboardingComplete(context) 
+                }
+                
+                // Check for What's New dialog (after update)
+                LaunchedEffect(Unit) {
+                    if (onboardingComplete && com.davy.ui.components.shouldShowWhatsNew(context)) {
+                        showWhatsNewDialog = true
+                    }
+                    // Initialize version tracking for future updates
+                    com.davy.ui.components.initializeVersionTracking(context)
+                }
+                
+                // Navigate to deep link destination if provided, or onboarding if not complete
+                LaunchedEffect(startDestination, onboardingComplete) {
                     if (startDestination != null) {
                         navController.navigate(startDestination)
+                    } else if (!onboardingComplete) {
+                        navController.navigate("onboarding_tour") {
+                            popUpTo("accounts") { inclusive = true }
+                        }
                     }
                 }
                 

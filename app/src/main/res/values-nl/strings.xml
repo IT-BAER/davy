@@ -147,6 +147,10 @@
     <string name="dark_mode_subtitle">Donker thema gebruiken</string>
     <string name="debug_logging">Debug-logboek</string>
     <string name="debug_logging_subtitle">Gedetailleerde logging inschakelen voor probleemoplossing (wachtwoorden uitgesloten)</string>
+    <string name="replay_onboarding">Introductie opnieuw afspelen</string>
+    <string name="replay_onboarding_subtitle">De welkomsttour opnieuw tonen</string>
+    <string name="show_whats_new">Nieuw tonen</string>
+    <string name="show_whats_new_subtitle">Voorbeeld van de update changelog</string>
     <string name="battery_optimization">Batterijoptimalisatie</string>
     <string name="battery_optimization_disabled">Uitgeschakeld</string>
     <string name="battery_optimization_enabled">Ingeschakeld (Aanbevolen)</string>
@@ -214,6 +218,10 @@
     <string name="faq_battery_optimization_answer">Batterijoptimalisatie van Android kan achtergrondsynchronisatie verhinderen. Het uitschakelen zorgt ervoor dat DAVy betrouwbaar kan synchroniseren volgens schema. U wordt gevraagd het uit te schakelen in de accountinstellingen. DAVy is ontworpen voor minimaal batterijgebruik.</string>
     <string name="faq_batch_operations">Hoe werken batchbewerkingen?</string>
     <string name="faq_batch_operations_answer">Druk lang op een kalender, adresboek of WebCal-abonnement om de batchselectiemodus te openen. Selecteer meerdere items en gebruik vervolgens de verwijderknop in het menu om ze allemaal tegelijk te verwijderen. Tik buiten of gebruik het terug-gebaar om de batchmodus te verlaten.</string>
+    <string name="faq_open_source">Is DAVy open source?</string>
+    <string name="faq_open_source_answer">Ja! DAVy is gratis en open-source software onder de Apache 2.0-licentie. Je kunt de broncode bekijken, problemen melden en bijdragen op GitHub via github.com/IT-BAER/davy.</string>
+    <string name="faq_get_help">Hoe krijg ik hulp of meld ik een bug?</string>
+    <string name="faq_get_help_answer">• Bekijk eerst deze FAQ en het Handleidingen-gedeelte\n• Meld bugs of vraag functies aan op GitHub: github.com/IT-BAER/davy/issues\n• Stuur feedback via Instellingen → Feedback Verzenden\n• Neem direct contact met ons op via admin@it-baer.net</string>
     
     <!-- Guides Screen -->
     <string name="guides">Handleidingen</string>
@@ -597,4 +605,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">Juridisch</string>
+    <string name="privacy_policy">Privacybeleid</string>
+    <string name="privacy_policy_title">Privacybeleid</string>
+    <string name="privacy_policy_effective_date">Ingangsdatum: 1 november 2025</string>
+    <string name="privacy_policy_intro_title">Inleiding</string>
+    <string name="privacy_policy_intro">DAVy is een privacy-gerichte, open-source applicatie voor CalDAV- en CardDAV-synchronisatie. Wij nemen uw privacy serieus. Dit document legt uit hoe de applicatie met uw gegevens omgaat.</string>
+    <string name="privacy_policy_info_title">Informatie die We Verzamelen</string>
+    <string name="privacy_policy_info">DAVy verzamelt of verzendt geen persoonlijke gegevens naar de app-ontwikkelaars of derden. Alle gegevens blijven op uw apparaat of worden rechtstreeks gesynchroniseerd met de CalDAV/CardDAV-server van uw keuze.</string>
+    <string name="privacy_policy_storage_title">Gegevensopslag</string>
+    <string name="privacy_policy_storage">Accountgegevens worden veilig opgeslagen in Android\'s accountbeheer. Agenda-afspraken en contacten worden lokaal op uw apparaat opgeslagen en gesynchroniseerd met de server die u opgeeft.</string>
+    <string name="privacy_policy_permissions_title">Machtigingen</string>
+    <string name="privacy_policy_permissions">De applicatie vraagt alleen de benodigde machtigingen voor agenda, contacten en synchronisatie. We hebben geen toegang tot gegevens buiten deze machtigingen.</string>
+    <string name="privacy_policy_third_party_title">Diensten van Derden</string>
+    <string name="privacy_policy_third_party">DAVy bevat geen tracking, analytics of advertenties van derden. De enige netwerkcommunicatie is met uw CalDAV/CardDAV-servers.</string>
+    <string name="privacy_policy_changes_title">Wijzigingen in dit Beleid</string>
+    <string name="privacy_policy_changes">We kunnen dit privacybeleid van tijd tot tijd bijwerken. Wijzigingen worden op deze pagina geplaatst met een bijgewerkte ingangsdatum.</string>
+    <string name="privacy_policy_contact_title">Neem Contact op</string>
+    <string name="privacy_policy_contact">Als u vragen heeft over dit privacybeleid, neem dan contact met ons op via onze GitHub-repository.</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">Servicevoorwaarden</string>
+    <string name="terms_of_service_title">Servicevoorwaarden</string>
+    <string name="terms_of_service_effective_date">Ingangsdatum: 1 november 2025</string>
+    <string name="terms_of_service_acceptance_title">Acceptatie van Voorwaarden</string>
+    <string name="terms_of_service_acceptance">Door DAVy te gebruiken, gaat u ermee akkoord gebonden te zijn aan deze voorwaarden. Als u het niet eens bent met enig deel van deze voorwaarden, gebruik de applicatie dan niet.</string>
+    <string name="terms_of_service_license_title">Licentie</string>
+    <string name="terms_of_service_license">DAVy is open-source software gelicentieerd onder de GNU General Public License versie 3 (GPLv3). U bent vrij om de software te gebruiken, te wijzigen en te verspreiden in overeenstemming met de voorwaarden van deze licentie.</string>
+    <string name="terms_of_service_disclaimer_title">Disclaimer</string>
+    <string name="terms_of_service_disclaimer">DAVy wordt \"zoals het is\" geleverd zonder enige garantie. De ontwikkelaars zijn niet aansprakelijk voor eventuele schade als gevolg van het gebruik van deze software.</string>
+    <string name="terms_of_service_user_responsibilities_title">Verantwoordelijkheden van de Gebruiker</string>
+    <string name="terms_of_service_user_responsibilities">U bent verantwoordelijk voor het handhaven van de beveiliging van uw accountgegevens, het kiezen van betrouwbare CalDAV/CardDAV-servers en ervoor zorgen dat uw gebruik voldoet aan de toepasselijke wetgeving.</string>
+    <string name="terms_of_service_limitations_title">Beperkingen</string>
+    <string name="terms_of_service_limitations">De ontwikkelaars garanderen geen servicecontinuïteit of compatibiliteit met alle servers. Functionaliteit kan variëren op basis van serverimplementatie.</string>
+    <string name="terms_of_service_changes_title">Wijzigingen in de Voorwaarden</string>
+    <string name="terms_of_service_changes">We kunnen deze voorwaarden van tijd tot tijd bijwerken. Voortgezet gebruik van de applicatie na wijzigingen vormt acceptatie van de nieuwe voorwaarden.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Overslaan</string>
+    <string name="onboarding_back">Terug</string>
+    <string name="onboarding_next">Volgende</string>
+    <string name="onboarding_get_started">Aan de slag</string>
+    <string name="onboarding_welcome_title">Welkom bij DAVy</string>
+    <string name="onboarding_welcome_description">Uw privacy-gerichte CalDAV- en CardDAV-synchronisatieoplossing voor Android</string>
+    <string name="onboarding_add_account_title">Voeg Uw Account Toe</string>
+    <string name="onboarding_add_account_description">Maak verbinding met Nextcloud, ownCloud, Radicale of elke CalDAV/CardDAV-server</string>
+    <string name="onboarding_sync_title">Configureer Synchronisatie</string>
+    <string name="onboarding_sync_description">Kies wat u wilt synchroniseren en stel uw voorkeuren in voor automatische achtergrondsynchronisatie</string>
+    <string name="onboarding_calendar_title">Bekijk Uw Agenda\'s</string>
+    <string name="onboarding_calendar_description">Al uw afspraken worden automatisch gesynchroniseerd met de Android Agenda-app</string>
+    <string name="onboarding_contacts_title">Beheer Uw Contacten</string>
+    <string name="onboarding_contacts_description">Uw contacten worden gesynchroniseerd met de Android Contacten-app, overal klaar voor gebruik</string>
 </resources>

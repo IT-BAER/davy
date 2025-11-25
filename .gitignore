@@ -31,6 +31,7 @@ out/
 # Keystore files
 *.jks
 *.keystore
+keystore.properties
 
 # External native build folder
 .cxx/
@@ -116,3 +117,5 @@ gw.sh
 ASSETS
 benchmark
 .editorconfig
+
+*.pdf

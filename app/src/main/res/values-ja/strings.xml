@@ -147,6 +147,10 @@
     <string name="dark_mode_subtitle">ダークテーマを使用</string>
     <string name="debug_logging">デバッグログ</string>
     <string name="debug_logging_subtitle">トラブルシューティング用の詳細ログを有効にします（パスワードは除外）</string>
+    <string name="replay_onboarding">オンボーディングを再生</string>
+    <string name="replay_onboarding_subtitle">ウェルカムツアーをもう一度表示</string>
+    <string name="show_whats_new">新機能を表示</string>
+    <string name="show_whats_new_subtitle">更新履歴ダイアログをプレビュー</string>
     <string name="battery_optimization">バッテリー最適化</string>
     <string name="battery_optimization_disabled">無効</string>
     <string name="battery_optimization_enabled">有効（推奨）</string>
@@ -214,6 +218,10 @@
     <string name="faq_battery_optimization_answer">Androidのバッテリー最適化により、バックグラウンド同期が妨げられる可能性があります。無効にすることで、DAVyがスケジュールに従って確実に同期できるようになります。アカウント設定で無効にするよう求められます。DAVyは最小限のバッテリー使用のために設計されています。</string>
     <string name="faq_batch_operations">バッチ操作はどのように機能しますか？</string>
     <string name="faq_batch_operations_answer">任意のカレンダー、アドレス帳、またはWebCal購読を長押しして、バッチ選択モードに入ります。複数のアイテムを選択し、メニューの削除ボタンを使用して一度に削除します。外側をタップするか、戻るジェスチャーを使用してバッチモードを終了します。</string>
+    <string name="faq_open_source">DAVyはオープンソースですか？</string>
+    <string name="faq_open_source_answer">はい！DAVyはApache 2.0ライセンスの無料でオープンソースのソフトウェアです。github.com/IT-BAER/davyでソースコードを見たり、問題を報告したり、貢献したりできます。</string>
+    <string name="faq_get_help">ヘルプを得たり、バグを報告するにはどうすればよいですか？</string>
+    <string name="faq_get_help_answer">• まずこのFAQとガイドセクションをご確認ください\n• バグの報告や機能リクエストはGitHubで：github.com/IT-BAER/davy/issues\n• 設定→フィードバックを送信からフィードバックを送信\n• admin@it-baer.netで直接お問い合わせください</string>
     
     <!-- Guides Screen -->
     <string name="guides">ガイド</string>
@@ -585,4 +593,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">法的情報</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="privacy_policy_title">プライバシーポリシー</string>
+    <string name="privacy_policy_effective_date">発効日：2025年11月1日</string>
+    <string name="privacy_policy_intro_title">はじめに</string>
+    <string name="privacy_policy_intro">DAVyは、CalDAVおよびCardDAV同期のためのプライバシー重視のオープンソースアプリケーションです。私たちはあなたのプライバシーを真剣に考えています。このドキュメントでは、アプリがあなたのデータをどのように処理するかを説明します。</string>
+    <string name="privacy_policy_info_title">収集する情報</string>
+    <string name="privacy_policy_info">DAVyは、個人データを収集したり、アプリ開発者やサードパーティに送信したりしません。すべてのデータはあなたのデバイスに残るか、選択したCalDAV/CardDAVサーバーと直接同期されます。</string>
+    <string name="privacy_policy_storage_title">データの保存</string>
+    <string name="privacy_policy_storage">アカウント資格情報はAndroidのアカウントマネージャーに安全に保存されます。カレンダーイベントと連絡先はデバイスにローカルに保存され、指定したサーバーと同期されます。</string>
+    <string name="privacy_policy_permissions_title">権限</string>
+    <string name="privacy_policy_permissions">アプリは、カレンダー、連絡先、同期に必要な権限のみを要求します。これらの権限の範囲外のデータにはアクセスしません。</string>
+    <string name="privacy_policy_third_party_title">サードパーティサービス</string>
+    <string name="privacy_policy_third_party">DAVyには、サードパーティのトラッキング、分析、広告は含まれていません。唯一のネットワーク通信は、あなたのCalDAV/CardDAVサーバーとのものです。</string>
+    <string name="privacy_policy_changes_title">このポリシーの変更</string>
+    <string name="privacy_policy_changes">このプライバシーポリシーは随時更新される場合があります。変更は、更新された発効日とともにこのページに掲載されます。</string>
+    <string name="privacy_policy_contact_title">お問い合わせ</string>
+    <string name="privacy_policy_contact">このプライバシーポリシーについてご質問がある場合は、GitHubリポジトリからお問い合わせください。</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">利用規約</string>
+    <string name="terms_of_service_title">利用規約</string>
+    <string name="terms_of_service_effective_date">発効日：2025年11月1日</string>
+    <string name="terms_of_service_acceptance_title">規約への同意</string>
+    <string name="terms_of_service_acceptance">DAVyを使用することにより、これらの規約に拘束されることに同意したことになります。これらの規約のいずれかに同意しない場合は、アプリを使用しないでください。</string>
+    <string name="terms_of_service_license_title">ライセンス</string>
+    <string name="terms_of_service_license">DAVyは、GNU General Public License バージョン3（GPLv3）の下でライセンスされたオープンソースソフトウェアです。このライセンスの条件に従って、ソフトウェアを自由に使用、変更、配布できます。</string>
+    <string name="terms_of_service_disclaimer_title">免責事項</string>
+    <string name="terms_of_service_disclaimer">DAVyは「現状のまま」提供され、いかなる種類の保証もありません。開発者は、このソフトウェアの使用から生じるいかなる損害についても責任を負いません。</string>
+    <string name="terms_of_service_user_responsibilities_title">ユーザーの責任</string>
+    <string name="terms_of_service_user_responsibilities">アカウント資格情報のセキュリティを維持し、信頼できるCalDAV/CardDAVサーバーを選択し、使用が適用法に準拠していることを確認する責任があります。</string>
+    <string name="terms_of_service_limitations_title">制限事項</string>
+    <string name="terms_of_service_limitations">開発者は、サービスの継続性やすべてのサーバーとの互換性を保証しません。機能はサーバーの実装によって異なる場合があります。</string>
+    <string name="terms_of_service_changes_title">規約の変更</string>
+    <string name="terms_of_service_changes">これらの規約は随時更新される場合があります。変更後のアプリの継続使用は、新しい規約への同意を構成します。</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">スキップ</string>
+    <string name="onboarding_back">戻る</string>
+    <string name="onboarding_next">次へ</string>
+    <string name="onboarding_get_started">始める</string>
+    <string name="onboarding_welcome_title">DAVyへようこそ</string>
+    <string name="onboarding_welcome_description">Androidのためのプライバシー重視のCalDAV・CardDAV同期ソリューション</string>
+    <string name="onboarding_add_account_title">アカウントを追加</string>
+    <string name="onboarding_add_account_description">Nextcloud、ownCloud、Radicale、またはその他のCalDAV/CardDAVサーバーに接続</string>
+    <string name="onboarding_sync_title">同期を設定</string>
+    <string name="onboarding_sync_description">同期する内容を選択し、自動バックグラウンド同期の設定を行います</string>
+    <string name="onboarding_calendar_title">カレンダーを表示</string>
+    <string name="onboarding_calendar_description">すべてのイベントが自動的にAndroidのカレンダーアプリに同期されます</string>
+    <string name="onboarding_contacts_title">連絡先を管理</string>
+    <string name="onboarding_contacts_description">連絡先がAndroidの連絡先アプリに同期され、どこでも使用できます</string>
 </resources>

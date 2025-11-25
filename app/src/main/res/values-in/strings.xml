@@ -146,6 +146,10 @@
     <string name="dark_mode_subtitle">Gunakan tema gelap</string>
     <string name="debug_logging">Pencatatan debug</string>
     <string name="debug_logging_subtitle">Aktifkan pencatatan terperinci untuk pemecahan masalah (tanpa kata sandi)</string>
+    <string name="replay_onboarding">Putar Ulang Pengenalan</string>
+    <string name="replay_onboarding_subtitle">Tampilkan tur selamat datang lagi</string>
+    <string name="show_whats_new">Tampilkan Yang Baru</string>
+    <string name="show_whats_new_subtitle">Pratinjau dialog catatan pembaruan</string>
     <string name="battery_optimization">Optimisasi baterai</string>
     <string name="battery_optimization_disabled">Dinonaktifkan</string>
     <string name="battery_optimization_enabled">Diaktifkan (Disarankan)</string>
@@ -213,6 +217,10 @@
     <string name="faq_battery_optimization_answer">Optimasi baterai Android dapat mencegah sinkronisasi latar belakang. Menonaktifkannya memastikan DAVy dapat menyinkronkan secara andal sesuai jadwal. Anda akan diminta untuk menonaktifkannya di pengaturan akun. DAVy dirancang untuk penggunaan baterai minimal.</string>
     <string name="faq_batch_operations">Bagaimana operasi batch bekerja?</string>
     <string name="faq_batch_operations_answer">Tekan lama kalender, buku alamat, atau langganan WebCal apa pun untuk memasuki mode pemilihan batch. Pilih beberapa item, lalu gunakan tombol hapus di menu untuk menghapus semuanya sekaligus. Ketuk di luar atau gunakan gestur kembali untuk keluar dari mode batch.</string>
+    <string name="faq_open_source">Apakah DAVy open source?</string>
+    <string name="faq_open_source_answer">Ya! DAVy adalah perangkat lunak bebas dan open-source yang dilisensikan di bawah Apache 2.0. Anda dapat melihat kode sumber, melaporkan masalah, dan berkontribusi di GitHub di github.com/IT-BAER/davy.</string>
+    <string name="faq_get_help">Bagaimana cara mendapatkan bantuan atau melaporkan bug?</string>
+    <string name="faq_get_help_answer">• Periksa FAQ ini dan bagian Panduan terlebih dahulu\n• Laporkan bug atau minta fitur di GitHub: github.com/IT-BAER/davy/issues\n• Kirim umpan balik melalui Pengaturan → Kirim Umpan Balik\n• Hubungi kami langsung di admin@it-baer.net</string>
     
     <!-- Guides Screen -->
     <string name="guides">Panduan</string>
@@ -584,4 +592,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">Hukum</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="privacy_policy_title">Kebijakan Privasi</string>
+    <string name="privacy_policy_effective_date">Tanggal Berlaku: 1 November 2025</string>
+    <string name="privacy_policy_intro_title">Pendahuluan</string>
+    <string name="privacy_policy_intro">DAVy adalah aplikasi open-source yang berfokus pada privasi untuk sinkronisasi CalDAV dan CardDAV. Kami menganggap privasi Anda dengan serius. Dokumen ini menjelaskan bagaimana aplikasi menangani data Anda.</string>
+    <string name="privacy_policy_info_title">Informasi yang Kami Kumpulkan</string>
+    <string name="privacy_policy_info">DAVy tidak mengumpulkan atau mengirim data pribadi apa pun ke pengembang aplikasi atau pihak ketiga. Semua data tetap di perangkat Anda atau disinkronkan langsung dengan server CalDAV/CardDAV pilihan Anda.</string>
+    <string name="privacy_policy_storage_title">Penyimpanan Data</string>
+    <string name="privacy_policy_storage">Kredensial akun disimpan dengan aman di pengelola akun Android. Acara kalender dan kontak disimpan secara lokal di perangkat Anda dan disinkronkan dengan server yang Anda tentukan.</string>
+    <string name="privacy_policy_permissions_title">Izin</string>
+    <string name="privacy_policy_permissions">Aplikasi hanya meminta izin yang diperlukan untuk kalender, kontak, dan sinkronisasi. Kami tidak mengakses data apa pun di luar izin ini.</string>
+    <string name="privacy_policy_third_party_title">Layanan Pihak Ketiga</string>
+    <string name="privacy_policy_third_party">DAVy tidak menyertakan pelacakan, analitik, atau iklan pihak ketiga apa pun. Satu-satunya komunikasi jaringan adalah dengan server CalDAV/CardDAV Anda.</string>
+    <string name="privacy_policy_changes_title">Perubahan pada Kebijakan Ini</string>
+    <string name="privacy_policy_changes">Kami dapat memperbarui kebijakan privasi ini dari waktu ke waktu. Setiap perubahan akan diposting di halaman ini dengan tanggal berlaku yang diperbarui.</string>
+    <string name="privacy_policy_contact_title">Hubungi Kami</string>
+    <string name="privacy_policy_contact">Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui repositori GitHub kami.</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">Ketentuan Layanan</string>
+    <string name="terms_of_service_title">Ketentuan Layanan</string>
+    <string name="terms_of_service_effective_date">Tanggal Berlaku: 1 November 2025</string>
+    <string name="terms_of_service_acceptance_title">Penerimaan Ketentuan</string>
+    <string name="terms_of_service_acceptance">Dengan menggunakan DAVy, Anda setuju untuk terikat oleh ketentuan ini. Jika Anda tidak menyetujui bagian mana pun dari ketentuan ini, mohon jangan gunakan aplikasi ini.</string>
+    <string name="terms_of_service_license_title">Lisensi</string>
+    <string name="terms_of_service_license">DAVy adalah perangkat lunak open-source yang dilisensikan di bawah GNU General Public License versi 3 (GPLv3). Anda bebas menggunakan, memodifikasi, dan mendistribusikan perangkat lunak sesuai dengan ketentuan lisensi ini.</string>
+    <string name="terms_of_service_disclaimer_title">Penafian</string>
+    <string name="terms_of_service_disclaimer">DAVy disediakan \"apa adanya\" tanpa jaminan apa pun. Pengembang tidak akan bertanggung jawab atas kerusakan apa pun yang timbul dari penggunaan perangkat lunak ini.</string>
+    <string name="terms_of_service_user_responsibilities_title">Tanggung Jawab Pengguna</string>
+    <string name="terms_of_service_user_responsibilities">Anda bertanggung jawab untuk menjaga keamanan kredensial akun Anda, memilih server CalDAV/CardDAV yang tepercaya, dan memastikan penggunaan Anda mematuhi hukum yang berlaku.</string>
+    <string name="terms_of_service_limitations_title">Batasan</string>
+    <string name="terms_of_service_limitations">Pengembang tidak menjamin kelangsungan layanan atau kompatibilitas dengan semua server. Fungsionalitas dapat bervariasi berdasarkan implementasi server.</string>
+    <string name="terms_of_service_changes_title">Perubahan pada Ketentuan</string>
+    <string name="terms_of_service_changes">Kami dapat memperbarui ketentuan ini dari waktu ke waktu. Penggunaan aplikasi yang berkelanjutan setelah perubahan merupakan penerimaan terhadap ketentuan baru.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Lewati</string>
+    <string name="onboarding_back">Kembali</string>
+    <string name="onboarding_next">Berikutnya</string>
+    <string name="onboarding_get_started">Mulai</string>
+    <string name="onboarding_welcome_title">Selamat Datang di DAVy</string>
+    <string name="onboarding_welcome_description">Solusi sinkronisasi CalDAV dan CardDAV yang berfokus pada privasi untuk Android</string>
+    <string name="onboarding_add_account_title">Tambahkan Akun Anda</string>
+    <string name="onboarding_add_account_description">Terhubung ke Nextcloud, ownCloud, Radicale, atau server CalDAV/CardDAV mana pun</string>
+    <string name="onboarding_sync_title">Konfigurasi Sinkronisasi</string>
+    <string name="onboarding_sync_description">Pilih apa yang akan disinkronkan dan atur preferensi Anda untuk sinkronisasi latar belakang otomatis</string>
+    <string name="onboarding_calendar_title">Lihat Kalender Anda</string>
+    <string name="onboarding_calendar_description">Semua acara Anda disinkronkan ke aplikasi Kalender Android secara otomatis</string>
+    <string name="onboarding_contacts_title">Kelola Kontak Anda</string>
+    <string name="onboarding_contacts_description">Kontak Anda disinkronkan ke aplikasi Kontak Android, siap digunakan di mana saja</string>
 </resources>

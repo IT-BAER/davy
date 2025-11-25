@@ -145,6 +145,10 @@
     <string name="dark_mode_subtitle">Использовать темную тему</string>
     <string name="debug_logging">Журнал отладки</string>
     <string name="debug_logging_subtitle">Включить подробное логирование для диагностики (без паролей)</string>
+    <string name="replay_onboarding">Повторить знакомство</string>
+    <string name="replay_onboarding_subtitle">Показать приветственный тур снова</string>
+    <string name="show_whats_new">Показать что нового</string>
+    <string name="show_whats_new_subtitle">Предпросмотр списка изменений</string>
     <string name="battery_optimization">Оптимизация батареи</string>
     <string name="battery_optimization_disabled">Отключено</string>
     <string name="battery_optimization_enabled">Включено (Рекомендуется)</string>
@@ -212,6 +216,10 @@
     <string name="faq_battery_optimization_answer">Оптимизация батареи Android может препятствовать фоновой синхронизации. Отключение гарантирует, что DAVy сможет надежно синхронизироваться по расписанию. Вам будет предложено отключить ее в настройках учетной записи. DAVy разработан для минимального использования батареи.</string>
     <string name="faq_batch_operations">Как работают пакетные операции?</string>
     <string name="faq_batch_operations_answer">Долгое нажатие на любой календарь, адресную книгу или подписку WebCal для входа в режим пакетного выбора. Выберите несколько элементов, затем используйте кнопку удаления в меню, чтобы удалить их все сразу. Коснитесь снаружи или используйте жест назад, чтобы выйти из пакетного режима.</string>
+    <string name="faq_open_source">Является ли DAVy открытым исходным кодом?</string>
+    <string name="faq_open_source_answer">Да! DAVy - это бесплатное программное обеспечение с открытым исходным кодом под лицензией Apache 2.0. Вы можете посмотреть исходный код, сообщить о проблемах и внести свой вклад на GitHub по адресу github.com/IT-BAER/davy.</string>
+    <string name="faq_get_help">Как получить помощь или сообщить об ошибке?</string>
+    <string name="faq_get_help_answer">• Сначала проверьте этот FAQ и раздел Руководства\n• Сообщайте об ошибках или запрашивайте функции на GitHub: github.com/IT-BAER/davy/issues\n• Отправляйте отзывы через Настройки → Отправить отзыв\n• Свяжитесь с нами напрямую по адресу admin@it-baer.net</string>
     
     <!-- Guides Screen -->
     <string name="guides">Руководства</string>
@@ -613,4 +621,57 @@
     <string name="every_duration">Every %1$s</string>
     <string name="every_hour">Every hour</string>
     <string name="once_a_day">Once a day</string>
+
+    <!-- Legal -->
+    <string name="legal">Правовая информация</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="privacy_policy_title">Политика конфиденциальности</string>
+    <string name="privacy_policy_effective_date">Дата вступления в силу: 1 ноября 2025 г.</string>
+    <string name="privacy_policy_intro_title">Введение</string>
+    <string name="privacy_policy_intro">DAVy — это ориентированное на конфиденциальность приложение с открытым исходным кодом для синхронизации CalDAV и CardDAV. Мы серьёзно относимся к вашей конфиденциальности. Этот документ объясняет, как приложение обрабатывает ваши данные.</string>
+    <string name="privacy_policy_info_title">Информация, которую мы собираем</string>
+    <string name="privacy_policy_info">DAVy не собирает и не отправляет никаких личных данных разработчикам приложения или третьим лицам. Все данные остаются на вашем устройстве или синхронизируются напрямую с выбранным вами сервером CalDAV/CardDAV.</string>
+    <string name="privacy_policy_storage_title">Хранение данных</string>
+    <string name="privacy_policy_storage">Учётные данные аккаунта надёжно хранятся в менеджере аккаунтов Android. События календаря и контакты хранятся локально на вашем устройстве и синхронизируются с указанным вами сервером.</string>
+    <string name="privacy_policy_permissions_title">Разрешения</string>
+    <string name="privacy_policy_permissions">Приложение запрашивает только необходимые разрешения для календаря, контактов и синхронизации. Мы не получаем доступ к каким-либо данным за пределами этих разрешений.</string>
+    <string name="privacy_policy_third_party_title">Сторонние сервисы</string>
+    <string name="privacy_policy_third_party">DAVy не включает стороннее отслеживание, аналитику или рекламу. Единственная сетевая связь осуществляется с вашими серверами CalDAV/CardDAV.</string>
+    <string name="privacy_policy_changes_title">Изменения в этой политике</string>
+    <string name="privacy_policy_changes">Мы можем время от времени обновлять эту политику конфиденциальности. Любые изменения будут опубликованы на этой странице с обновлённой датой вступления в силу.</string>
+    <string name="privacy_policy_contact_title">Свяжитесь с нами</string>
+    <string name="privacy_policy_contact">Если у вас есть вопросы об этой политике конфиденциальности, свяжитесь с нами через наш репозиторий GitHub.</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_of_service">Условия использования</string>
+    <string name="terms_of_service_title">Условия использования</string>
+    <string name="terms_of_service_effective_date">Дата вступления в силу: 1 ноября 2025 г.</string>
+    <string name="terms_of_service_acceptance_title">Принятие условий</string>
+    <string name="terms_of_service_acceptance">Используя DAVy, вы соглашаетесь соблюдать эти условия. Если вы не согласны с какой-либо частью этих условий, пожалуйста, не используйте приложение.</string>
+    <string name="terms_of_service_license_title">Лицензия</string>
+    <string name="terms_of_service_license">DAVy — это программное обеспечение с открытым исходным кодом, лицензированное по GNU General Public License версии 3 (GPLv3). Вы можете свободно использовать, изменять и распространять программное обеспечение в соответствии с условиями этой лицензии.</string>
+    <string name="terms_of_service_disclaimer_title">Отказ от ответственности</string>
+    <string name="terms_of_service_disclaimer">DAVy предоставляется «как есть» без каких-либо гарантий. Разработчики не несут ответственности за любой ущерб, возникший в результате использования этого программного обеспечения.</string>
+    <string name="terms_of_service_user_responsibilities_title">Обязанности пользователя</string>
+    <string name="terms_of_service_user_responsibilities">Вы несёте ответственность за поддержание безопасности учётных данных вашего аккаунта, выбор надёжных серверов CalDAV/CardDAV и обеспечение соответствия вашего использования применимому законодательству.</string>
+    <string name="terms_of_service_limitations_title">Ограничения</string>
+    <string name="terms_of_service_limitations">Разработчики не гарантируют непрерывность сервиса или совместимость со всеми серверами. Функциональность может варьироваться в зависимости от реализации сервера.</string>
+    <string name="terms_of_service_changes_title">Изменения условий</string>
+    <string name="terms_of_service_changes">Мы можем время от времени обновлять эти условия. Продолжение использования приложения после изменений означает принятие новых условий.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Пропустить</string>
+    <string name="onboarding_back">Назад</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_get_started">Начать</string>
+    <string name="onboarding_welcome_title">Добро пожаловать в DAVy</string>
+    <string name="onboarding_welcome_description">Ваше решение для синхронизации CalDAV и CardDAV с акцентом на конфиденциальность для Android</string>
+    <string name="onboarding_add_account_title">Добавьте свой аккаунт</string>
+    <string name="onboarding_add_account_description">Подключитесь к Nextcloud, ownCloud, Radicale или любому серверу CalDAV/CardDAV</string>
+    <string name="onboarding_sync_title">Настройте синхронизацию</string>
+    <string name="onboarding_sync_description">Выберите, что синхронизировать, и настройте параметры автоматической фоновой синхронизации</string>
+    <string name="onboarding_calendar_title">Просматривайте свои календари</string>
+    <string name="onboarding_calendar_description">Все ваши события автоматически синхронизируются с приложением Календарь Android</string>
+    <string name="onboarding_contacts_title">Управляйте контактами</string>
+    <string name="onboarding_contacts_description">Ваши контакты синхронизируются с приложением Контакты Android, готовые к использованию везде</string>
 </resources>
