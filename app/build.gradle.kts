@@ -97,6 +97,9 @@ android {
         // Workaround Windows file-lock flakiness: don't run lintVital in assembleRelease
         // Lint still enforced via explicit :app:lintRelease in CI
         checkReleaseBuilds = false
+        // Disable MissingTranslation for Privacy Policy/ToS legal texts (acceptable in English)
+        // Disable ExtraTranslation for legacy privacy_policy_* strings in translations
+        disable += setOf("MissingTranslation", "ExtraTranslation")
     }
 
     compileOptions {

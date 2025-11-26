@@ -626,6 +626,8 @@
     <string name="legal">Правовая информация</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="privacy_policy_title">Политика конфиденциальности</string>
+    <string name="privacy_policy_subtitle">Просмотреть нашу политику конфиденциальности</string>
+    <string name="privacy_effective_date">Дата вступления в силу: 01 ноября 2025 г.</string>
     <string name="privacy_policy_effective_date">Дата вступления в силу: 1 ноября 2025 г.</string>
     <string name="privacy_policy_intro_title">Введение</string>
     <string name="privacy_policy_intro">DAVy — это ориентированное на конфиденциальность приложение с открытым исходным кодом для синхронизации CalDAV и CardDAV. Мы серьёзно относимся к вашей конфиденциальности. Этот документ объясняет, как приложение обрабатывает ваши данные.</string>

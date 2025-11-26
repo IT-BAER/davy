@@ -602,6 +602,8 @@
     <string name="legal">Legal</string>
     <string name="privacy_policy">Política de Privacidad</string>
     <string name="privacy_policy_title">Política de Privacidad</string>
+    <string name="privacy_policy_subtitle">Ver nuestras prácticas de privacidad</string>
+    <string name="privacy_effective_date">Fecha de Vigencia: 01 de noviembre de 2025</string>
     <string name="privacy_policy_effective_date">Fecha de vigencia: 1 de noviembre de 2025</string>
     <string name="privacy_policy_intro_title">Introducción</string>
     <string name="privacy_policy_intro">DAVy es una aplicación de código abierto centrada en la privacidad para la sincronización de CalDAV y CardDAV. Nos tomamos tu privacidad muy en serio. Este documento explica cómo la aplicación maneja tus datos.</string>

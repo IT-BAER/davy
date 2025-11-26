@@ -598,6 +598,8 @@
     <string name="legal">法的情報</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="privacy_policy_title">プライバシーポリシー</string>
+    <string name="privacy_policy_subtitle">プライバシーに関する取り組みを見る</string>
+    <string name="privacy_effective_date">発効日：2025年11月01日</string>
     <string name="privacy_policy_effective_date">発効日：2025年11月1日</string>
     <string name="privacy_policy_intro_title">はじめに</string>
     <string name="privacy_policy_intro">DAVyは、CalDAVおよびCardDAV同期のためのプライバシー重視のオープンソースアプリケーションです。私たちはあなたのプライバシーを真剣に考えています。このドキュメントでは、アプリがあなたのデータをどのように処理するかを説明します。</string>

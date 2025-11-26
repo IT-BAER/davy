@@ -603,6 +603,8 @@
     <string name="legal">कानूनी</string>
     <string name="privacy_policy">गोपनीयता नीति</string>
     <string name="privacy_policy_title">गोपनीयता नीति</string>
+    <string name="privacy_policy_subtitle">हमारी गोपनीयता प्रथाएं देखें</string>
+    <string name="privacy_effective_date">प्रभावी तिथि: 01 नवंबर, 2025</string>
     <string name="privacy_policy_effective_date">प्रभावी तिथि: 1 नवंबर 2025</string>
     <string name="privacy_policy_intro_title">परिचय</string>
     <string name="privacy_policy_intro">DAVy CalDAV और CardDAV सिंक के लिए एक गोपनीयता-केंद्रित, ओपन-सोर्स एप्लिकेशन है। हम आपकी गोपनीयता को गंभीरता से लेते हैं। यह दस्तावेज़ बताता है कि एप्लिकेशन आपके डेटा को कैसे संभालता है।</string>

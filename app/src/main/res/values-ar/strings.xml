@@ -652,6 +652,8 @@
     <string name="legal">قانوني</string>
     <string name="privacy_policy">سياسة الخصوصية</string>
     <string name="privacy_policy_title">سياسة الخصوصية</string>
+    <string name="privacy_policy_subtitle">عرض ممارسات الخصوصية لدينا</string>
+    <string name="privacy_effective_date">تاريخ السريان: ٠١ نوفمبر ٢٠٢٥</string>
     <string name="privacy_policy_effective_date">تاريخ السريان: ١ نوفمبر ٢٠٢٥</string>
     <string name="privacy_policy_intro_title">مقدمة</string>
     <string name="privacy_policy_intro">DAVy هو تطبيق مفتوح المصدر يركز على الخصوصية لمزامنة CalDAV وCardDAV. نحن نأخذ خصوصيتك على محمل الجد. يوضح هذا المستند كيفية تعامل التطبيق مع بياناتك.</string>
