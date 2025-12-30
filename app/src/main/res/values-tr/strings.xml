@@ -603,41 +603,11 @@
     <!-- Legal -->
     <string name="legal">Yasal</string>
     <string name="privacy_policy">Gizlilik Politikası</string>
-    <string name="privacy_policy_title">Gizlilik Politikası</string>
     <string name="privacy_policy_subtitle">Gizlilik uygulamalarımızı görüntüleyin</string>
     <string name="privacy_effective_date">Yürürlük Tarihi: 01 Kasım 2025</string>
-    <string name="privacy_policy_effective_date">Yürürlük Tarihi: 1 Kasım 2025</string>
-    <string name="privacy_policy_intro_title">Giriş</string>
-    <string name="privacy_policy_intro">DAVy, CalDAV ve CardDAV senkronizasyonu için gizlilik odaklı, açık kaynaklı bir uygulamadır. Gizliliğinizi ciddiye alıyoruz. Bu belge, uygulamanın verilerinizi nasıl işlediğini açıklar.</string>
-    <string name="privacy_policy_info_title">Topladığımız Bilgiler</string>
-    <string name="privacy_policy_info">DAVy, uygulama geliştiricilerine veya üçüncü taraflara herhangi bir kişisel veri toplamaz veya göndermez. Tüm veriler cihazınızda kalır veya doğrudan seçtiğiniz CalDAV/CardDAV sunucusuyla senkronize edilir.</string>
-    <string name="privacy_policy_storage_title">Veri Depolama</string>
-    <string name="privacy_policy_storage">Hesap kimlik bilgileri Android\'in hesap yöneticisinde güvenli bir şekilde saklanır. Takvim etkinlikleri ve kişiler cihazınızda yerel olarak saklanır ve belirttiğiniz sunucuyla senkronize edilir.</string>
-    <string name="privacy_policy_permissions_title">İzinler</string>
-    <string name="privacy_policy_permissions">Uygulama yalnızca takvim, kişiler ve senkronizasyon için gerekli izinleri ister. Bu izinlerin dışında hiçbir veriye erişmiyoruz.</string>
-    <string name="privacy_policy_third_party_title">Üçüncü Taraf Hizmetleri</string>
-    <string name="privacy_policy_third_party">DAVy, herhangi bir üçüncü taraf izleme, analitik veya reklam içermez. Tek ağ iletişimi CalDAV/CardDAV sunucularınızla yapılır.</string>
-    <string name="privacy_policy_changes_title">Bu Politikadaki Değişiklikler</string>
-    <string name="privacy_policy_changes">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Herhangi bir değişiklik, güncellenmiş bir yürürlük tarihi ile bu sayfada yayınlanacaktır.</string>
-    <string name="privacy_policy_contact_title">Bize Ulaşın</string>
-    <string name="privacy_policy_contact">Bu gizlilik politikası hakkında sorularınız varsa, lütfen GitHub depomuz aracılığıyla bizimle iletişime geçin.</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">Hizmet Şartları</string>
-    <string name="terms_of_service_title">Hizmet Şartları</string>
-    <string name="terms_of_service_effective_date">Yürürlük Tarihi: 1 Kasım 2025</string>
-    <string name="terms_of_service_acceptance_title">Şartların Kabulü</string>
-    <string name="terms_of_service_acceptance">DAVy\'yi kullanarak bu şartlara bağlı olmayı kabul etmiş olursunuz. Bu şartların herhangi bir kısmına katılmıyorsanız, lütfen uygulamayı kullanmayın.</string>
-    <string name="terms_of_service_license_title">Lisans</string>
-    <string name="terms_of_service_license">DAVy, GNU Genel Kamu Lisansı sürüm 3 (GPLv3) altında lisanslanmış açık kaynaklı yazılımdır. Bu lisansın şartlarına uygun olarak yazılımı kullanma, değiştirme ve dağıtma özgürlüğüne sahipsiniz.</string>
-    <string name="terms_of_service_disclaimer_title">Sorumluluk Reddi</string>
-    <string name="terms_of_service_disclaimer">DAVy, hiçbir garanti olmaksızın \"olduğu gibi\" sağlanmaktadır. Geliştiriciler, bu yazılımın kullanımından kaynaklanan herhangi bir zarardan sorumlu tutulamaz.</string>
-    <string name="terms_of_service_user_responsibilities_title">Kullanıcı Sorumlulukları</string>
-    <string name="terms_of_service_user_responsibilities">Hesap kimlik bilgilerinizin güvenliğini korumak, güvenilir CalDAV/CardDAV sunucuları seçmek ve kullanımınızın geçerli yasalara uygun olmasını sağlamak sizin sorumluluğunuzdadır.</string>
-    <string name="terms_of_service_limitations_title">Sınırlamalar</string>
-    <string name="terms_of_service_limitations">Geliştiriciler hizmet sürekliliği veya tüm sunucularla uyumluluk garantisi vermez. İşlevsellik, sunucu uygulamasına bağlı olarak değişebilir.</string>
-    <string name="terms_of_service_changes_title">Şartlardaki Değişiklikler</string>
-    <string name="terms_of_service_changes">Bu şartları zaman zaman güncelleyebiliriz. Değişikliklerden sonra uygulamayı kullanmaya devam etmeniz, yeni şartları kabul ettiğiniz anlamına gelir.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">Atla</string>
@@ -654,4 +624,69 @@
     <string name="onboarding_calendar_description">Tüm etkinlikleriniz Android\'in Takvim uygulamasına otomatik olarak senkronize edilir</string>
     <string name="onboarding_contacts_title">Kişilerinizi Yönetin</string>
     <string name="onboarding_contacts_description">Kişileriniz Android\'in Kişiler uygulamasına senkronize edilir, her yerde kullanıma hazır</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">Geri Bildirim Gönder</string>
+    <string name="send_feedback_subtitle">Sorunları bildirin veya iyileştirmeler önerin</string>
+    <string name="feedback_email_subject">DAVy Geri Bildirimi (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">Kaynak kodunu görüntüleyin ve sorunları bildirin</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">Yenilikler</string>
+    <string name="whats_new_title">v%1$s\'deki Yenilikler</string>
+    <string name="whats_new_dismiss">Anladım</string>
+    <string name="whats_new_v1_0_0">• İlk sürüm\n• CalDAV takvim senkronizasyonu\n• CardDAV kişi senkronizasyonu\n• WebCal abonelik desteği\n• Çoklu hesap desteği\n• Yapılandırılabilir aralıklarla arka plan senkronizasyonu\n• Yalnızca WiFi senkronizasyon seçeneği\n• Material 3 tasarım\n• Karanlık tema desteği</string>
+    <string name="whats_new_v1_0_1">• Gizlilik Politikası ve Hizmet Şartları eklendi\n• Yeni kullanıcılar için yeni karşılama deneyimi\n• Güncellemelerden sonra \"Yenilikler\" iletişim kutusu\n• Ayarlarda \"Geri Bildirim Gönder\" seçeneği\n• Hakkında ve SSS\'de GitHub bağlantıları\n• Açık Kaynak ve Yardım bölümleri ile genişletilmiş SSS\n• SSS yanıtlarında tıklanabilir URL\'ler\n• Geliştiriciler için test seçenekleri\n• Tüm 15 dil için tam çeviriler\n• Almanca çeviriler artık gayri resmi \"Du\" stilinde</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">Giriş</string>
+    <string name="privacy_introduction_content">DAVy (\"Uygulama\"), Android için bir CalDAV, CardDAV ve WebCal senkronizasyon uygulamasıdır. Bu Gizlilik Politikası, Uygulamanın hangi bilgileri topladığını, nasıl kullanıldığını ve verilerinizle ilgili haklarınızı açıklar.\n\nGizliliğinizi korumaya kararlıyız. DAVy, takvim, kişi ve görev verilerinizi kendi sunucularınızla senkronize etmek için tasarlanmıştır - sunucularımızda kişisel verilerinizi toplamıyor, saklamıyor veya paylaşmıyoruz.</string>
+    <string name="privacy_info_collect_title">Topladığımız Bilgiler</string>
+    <string name="privacy_info_collect_content">DAVy, cihazınızda aşağıdaki bilgileri yerel olarak toplar ve saklar:\n\n• Sunucu kimlik bilgileri (URL, kullanıcı adı, şifre/OAuth belirteçleri)\n• Sunucularınızdan takvim etkinlikleri, kişiler ve görevler\n• Uygulama ayarları ve tercihleri\n• Senkronizasyon durumu ve hata günlükleri\n\nBu veriler cihazınızda güvenli bir şekilde saklanır ve yalnızca yapılandırdığınız sunuculara iletilir.</string>
+    <string name="privacy_how_use_title">Bilgileri Nasıl Kullanıyoruz</string>
+    <string name="privacy_how_use_content">Toplanan bilgiler yalnızca şu amaçlarla kullanılır:\n\n• CalDAV/CardDAV/WebCal sunucularınızla kimlik doğrulama\n• Takvimleri, kişileri ve görevleri senkronize etme\n• Ayarlarınızı saklama\n• Senkronizasyon durumunu gösterme ve hataları giderme</string>
+    <string name="privacy_data_storage_title">Veri Depolama ve Güvenlik</string>
+    <string name="privacy_data_storage_content">• Tüm veriler Android cihazınızda yerel olarak saklanır\n• Şifreler Android\'in güvenli depolaması kullanılarak şifrelenir\n• Sunucularınız destekliyorsa veriler HTTPS üzerinden iletilir\n• DAVy geliştiricilerine veya üçüncü taraflara veri gönderilmez</string>
+    <string name="privacy_data_sharing_title">Veri Paylaşımı</string>
+    <string name="privacy_data_sharing_content">DAVy, verilerinizi üçüncü taraflarla paylaşmaz. Verileriniz yalnızca açıkça yapılandırdığınız sunuculara iletilir.</string>
+    <string name="privacy_your_rights_title">Haklarınız</string>
+    <string name="privacy_your_rights_content">Verileriniz üzerinde tam kontrole sahipsiniz:\n\n• Hesapları ve ilişkili verileri istediğiniz zaman silin\n• Yedekleme özellikleri aracılığıyla verileri dışa aktarın\n• Android ayarları aracılığıyla tüm uygulama verilerini temizleyin\n• İzinleri istediğiniz zaman iptal edin</string>
+    <string name="privacy_permissions_title">İzinler</string>
+    <string name="privacy_permissions_content">DAVy şu izinleri ister:\n\n• Takvim: Takvim etkinliklerini senkronize etmek için okuma/yazma\n• Kişiler: Kişileri senkronize etmek için okuma/yazma\n• İnternet: CalDAV/CardDAV sunucularınıza bağlanma\n• Bildirimler: Senkronizasyon durumunu ve hataları gösterme</string>
+    <string name="privacy_third_party_title">Üçüncü Taraf Hizmetleri</string>
+    <string name="privacy_third_party_content">DAVy, herhangi bir üçüncü taraf analitik, reklam veya izleme hizmeti içermez. Uygulama yalnızca yapılandırdığınız sunucularla iletişim kurar.</string>
+    <string name="privacy_children_title">Çocukların Gizliliği</string>
+    <string name="privacy_children_content">DAVy, 13 yaşın altındaki çocuklardan bilerek bilgi toplamaz. Uygulama genel kullanım için tasarlanmıştır ve çocukları hedef almaz.</string>
+    <string name="privacy_contact_title">İletişim Bilgileri</string>
+    <string name="privacy_contact_content">Bu Gizlilik Politikası hakkında sorularınız veya endişeleriniz için lütfen uygulama destek kanalları veya GitHub deposu aracılığıyla bizimle iletişime geçin.</string>
+    <string name="privacy_last_updated">Son güncelleme: 29 Ekim 2025</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">Hizmet şartlarımızı görüntüleyin</string>
+    <string name="tos_effective_date">Yürürlük Tarihi: 01 Kasım 2025</string>
+    <string name="tos_acceptance_title">Şartların Kabulü</string>
+    <string name="tos_acceptance_content">DAVy\'yi (\"Uygulama\") indirerek, yükleyerek veya kullanarak bu Şartlar ve Koşullara bağlı olmayı kabul edersiniz. Bu şartları kabul etmiyorsanız, Uygulamayı kullanmayın.</string>
+    <string name="tos_service_title">Hizmet Açıklaması</string>
+    <string name="tos_service_content">DAVy, Android cihazınız ile uyumlu sunucular arasında takvimleri, kişileri ve görevleri senkronize etmenizi sağlayan bir CalDAV, CardDAV ve WebCal senkronizasyon uygulamasıdır. Uygulama, sunucularınız için bir istemci görevi görür ve barındırma hizmetleri sağlamaz.</string>
+    <string name="tos_responsibilities_title">Kullanıcı Sorumlulukları</string>
+    <string name="tos_responsibilities_content">Aşağıdakilerden sorumlusunuz:\n\n• Sunucu kimlik bilgilerinizi güvende tutmak\n• Yapılandırılmış sunuculara erişim yetkinizin olduğundan emin olmak\n• Önemli verileri yedeklemek\n• Uygulamayı geçerli yasalara uygun şekilde kullanmak</string>
+    <string name="tos_security_title">Hesap Güvenliği</string>
+    <string name="tos_security_content">Sunucu kimlik bilgilerinizin gizliliğini korumaktan sorumlusunuz. DAVy, kimlik bilgilerini cihazınızda Android\'in şifreli depolamasını kullanarak güvenli bir şekilde saklar, ancak güçlü şifreler kullanmak ve cihaz şifrelemesini etkinleştirmek gibi ek önlemler almalısınız.</string>
+    <string name="tos_ip_title">Fikri Mülkiyet</string>
+    <string name="tos_ip_content">DAVy, Apache License 2.0 altında lisanslanan açık kaynaklı bir yazılımdır. Bu lisansa uygun olarak Uygulamayı kullanabilir, değiştirebilir ve dağıtabilirsiniz. Uygulama tarafından kullanılan üçüncü taraf kütüphaneler kendi lisanslarına tabidir.</string>
+    <string name="tos_disclaimer_title">Garanti Reddi</string>
+    <string name="tos_disclaimer_content">UYGULAMA HİÇBİR GARANTİ OLMAKSIZIN \"OLDUĞU GİBİ\" SAĞLANIR. UYGULAMANIN HATASIZ, KESİNTİSİZ VEYA ZARARLI BİLEŞENLERDEN ARINMIŞ OLACAĞINI GARANTİ ETMİYORUZ. UYGULAMAYI KULLANMAK TAMAMİYLE KENDİ RİSKİNİZDİR.</string>
+    <string name="tos_liability_title">Sorumluluk Sınırlaması</string>
+    <string name="tos_liability_content">YASALARIN İZİN VERDİĞİ AZAMİ ÖLÇÜDE, GELİŞTİRİCİLER VERİ, KAR VEYA İŞ FIRSATI KAYBI DAHİL OLMAK ÜZERE HERHANGİ BİR DOLAYLI, ARIZİ, ÖZEL, SONUÇ OLARAK ORTAYA ÇIKAN VEYA CEZAİ ZARARDAN SORUMLU OLMAYACAKTIR.</string>
+    <string name="tos_modifications_title">Şart Değişiklikleri</string>
+    <string name="tos_modifications_content">Bu Şartları istediğimiz zaman değiştirme hakkını saklı tutarız. Değişiklikler, güncellenen şartların yayınlanmasından sonra yürürlüğe girer. Değişikliklerden sonra Uygulamayı kullanmaya devam etmeniz, yeni şartları kabul ettiğiniz anlamına gelir.</string>
+    <string name="tos_termination_title">Fesih</string>
+    <string name="tos_termination_content">Uygulamayı kaldırarak istediğiniz zaman kullanımınızı sonlandırabilirsiniz. Sorumluluk sınırlamaları ve fikri mülkiyet hükümleriyle ilgili bu şartlar fesihten sonra da geçerli kalacaktır.</string>
+    <string name="tos_contact_title">İletişim Bilgileri</string>
+    <string name="tos_contact_content">Bu Şartlar hakkında sorularınız için lütfen uygulama destek kanalları veya GitHub deposu aracılığıyla bizimle iletişime geçin.</string>
+    <string name="tos_last_updated">Son güncelleme: 29 Ekim 2025</string>
 </resources>

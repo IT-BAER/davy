@@ -596,41 +596,11 @@
     <!-- Legal -->
     <string name="legal">Hukum</string>
     <string name="privacy_policy">Kebijakan Privasi</string>
-    <string name="privacy_policy_title">Kebijakan Privasi</string>
     <string name="privacy_policy_subtitle">Lihat praktik privasi kami</string>
     <string name="privacy_effective_date">Tanggal Berlaku: 01 November 2025</string>
-    <string name="privacy_policy_effective_date">Tanggal Berlaku: 1 November 2025</string>
-    <string name="privacy_policy_intro_title">Pendahuluan</string>
-    <string name="privacy_policy_intro">DAVy adalah aplikasi open-source yang berfokus pada privasi untuk sinkronisasi CalDAV dan CardDAV. Kami menganggap privasi Anda dengan serius. Dokumen ini menjelaskan bagaimana aplikasi menangani data Anda.</string>
-    <string name="privacy_policy_info_title">Informasi yang Kami Kumpulkan</string>
-    <string name="privacy_policy_info">DAVy tidak mengumpulkan atau mengirim data pribadi apa pun ke pengembang aplikasi atau pihak ketiga. Semua data tetap di perangkat Anda atau disinkronkan langsung dengan server CalDAV/CardDAV pilihan Anda.</string>
-    <string name="privacy_policy_storage_title">Penyimpanan Data</string>
-    <string name="privacy_policy_storage">Kredensial akun disimpan dengan aman di pengelola akun Android. Acara kalender dan kontak disimpan secara lokal di perangkat Anda dan disinkronkan dengan server yang Anda tentukan.</string>
-    <string name="privacy_policy_permissions_title">Izin</string>
-    <string name="privacy_policy_permissions">Aplikasi hanya meminta izin yang diperlukan untuk kalender, kontak, dan sinkronisasi. Kami tidak mengakses data apa pun di luar izin ini.</string>
-    <string name="privacy_policy_third_party_title">Layanan Pihak Ketiga</string>
-    <string name="privacy_policy_third_party">DAVy tidak menyertakan pelacakan, analitik, atau iklan pihak ketiga apa pun. Satu-satunya komunikasi jaringan adalah dengan server CalDAV/CardDAV Anda.</string>
-    <string name="privacy_policy_changes_title">Perubahan pada Kebijakan Ini</string>
-    <string name="privacy_policy_changes">Kami dapat memperbarui kebijakan privasi ini dari waktu ke waktu. Setiap perubahan akan diposting di halaman ini dengan tanggal berlaku yang diperbarui.</string>
-    <string name="privacy_policy_contact_title">Hubungi Kami</string>
-    <string name="privacy_policy_contact">Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui repositori GitHub kami.</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">Ketentuan Layanan</string>
-    <string name="terms_of_service_title">Ketentuan Layanan</string>
-    <string name="terms_of_service_effective_date">Tanggal Berlaku: 1 November 2025</string>
-    <string name="terms_of_service_acceptance_title">Penerimaan Ketentuan</string>
-    <string name="terms_of_service_acceptance">Dengan menggunakan DAVy, Anda setuju untuk terikat oleh ketentuan ini. Jika Anda tidak menyetujui bagian mana pun dari ketentuan ini, mohon jangan gunakan aplikasi ini.</string>
-    <string name="terms_of_service_license_title">Lisensi</string>
-    <string name="terms_of_service_license">DAVy adalah perangkat lunak open-source yang dilisensikan di bawah GNU General Public License versi 3 (GPLv3). Anda bebas menggunakan, memodifikasi, dan mendistribusikan perangkat lunak sesuai dengan ketentuan lisensi ini.</string>
-    <string name="terms_of_service_disclaimer_title">Penafian</string>
-    <string name="terms_of_service_disclaimer">DAVy disediakan \"apa adanya\" tanpa jaminan apa pun. Pengembang tidak akan bertanggung jawab atas kerusakan apa pun yang timbul dari penggunaan perangkat lunak ini.</string>
-    <string name="terms_of_service_user_responsibilities_title">Tanggung Jawab Pengguna</string>
-    <string name="terms_of_service_user_responsibilities">Anda bertanggung jawab untuk menjaga keamanan kredensial akun Anda, memilih server CalDAV/CardDAV yang tepercaya, dan memastikan penggunaan Anda mematuhi hukum yang berlaku.</string>
-    <string name="terms_of_service_limitations_title">Batasan</string>
-    <string name="terms_of_service_limitations">Pengembang tidak menjamin kelangsungan layanan atau kompatibilitas dengan semua server. Fungsionalitas dapat bervariasi berdasarkan implementasi server.</string>
-    <string name="terms_of_service_changes_title">Perubahan pada Ketentuan</string>
-    <string name="terms_of_service_changes">Kami dapat memperbarui ketentuan ini dari waktu ke waktu. Penggunaan aplikasi yang berkelanjutan setelah perubahan merupakan penerimaan terhadap ketentuan baru.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">Lewati</string>
@@ -647,4 +617,69 @@
     <string name="onboarding_calendar_description">Semua acara Anda disinkronkan ke aplikasi Kalender Android secara otomatis</string>
     <string name="onboarding_contacts_title">Kelola Kontak Anda</string>
     <string name="onboarding_contacts_description">Kontak Anda disinkronkan ke aplikasi Kontak Android, siap digunakan di mana saja</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">Kirim Umpan Balik</string>
+    <string name="send_feedback_subtitle">Laporkan masalah atau sarankan perbaikan</string>
+    <string name="feedback_email_subject">Umpan Balik DAVy (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">Lihat kode sumber dan laporkan masalah</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">Apa yang Baru</string>
+    <string name="whats_new_title">Apa yang Baru di v%1$s</string>
+    <string name="whats_new_dismiss">Mengerti</string>
+    <string name="whats_new_v1_0_0">• Rilis pertama\n• Sinkronisasi kalender CalDAV\n• Sinkronisasi kontak CardDAV\n• Dukungan langganan WebCal\n• Dukungan beberapa akun\n• Sinkronisasi latar belakang dengan interval yang dapat dikonfigurasi\n• Opsi sinkronisasi hanya WiFi\n• Desain Material 3\n• Dukungan tema gelap</string>
+    <string name="whats_new_v1_0_1">• Menambahkan Kebijakan Privasi dan Ketentuan Layanan\n• Pengalaman sambutan baru untuk pengguna baru\n• Dialog \"Apa yang Baru\" setelah pembaruan\n• Opsi \"Kirim Umpan Balik\" di Pengaturan\n• Tautan GitHub di Tentang dan FAQ\n• FAQ yang diperluas dengan bagian Open Source dan Bantuan\n• URL yang dapat diklik dalam jawaban FAQ\n• Opsi pengujian untuk pengembang\n• Terjemahan lengkap untuk semua 15 bahasa\n• Terjemahan Jerman sekarang dalam gaya informal \"Du\"</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">Pendahuluan</string>
+    <string name="privacy_introduction_content">DAVy (\"Aplikasi\") adalah aplikasi sinkronisasi CalDAV, CardDAV, dan WebCal untuk Android. Kebijakan Privasi ini menjelaskan informasi apa yang dikumpulkan oleh Aplikasi, bagaimana informasi tersebut digunakan, dan hak-hak Anda terkait data Anda.\n\nKami berkomitmen untuk melindungi privasi Anda. DAVy dirancang untuk menyinkronkan data kalender, kontak, dan tugas Anda dengan server Anda sendiri - kami tidak mengumpulkan, menyimpan, atau membagikan data pribadi Anda di server kami.</string>
+    <string name="privacy_info_collect_title">Informasi yang Kami Kumpulkan</string>
+    <string name="privacy_info_collect_content">DAVy mengumpulkan dan menyimpan informasi berikut secara lokal di perangkat Anda:\n\n• Kredensial server (URL, nama pengguna, kata sandi/token OAuth)\n• Acara kalender, kontak, dan tugas dari server Anda\n• Pengaturan dan preferensi aplikasi\n• Status sinkronisasi dan log kesalahan\n\nData ini disimpan dengan aman di perangkat Anda dan hanya dikirimkan ke server yang Anda konfigurasi.</string>
+    <string name="privacy_how_use_title">Bagaimana Kami Menggunakan Informasi</string>
+    <string name="privacy_how_use_content">Informasi yang dikumpulkan digunakan secara eksklusif untuk:\n\n• Mengautentikasi dengan server CalDAV/CardDAV/WebCal Anda\n• Menyinkronkan kalender, kontak, dan tugas\n• Menyimpan pengaturan Anda\n• Menampilkan status sinkronisasi dan memecahkan masalah kesalahan</string>
+    <string name="privacy_data_storage_title">Penyimpanan dan Keamanan Data</string>
+    <string name="privacy_data_storage_content">• Semua data disimpan secara lokal di perangkat Android Anda\n• Kata sandi dienkripsi menggunakan penyimpanan aman Android\n• Data dikirimkan melalui HTTPS jika server Anda mendukungnya\n• Tidak ada data yang dikirim ke pengembang DAVy atau pihak ketiga</string>
+    <string name="privacy_data_sharing_title">Berbagi Data</string>
+    <string name="privacy_data_sharing_content">DAVy tidak membagikan data Anda dengan pihak ketiga. Data Anda hanya dikirimkan ke server yang Anda konfigurasi secara eksplisit.</string>
+    <string name="privacy_your_rights_title">Hak Anda</string>
+    <string name="privacy_your_rights_content">Anda memiliki kendali penuh atas data Anda:\n\n• Hapus akun dan data terkait kapan saja\n• Ekspor data melalui fitur cadangan\n• Hapus semua data aplikasi melalui pengaturan Android\n• Cabut izin kapan saja</string>
+    <string name="privacy_permissions_title">Izin</string>
+    <string name="privacy_permissions_content">DAVy meminta izin berikut:\n\n• Kalender: Baca/tulis untuk menyinkronkan acara kalender\n• Kontak: Baca/tulis untuk menyinkronkan kontak\n• Internet: Terhubung ke server CalDAV/CardDAV Anda\n• Notifikasi: Menampilkan status sinkronisasi dan kesalahan</string>
+    <string name="privacy_third_party_title">Layanan Pihak Ketiga</string>
+    <string name="privacy_third_party_content">DAVy tidak menyertakan layanan analitik, iklan, atau pelacakan pihak ketiga. Aplikasi hanya berkomunikasi dengan server yang Anda konfigurasi.</string>
+    <string name="privacy_children_title">Privasi Anak</string>
+    <string name="privacy_children_content">DAVy tidak secara sengaja mengumpulkan informasi dari anak-anak di bawah 13 tahun. Aplikasi ini dimaksudkan untuk penggunaan umum dan tidak ditargetkan untuk anak-anak.</string>
+    <string name="privacy_contact_title">Informasi Kontak</string>
+    <string name="privacy_contact_content">Untuk pertanyaan atau masalah tentang Kebijakan Privasi ini, silakan hubungi kami melalui saluran dukungan aplikasi atau repositori GitHub.</string>
+    <string name="privacy_last_updated">Terakhir diperbarui: 29 Oktober 2025</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">Lihat ketentuan layanan kami</string>
+    <string name="tos_effective_date">Tanggal Berlaku: 01 November 2025</string>
+    <string name="tos_acceptance_title">Penerimaan Ketentuan</string>
+    <string name="tos_acceptance_content">Dengan mengunduh, menginstal, atau menggunakan DAVy (\"Aplikasi\"), Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Jika Anda tidak menyetujui ketentuan ini, jangan gunakan Aplikasi.</string>
+    <string name="tos_service_title">Deskripsi Layanan</string>
+    <string name="tos_service_content">DAVy adalah aplikasi sinkronisasi CalDAV, CardDAV, dan WebCal yang memungkinkan Anda menyinkronkan kalender, kontak, dan tugas antara perangkat Android Anda dan server yang kompatibel. Aplikasi bertindak sebagai klien untuk server Anda dan tidak menyediakan layanan hosting.</string>
+    <string name="tos_responsibilities_title">Tanggung Jawab Pengguna</string>
+    <string name="tos_responsibilities_content">Anda bertanggung jawab untuk:\n\n• Menjaga keamanan kredensial server Anda\n• Memastikan Anda memiliki otorisasi untuk mengakses server yang dikonfigurasi\n• Mencadangkan data penting\n• Menggunakan Aplikasi sesuai dengan hukum yang berlaku</string>
+    <string name="tos_security_title">Keamanan Akun</string>
+    <string name="tos_security_content">Anda bertanggung jawab untuk menjaga kerahasiaan kredensial server Anda. DAVy menyimpan kredensial dengan aman di perangkat Anda menggunakan penyimpanan terenkripsi Android, tetapi Anda harus mengambil tindakan pencegahan tambahan seperti menggunakan kata sandi yang kuat dan mengaktifkan enkripsi perangkat.</string>
+    <string name="tos_ip_title">Kekayaan Intelektual</string>
+    <string name="tos_ip_content">DAVy adalah perangkat lunak sumber terbuka yang dilisensikan di bawah Apache License 2.0. Anda dapat menggunakan, memodifikasi, dan mendistribusikan Aplikasi sesuai dengan lisensi ini. Pustaka pihak ketiga yang digunakan oleh Aplikasi tunduk pada lisensi masing-masing.</string>
+    <string name="tos_disclaimer_title">Penafian Jaminan</string>
+    <string name="tos_disclaimer_content">APLIKASI DISEDIAKAN \"APA ADANYA\" TANPA JAMINAN APA PUN. KAMI TIDAK MENJAMIN BAHWA APLIKASI AKAN BEBAS KESALAHAN, TIDAK TERPUTUS, ATAU BEBAS DARI KOMPONEN BERBAHAYA. PENGGUNAAN APLIKASI ADALAH RISIKO ANDA SENDIRI.</string>
+    <string name="tos_liability_title">Batasan Tanggung Jawab</string>
+    <string name="tos_liability_content">SEJAUH DIIZINKAN OLEH HUKUM, PENGEMBANG TIDAK BERTANGGUNG JAWAB ATAS KERUSAKAN TIDAK LANGSUNG, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU HUKUMAN, TERMASUK KEHILANGAN DATA, KEUNTUNGAN, ATAU PELUANG BISNIS.</string>
+    <string name="tos_modifications_title">Modifikasi Ketentuan</string>
+    <string name="tos_modifications_content">Kami berhak untuk memodifikasi Ketentuan ini kapan saja. Perubahan akan berlaku setelah ketentuan yang diperbarui diposting. Penggunaan Aplikasi yang berkelanjutan setelah perubahan merupakan penerimaan ketentuan baru.</string>
+    <string name="tos_termination_title">Pengakhiran</string>
+    <string name="tos_termination_content">Anda dapat mengakhiri penggunaan Aplikasi kapan saja dengan menghapus instalannya. Ketentuan ini terkait batasan tanggung jawab dan ketentuan kekayaan intelektual akan tetap berlaku setelah pengakhiran.</string>
+    <string name="tos_contact_title">Informasi Kontak</string>
+    <string name="tos_contact_content">Untuk pertanyaan tentang Ketentuan ini, silakan hubungi kami melalui saluran dukungan aplikasi atau repositori GitHub.</string>
+    <string name="tos_last_updated">Terakhir diperbarui: 29 Oktober 2025</string>
 </resources>

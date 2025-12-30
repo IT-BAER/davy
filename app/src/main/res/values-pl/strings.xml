@@ -627,41 +627,11 @@
     <!-- Legal -->
     <string name="legal">Informacje prawne</string>
     <string name="privacy_policy">Polityka prywatności</string>
-    <string name="privacy_policy_title">Polityka prywatności</string>
     <string name="privacy_policy_subtitle">Zobacz nasze praktyki ochrony prywatności</string>
     <string name="privacy_effective_date">Data Wejścia w Życie: 01 listopada 2025</string>
-    <string name="privacy_policy_effective_date">Data wejścia w życie: 1 listopada 2025</string>
-    <string name="privacy_policy_intro_title">Wprowadzenie</string>
-    <string name="privacy_policy_intro">DAVy to aplikacja open-source zorientowana na prywatność do synchronizacji CalDAV i CardDAV. Traktujemy Twoją prywatność poważnie. Ten dokument wyjaśnia, jak aplikacja obsługuje Twoje dane.</string>
-    <string name="privacy_policy_info_title">Informacje, które zbieramy</string>
-    <string name="privacy_policy_info">DAVy nie zbiera ani nie wysyła żadnych danych osobowych do twórców aplikacji ani osób trzecich. Wszystkie dane pozostają na Twoim urządzeniu lub są synchronizowane bezpośrednio z wybranym przez Ciebie serwerem CalDAV/CardDAV.</string>
-    <string name="privacy_policy_storage_title">Przechowywanie danych</string>
-    <string name="privacy_policy_storage">Dane logowania do konta są bezpiecznie przechowywane w menedżerze kont Android. Wydarzenia kalendarza i kontakty są przechowywane lokalnie na Twoim urządzeniu i synchronizowane z określonym przez Ciebie serwerem.</string>
-    <string name="privacy_policy_permissions_title">Uprawnienia</string>
-    <string name="privacy_policy_permissions">Aplikacja żąda tylko uprawnień niezbędnych do kalendarza, kontaktów i synchronizacji. Nie uzyskujemy dostępu do żadnych danych poza tymi uprawnieniami.</string>
-    <string name="privacy_policy_third_party_title">Usługi osób trzecich</string>
-    <string name="privacy_policy_third_party">DAVy nie zawiera żadnego śledzenia, analityki ani reklam od osób trzecich. Jedyna komunikacja sieciowa odbywa się z Twoimi serwerami CalDAV/CardDAV.</string>
-    <string name="privacy_policy_changes_title">Zmiany w tej polityce</string>
-    <string name="privacy_policy_changes">Możemy od czasu do czasu aktualizować tę politykę prywatności. Wszelkie zmiany zostaną opublikowane na tej stronie z zaktualizowaną datą wejścia w życie.</string>
-    <string name="privacy_policy_contact_title">Skontaktuj się z nami</string>
-    <string name="privacy_policy_contact">Jeśli masz pytania dotyczące tej polityki prywatności, skontaktuj się z nami przez nasze repozytorium GitHub.</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">Warunki korzystania z usługi</string>
-    <string name="terms_of_service_title">Warunki korzystania z usługi</string>
-    <string name="terms_of_service_effective_date">Data wejścia w życie: 1 listopada 2025</string>
-    <string name="terms_of_service_acceptance_title">Akceptacja warunków</string>
-    <string name="terms_of_service_acceptance">Korzystając z DAVy, zgadzasz się na związanie tymi warunkami. Jeśli nie zgadzasz się z jakąkolwiek częścią tych warunków, prosimy nie używać aplikacji.</string>
-    <string name="terms_of_service_license_title">Licencja</string>
-    <string name="terms_of_service_license">DAVy jest oprogramowaniem open-source licencjonowanym na podstawie GNU General Public License wersja 3 (GPLv3). Możesz swobodnie używać, modyfikować i rozpowszechniać oprogramowanie zgodnie z warunkami tej licencji.</string>
-    <string name="terms_of_service_disclaimer_title">Zastrzeżenie</string>
-    <string name="terms_of_service_disclaimer">DAVy jest dostarczany \"tak jak jest\" bez żadnych gwarancji. Twórcy nie ponoszą odpowiedzialności za jakiekolwiek szkody wynikające z użytkowania tego oprogramowania.</string>
-    <string name="terms_of_service_user_responsibilities_title">Obowiązki użytkownika</string>
-    <string name="terms_of_service_user_responsibilities">Jesteś odpowiedzialny za utrzymanie bezpieczeństwa danych logowania do konta, wybór zaufanych serwerów CalDAV/CardDAV i upewnienie się, że Twoje użytkowanie jest zgodne z obowiązującym prawem.</string>
-    <string name="terms_of_service_limitations_title">Ograniczenia</string>
-    <string name="terms_of_service_limitations">Twórcy nie gwarantują ciągłości usługi ani kompatybilności ze wszystkimi serwerami. Funkcjonalność może się różnić w zależności od implementacji serwera.</string>
-    <string name="terms_of_service_changes_title">Zmiany warunków</string>
-    <string name="terms_of_service_changes">Możemy od czasu do czasu aktualizować te warunki. Dalsze korzystanie z aplikacji po zmianach stanowi akceptację nowych warunków.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">Pomiń</string>
@@ -678,4 +648,69 @@
     <string name="onboarding_calendar_description">Wszystkie Twoje wydarzenia synchronizują się automatycznie z aplikacją Kalendarz Android</string>
     <string name="onboarding_contacts_title">Zarządzaj kontaktami</string>
     <string name="onboarding_contacts_description">Twoje kontakty synchronizują się z aplikacją Kontakty Android, gotowe do użycia wszędzie</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">Wyślij opinię</string>
+    <string name="send_feedback_subtitle">Zgłoś problemy lub zaproponuj ulepszenia</string>
+    <string name="feedback_email_subject">Opinia o DAVy (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">Zobacz kod źródłowy i zgłoś problemy</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">Co nowego</string>
+    <string name="whats_new_title">Co nowego w v%1$s</string>
+    <string name="whats_new_dismiss">Rozumiem</string>
+    <string name="whats_new_v1_0_0">• Pierwsze wydanie\n• Synchronizacja kalendarza CalDAV\n• Synchronizacja kontaktów CardDAV\n• Obsługa subskrypcji WebCal\n• Obsługa wielu kont\n• Synchronizacja w tle z konfigurowalnymi interwałami\n• Opcja synchronizacji tylko przez WiFi\n• Design Material 3\n• Obsługa trybu ciemnego</string>
+    <string name="whats_new_v1_0_1">• Dodano Politykę Prywatności i Warunki Użytkowania\n• Nowe doświadczenie powitalne dla nowych użytkowników\n• Okno Co nowego po aktualizacjach\n• Opcja Wyślij opinię w Ustawieniach\n• Linki do GitHub w O aplikacji i FAQ\n• Rozszerzone FAQ z sekcjami Open Source i Pomoc\n• Klikalne adresy URL w odpowiedziach FAQ\n• Opcje testowe dla programistów\n• Kompletne tłumaczenia dla wszystkich 15 języków\n• Niemieckie tłumaczenia teraz w nieformalnym stylu \"Du\"</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">Wprowadzenie</string>
+    <string name="privacy_introduction_content">DAVy („Aplikacja") to aplikacja do synchronizacji CalDAV, CardDAV i WebCal dla systemu Android. Niniejsza Polityka Prywatności wyjaśnia, jakie informacje zbiera Aplikacja, jak są wykorzystywane oraz jakie masz prawa dotyczące swoich danych.\n\nZobowiązujemy się chronić Twoją prywatność. DAVy jest zaprojektowany do synchronizacji danych kalendarza, kontaktów i zadań z Twoimi własnymi serwerami — nie zbieramy, nie przechowujemy ani nie przesyłamy żadnych Twoich danych osobowych na nasze serwery.</string>
+    <string name="privacy_info_collect_title">Informacje, które zbieramy</string>
+    <string name="privacy_info_collect_content">DAVy zbiera i przechowuje następujące informacje lokalnie na Twoim urządzeniu:\n\n• Dane dostępu do serwera (URL, nazwa użytkownika, hasło/tokeny OAuth)\n• Wydarzenia kalendarza, kontakty i zadania z Twoich serwerów\n• Preferencje i ustawienia aplikacji\n• Status synchronizacji i dzienniki błędów\n\nTe dane są bezpiecznie przechowywane na Twoim urządzeniu i przesyłane tylko do serwerów, które skonfigurujesz.</string>
+    <string name="privacy_how_use_title">Jak wykorzystujemy informacje</string>
+    <string name="privacy_how_use_content">Zebrane informacje są wykorzystywane wyłącznie do:\n\n• Uwierzytelniania z Twoimi serwerami CalDAV/CardDAV/WebCal\n• Synchronizacji kalendarzy, kontaktów i zadań\n• Przechowywania Twoich preferencji\n• Wyświetlania statusu synchronizacji i rozwiązywania problemów</string>
+    <string name="privacy_data_storage_title">Przechowywanie i bezpieczeństwo danych</string>
+    <string name="privacy_data_storage_content">• Wszystkie dane są przechowywane lokalnie na Twoim urządzeniu Android\n• Hasła są szyfrowane przy użyciu bezpiecznego magazynu Androida\n• Dane są przesyłane przez HTTPS, gdy Twoje serwery to obsługują\n• Żadne dane nie są wysyłane do programistów DAVy ani osób trzecich</string>
+    <string name="privacy_data_sharing_title">Udostępnianie danych</string>
+    <string name="privacy_data_sharing_content">DAVy nie udostępnia Twoich danych osobom trzecim. Twoje dane są przesyłane tylko do serwerów, które wyraźnie skonfigurujesz.</string>
+    <string name="privacy_your_rights_title">Twoje prawa</string>
+    <string name="privacy_your_rights_content">Masz pełną kontrolę nad swoimi danymi:\n\n• Usuwanie kont i powiązanych danych w dowolnym momencie\n• Eksportowanie danych za pomocą funkcji kopii zapasowej\n• Czyszczenie wszystkich danych aplikacji przez ustawienia Androida\n• Cofanie uprawnień w dowolnym momencie</string>
+    <string name="privacy_permissions_title">Uprawnienia</string>
+    <string name="privacy_permissions_content">DAVy wymaga następujących uprawnień:\n\n• Kalendarz: Odczyt/zapis do synchronizacji wydarzeń kalendarza\n• Kontakty: Odczyt/zapis do synchronizacji kontaktów\n• Internet: Połączenie z Twoimi serwerami CalDAV/CardDAV\n• Powiadomienia: Wyświetlanie statusu synchronizacji i błędów</string>
+    <string name="privacy_third_party_title">Usługi stron trzecich</string>
+    <string name="privacy_third_party_content">DAVy nie zawiera żadnych usług analitycznych, reklamowych ani śledzących stron trzecich. Aplikacja komunikuje się tylko z serwerami, które skonfigurujesz.</string>
+    <string name="privacy_children_title">Prywatność dzieci</string>
+    <string name="privacy_children_content">DAVy świadomie nie zbiera informacji od dzieci poniżej 13 roku życia. Aplikacja jest przeznaczona dla ogółu odbiorców i nie jest skierowana do dzieci.</string>
+    <string name="privacy_contact_title">Dane kontaktowe</string>
+    <string name="privacy_contact_content">W przypadku pytań lub wątpliwości dotyczących tej Polityki Prywatności, skontaktuj się z nami przez kanały wsparcia aplikacji lub repozytorium GitHub.</string>
+    <string name="privacy_last_updated">Ostatnia aktualizacja: 29 października 2025</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">Zobacz nasze warunki użytkowania</string>
+    <string name="tos_effective_date">Data wejścia w życie: 01 listopada 2025</string>
+    <string name="tos_acceptance_title">Akceptacja warunków</string>
+    <string name="tos_acceptance_content">Pobierając, instalując lub korzystając z DAVy („Aplikacja"), zgadzasz się na przestrzeganie niniejszych Warunków Użytkowania. Jeśli nie zgadzasz się z tymi warunkami, nie korzystaj z Aplikacji.</string>
+    <string name="tos_service_title">Opis usługi</string>
+    <string name="tos_service_content">DAVy to aplikacja do synchronizacji CalDAV, CardDAV i WebCal, która umożliwia synchronizację kalendarzy, kontaktów i zadań między urządzeniem Android a kompatybilnymi serwerami. Aplikacja działa jako klient Twoich serwerów i nie świadczy usług hostingowych.</string>
+    <string name="tos_responsibilities_title">Obowiązki użytkownika</string>
+    <string name="tos_responsibilities_content">Jesteś odpowiedzialny za:\n\n• Utrzymanie bezpieczeństwa danych dostępu do serwera\n• Upewnienie się, że masz autoryzację do dostępu do skonfigurowanych serwerów\n• Tworzenie kopii zapasowych ważnych danych\n• Korzystanie z Aplikacji zgodnie z obowiązującym prawem</string>
+    <string name="tos_security_title">Bezpieczeństwo konta</string>
+    <string name="tos_security_content">Jesteś odpowiedzialny za zachowanie poufności danych dostępu do serwera. DAVy bezpiecznie przechowuje dane dostępu na Twoim urządzeniu przy użyciu zaszyfrowanego magazynu Androida, ale powinieneś podjąć dodatkowe środki ostrożności, takie jak używanie silnych haseł i włączenie szyfrowania urządzenia.</string>
+    <string name="tos_ip_title">Własność intelektualna</string>
+    <string name="tos_ip_content">DAVy jest oprogramowaniem open source na licencji Apache License 2.0. Możesz używać, modyfikować i rozpowszechniać Aplikację zgodnie z tą licencją. Biblioteki stron trzecich używane przez Aplikację podlegają ich odpowiednim licencjom.</string>
+    <string name="tos_disclaimer_title">Wyłączenie gwarancji</string>
+    <string name="tos_disclaimer_content">APLIKACJA JEST DOSTARCZANA „TAK JAK JEST" BEZ JAKIEJKOLWIEK GWARANCJI. NIE GWARANTUJEMY, ŻE APLIKACJA BĘDZIE WOLNA OD BŁĘDÓW, NIEPRZERWANA LUB WOLNA OD SZKODLIWYCH KOMPONENTÓW. KORZYSTASZ Z APLIKACJI NA WŁASNE RYZYKO.</string>
+    <string name="tos_liability_title">Ograniczenie odpowiedzialności</string>
+    <string name="tos_liability_content">W MAKSYMALNYM ZAKRESIE DOZWOLONYM PRZEZ PRAWO, PROGRAMIŚCI NIE PONOSZĄ ODPOWIEDZIALNOŚCI ZA JAKIEKOLWIEK SZKODY POŚREDNIE, PRZYPADKOWE, SPECJALNE, WYNIKOWE LUB KARNE, W TYM UTRATĘ DANYCH, ZYSKÓW LUB MOŻLIWOŚCI BIZNESOWYCH.</string>
+    <string name="tos_modifications_title">Zmiany warunków</string>
+    <string name="tos_modifications_content">Zastrzegamy sobie prawo do modyfikacji niniejszych Warunków Użytkowania w dowolnym momencie. Zmiany wchodzą w życie po opublikowaniu zaktualizowanych warunków. Dalsze korzystanie z Aplikacji po zmianach oznacza akceptację nowych warunków.</string>
+    <string name="tos_termination_title">Zakończenie</string>
+    <string name="tos_termination_content">Możesz przestać korzystać z Aplikacji w dowolnym momencie, odinstalowując ją. Niniejsze warunki dotyczące ograniczeń odpowiedzialności i postanowień dotyczących własności intelektualnej pozostają w mocy po zakończeniu.</string>
+    <string name="tos_contact_title">Dane kontaktowe</string>
+    <string name="tos_contact_content">W przypadku pytań dotyczących niniejszych Warunków Użytkowania, skontaktuj się z nami przez kanały wsparcia aplikacji lub repozytorium GitHub.</string>
+    <string name="tos_last_updated">Ostatnia aktualizacja: 29 października 2025</string>
 </resources>

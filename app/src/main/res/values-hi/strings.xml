@@ -602,41 +602,11 @@
     <!-- Legal -->
     <string name="legal">कानूनी</string>
     <string name="privacy_policy">गोपनीयता नीति</string>
-    <string name="privacy_policy_title">गोपनीयता नीति</string>
     <string name="privacy_policy_subtitle">हमारी गोपनीयता प्रथाएं देखें</string>
     <string name="privacy_effective_date">प्रभावी तिथि: 01 नवंबर, 2025</string>
-    <string name="privacy_policy_effective_date">प्रभावी तिथि: 1 नवंबर 2025</string>
-    <string name="privacy_policy_intro_title">परिचय</string>
-    <string name="privacy_policy_intro">DAVy CalDAV और CardDAV सिंक के लिए एक गोपनीयता-केंद्रित, ओपन-सोर्स एप्लिकेशन है। हम आपकी गोपनीयता को गंभीरता से लेते हैं। यह दस्तावेज़ बताता है कि एप्लिकेशन आपके डेटा को कैसे संभालता है।</string>
-    <string name="privacy_policy_info_title">हम कौन सी जानकारी एकत्र करते हैं</string>
-    <string name="privacy_policy_info">DAVy कोई भी व्यक्तिगत डेटा एकत्र या ऐप डेवलपर्स या तृतीय पक्षों को नहीं भेजता है। सभी डेटा आपके डिवाइस पर रहता है या सीधे आपके चुने हुए CalDAV/CardDAV सर्वर के साथ सिंक होता है।</string>
-    <string name="privacy_policy_storage_title">डेटा संग्रहण</string>
-    <string name="privacy_policy_storage">खाता क्रेडेंशियल सुरक्षित रूप से Android के खाता प्रबंधक में संग्रहीत होते हैं। कैलेंडर इवेंट और संपर्क आपके डिवाइस पर स्थानीय रूप से संग्रहीत होते हैं और आपके निर्दिष्ट सर्वर के साथ सिंक होते हैं।</string>
-    <string name="privacy_policy_permissions_title">अनुमतियाँ</string>
-    <string name="privacy_policy_permissions">एप्लिकेशन केवल कैलेंडर, संपर्क और सिंक के लिए आवश्यक अनुमतियों का अनुरोध करता है। हम इन अनुमतियों के बाहर किसी भी डेटा तक नहीं पहुंचते।</string>
-    <string name="privacy_policy_third_party_title">तृतीय-पक्ष सेवाएं</string>
-    <string name="privacy_policy_third_party">DAVy में कोई तृतीय-पक्ष ट्रैकिंग, एनालिटिक्स या विज्ञापन शामिल नहीं है। एकमात्र नेटवर्क संचार आपके CalDAV/CardDAV सर्वरों के साथ है।</string>
-    <string name="privacy_policy_changes_title">इस नीति में परिवर्तन</string>
-    <string name="privacy_policy_changes">हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। कोई भी परिवर्तन इस पृष्ठ पर अपडेटेड प्रभावी तिथि के साथ पोस्ट किया जाएगा।</string>
-    <string name="privacy_policy_contact_title">हमसे संपर्क करें</string>
-    <string name="privacy_policy_contact">यदि इस गोपनीयता नीति के बारे में आपके कोई प्रश्न हैं, तो कृपया हमारे GitHub रिपॉजिटरी के माध्यम से हमसे संपर्क करें।</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">सेवा की शर्तें</string>
-    <string name="terms_of_service_title">सेवा की शर्तें</string>
-    <string name="terms_of_service_effective_date">प्रभावी तिथि: 1 नवंबर 2025</string>
-    <string name="terms_of_service_acceptance_title">शर्तों की स्वीकृति</string>
-    <string name="terms_of_service_acceptance">DAVy का उपयोग करके, आप इन शर्तों से बंधे होने के लिए सहमत हैं। यदि आप इन शर्तों के किसी भी भाग से असहमत हैं, तो कृपया एप्लिकेशन का उपयोग न करें।</string>
-    <string name="terms_of_service_license_title">लाइसेंस</string>
-    <string name="terms_of_service_license">DAVy GNU General Public License संस्करण 3 (GPLv3) के तहत लाइसेंस प्राप्त ओपन-सोर्स सॉफ्टवेयर है। आप इस लाइसेंस की शर्तों के अनुसार सॉफ्टवेयर का उपयोग, संशोधन और वितरण करने के लिए स्वतंत्र हैं।</string>
-    <string name="terms_of_service_disclaimer_title">अस्वीकरण</string>
-    <string name="terms_of_service_disclaimer">DAVy किसी भी प्रकार की वारंटी के बिना \"जैसा है\" प्रदान किया गया है। इस सॉफ्टवेयर के उपयोग से उत्पन्न किसी भी क्षति के लिए डेवलपर्स उत्तरदायी नहीं होंगे।</string>
-    <string name="terms_of_service_user_responsibilities_title">उपयोगकर्ता की जिम्मेदारियां</string>
-    <string name="terms_of_service_user_responsibilities">आप अपने खाता क्रेडेंशियल की सुरक्षा बनाए रखने, विश्वसनीय CalDAV/CardDAV सर्वर चुनने और यह सुनिश्चित करने के लिए जिम्मेदार हैं कि आपका उपयोग लागू कानूनों का अनुपालन करता है।</string>
-    <string name="terms_of_service_limitations_title">सीमाएं</string>
-    <string name="terms_of_service_limitations">डेवलपर्स सेवा की निरंतरता या सभी सर्वरों के साथ संगतता की गारंटी नहीं देते। सर्वर कार्यान्वयन के आधार पर कार्यक्षमता भिन्न हो सकती है।</string>
-    <string name="terms_of_service_changes_title">शर्तों में परिवर्तन</string>
-    <string name="terms_of_service_changes">हम समय-समय पर इन शर्तों को अपडेट कर सकते हैं। परिवर्तनों के बाद एप्लिकेशन का निरंतर उपयोग नई शर्तों की स्वीकृति माना जाता है।</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">छोड़ें</string>
@@ -653,4 +623,69 @@
     <string name="onboarding_calendar_description">आपके सभी इवेंट स्वचालित रूप से Android के कैलेंडर ऐप में सिंक होते हैं</string>
     <string name="onboarding_contacts_title">अपने संपर्क प्रबंधित करें</string>
     <string name="onboarding_contacts_description">आपके संपर्क Android के संपर्क ऐप में सिंक होते हैं, हर जगह उपयोग के लिए तैयार</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">प्रतिक्रिया भेजें</string>
+    <string name="send_feedback_subtitle">समस्याओं की रिपोर्ट करें या सुधार सुझाएं</string>
+    <string name="feedback_email_subject">DAVy प्रतिक्रिया (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">स्रोत कोड देखें और समस्याओं की रिपोर्ट करें</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">नया क्या है</string>
+    <string name="whats_new_title">v%1$s में नया क्या है</string>
+    <string name="whats_new_dismiss">समझ गया</string>
+    <string name="whats_new_v1_0_0">• पहला रिलीज़\n• CalDAV कैलेंडर सिंक\n• CardDAV संपर्क सिंक\n• WebCal सदस्यता समर्थन\n• एकाधिक खाता समर्थन\n• कॉन्फ़िगर करने योग्य अंतराल के साथ पृष्ठभूमि सिंक\n• केवल WiFi पर सिंक विकल्प\n• Material 3 डिज़ाइन\n• डार्क थीम समर्थन</string>
+    <string name="whats_new_v1_0_1">• गोपनीयता नीति और सेवा की शर्तें जोड़ी गईं\n• नए उपयोगकर्ताओं के लिए नया स्वागत अनुभव\n• अपडेट के बाद \"नया क्या है\" संवाद\n• सेटिंग्स में \"प्रतिक्रिया भेजें\" विकल्प\n• हमारे बारे में और FAQ में GitHub लिंक\n• ओपन सोर्स और मदद अनुभागों के साथ विस्तारित FAQ\n• FAQ उत्तरों में क्लिक करने योग्य URL\n• डेवलपर्स के लिए परीक्षण विकल्प\n• सभी 15 भाषाओं के लिए पूर्ण अनुवाद\n• जर्मन अनुवाद अब अनौपचारिक \"Du\" शैली में</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">परिचय</string>
+    <string name="privacy_introduction_content">DAVy (\"ऐप\") Android के लिए एक CalDAV, CardDAV और WebCal सिंक ऐप है। यह गोपनीयता नीति बताती है कि ऐप कौन सी जानकारी एकत्र करता है, इसका उपयोग कैसे किया जाता है, और आपके डेटा के संबंध में आपके अधिकार।\n\nहम आपकी गोपनीयता की रक्षा के लिए प्रतिबद्ध हैं। DAVy को आपके कैलेंडर, संपर्क और कार्य डेटा को आपके अपने सर्वर से सिंक करने के लिए डिज़ाइन किया गया है - हम आपके किसी भी व्यक्तिगत डेटा को अपने सर्वर पर एकत्र, संग्रहीत या साझा नहीं करते हैं।</string>
+    <string name="privacy_info_collect_title">हम कौन सी जानकारी एकत्र करते हैं</string>
+    <string name="privacy_info_collect_content">DAVy आपके डिवाइस पर स्थानीय रूप से निम्नलिखित जानकारी एकत्र और संग्रहीत करता है:\n\n• सर्वर क्रेडेंशियल (URL, उपयोगकर्ता नाम, पासवर्ड/OAuth टोकन)\n• आपके सर्वर से कैलेंडर इवेंट, संपर्क और कार्य\n• ऐप सेटिंग्स और प्राथमिकताएं\n• सिंक स्थिति और त्रुटि लॉग\n\nयह डेटा आपके डिवाइस पर सुरक्षित रूप से संग्रहीत है और केवल आपके द्वारा कॉन्फ़िगर किए गए सर्वर पर प्रसारित किया जाता है।</string>
+    <string name="privacy_how_use_title">हम जानकारी का उपयोग कैसे करते हैं</string>
+    <string name="privacy_how_use_content">एकत्रित जानकारी का उपयोग विशेष रूप से इसके लिए किया जाता है:\n\n• आपके CalDAV/CardDAV/WebCal सर्वर के साथ प्रमाणीकरण\n• कैलेंडर, संपर्क और कार्यों को सिंक करना\n• आपकी सेटिंग्स को संग्रहीत करना\n• सिंक स्थिति दिखाना और त्रुटियों का निवारण करना</string>
+    <string name="privacy_data_storage_title">डेटा संग्रहण और सुरक्षा</string>
+    <string name="privacy_data_storage_content">• सभी डेटा आपके Android डिवाइस पर स्थानीय रूप से संग्रहीत है\n• पासवर्ड Android के सुरक्षित स्टोरेज का उपयोग करके एन्क्रिप्ट किए गए हैं\n• यदि आपके सर्वर इसका समर्थन करते हैं तो डेटा HTTPS पर प्रसारित किया जाता है\n• DAVy डेवलपर्स या तीसरे पक्ष को कोई डेटा नहीं भेजा जाता</string>
+    <string name="privacy_data_sharing_title">डेटा साझाकरण</string>
+    <string name="privacy_data_sharing_content">DAVy आपके डेटा को तीसरे पक्ष के साथ साझा नहीं करता है। आपका डेटा केवल उन सर्वर पर प्रसारित किया जाता है जिन्हें आप स्पष्ट रूप से कॉन्फ़िगर करते हैं।</string>
+    <string name="privacy_your_rights_title">आपके अधिकार</string>
+    <string name="privacy_your_rights_content">आपके डेटा पर आपका पूर्ण नियंत्रण है:\n\n• किसी भी समय खाते और संबंधित डेटा हटाएं\n• बैकअप सुविधाओं के माध्यम से डेटा निर्यात करें\n• Android सेटिंग्स के माध्यम से सभी ऐप डेटा साफ़ करें\n• किसी भी समय अनुमतियां रद्द करें</string>
+    <string name="privacy_permissions_title">अनुमतियां</string>
+    <string name="privacy_permissions_content">DAVy निम्नलिखित अनुमतियों का अनुरोध करता है:\n\n• कैलेंडर: कैलेंडर इवेंट सिंक करने के लिए पढ़ना/लिखना\n• संपर्क: संपर्क सिंक करने के लिए पढ़ना/लिखना\n• इंटरनेट: आपके CalDAV/CardDAV सर्वर से कनेक्ट करना\n• सूचनाएं: सिंक स्थिति और त्रुटियां दिखाना</string>
+    <string name="privacy_third_party_title">तृतीय-पक्ष सेवाएं</string>
+    <string name="privacy_third_party_content">DAVy में कोई तृतीय-पक्ष एनालिटिक्स, विज्ञापन या ट्रैकिंग सेवाएं शामिल नहीं हैं। ऐप केवल उन सर्वर के साथ संवाद करता है जिन्हें आप कॉन्फ़िगर करते हैं।</string>
+    <string name="privacy_children_title">बच्चों की गोपनीयता</string>
+    <string name="privacy_children_content">DAVy जानबूझकर 13 वर्ष से कम उम्र के बच्चों से जानकारी एकत्र नहीं करता है। ऐप सामान्य उपयोग के लिए है और बच्चों को लक्षित नहीं करता।</string>
+    <string name="privacy_contact_title">संपर्क जानकारी</string>
+    <string name="privacy_contact_content">इस गोपनीयता नीति के बारे में प्रश्नों या चिंताओं के लिए, कृपया ऐप समर्थन चैनल या GitHub रिपॉजिटरी के माध्यम से हमसे संपर्क करें।</string>
+    <string name="privacy_last_updated">अंतिम अपडेट: 29 अक्टूबर 2025</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">हमारी सेवा की शर्तें देखें</string>
+    <string name="tos_effective_date">प्रभावी तिथि: 01 नवंबर 2025</string>
+    <string name="tos_acceptance_title">शर्तों की स्वीकृति</string>
+    <string name="tos_acceptance_content">DAVy (\"ऐप\") को डाउनलोड, इंस्टॉल या उपयोग करके, आप इन नियमों और शर्तों से बाध्य होने के लिए सहमत होते हैं। यदि आप इन शर्तों से सहमत नहीं हैं, तो ऐप का उपयोग न करें।</string>
+    <string name="tos_service_title">सेवा विवरण</string>
+    <string name="tos_service_content">DAVy एक CalDAV, CardDAV और WebCal सिंक ऐप है जो आपको अपने Android डिवाइस और संगत सर्वर के बीच कैलेंडर, संपर्क और कार्यों को सिंक करने की अनुमति देता है। ऐप आपके सर्वर के लिए क्लाइंट के रूप में कार्य करता है और होस्टिंग सेवाएं प्रदान नहीं करता है।</string>
+    <string name="tos_responsibilities_title">उपयोगकर्ता जिम्मेदारियां</string>
+    <string name="tos_responsibilities_content">आप इसके लिए जिम्मेदार हैं:\n\n• अपने सर्वर क्रेडेंशियल्स को सुरक्षित रखना\n• यह सुनिश्चित करना कि आपके पास कॉन्फ़िगर किए गए सर्वर तक पहुंचने का प्राधिकरण है\n• महत्वपूर्ण डेटा का बैकअप लेना\n• लागू कानूनों के अनुसार ऐप का उपयोग करना</string>
+    <string name="tos_security_title">खाता सुरक्षा</string>
+    <string name="tos_security_content">आप अपने सर्वर क्रेडेंशियल्स की गोपनीयता बनाए रखने के लिए जिम्मेदार हैं। DAVy Android के एन्क्रिप्टेड स्टोरेज का उपयोग करके आपके डिवाइस पर क्रेडेंशियल्स को सुरक्षित रूप से संग्रहीत करता है, लेकिन आपको मजबूत पासवर्ड का उपयोग करने और डिवाइस एन्क्रिप्शन सक्षम करने जैसी अतिरिक्त सावधानियां बरतनी चाहिए।</string>
+    <string name="tos_ip_title">बौद्धिक संपदा</string>
+    <string name="tos_ip_content">DAVy Apache License 2.0 के तहत लाइसेंस प्राप्त ओपन-सोर्स सॉफ़्टवेयर है। आप इस लाइसेंस के अनुसार ऐप का उपयोग, संशोधन और वितरण कर सकते हैं। ऐप द्वारा उपयोग की जाने वाली तृतीय-पक्ष लाइब्रेरी अपने संबंधित लाइसेंस के अधीन हैं।</string>
+    <string name="tos_disclaimer_title">वारंटी का अस्वीकरण</string>
+    <string name="tos_disclaimer_content">ऐप \"जैसा है\" किसी भी प्रकार की वारंटी के बिना प्रदान किया जाता है। हम गारंटी नहीं देते कि ऐप त्रुटि-मुक्त, निर्बाध या हानिकारक घटकों से मुक्त होगा। ऐप का उपयोग आपके अपने जोखिम पर है।</string>
+    <string name="tos_liability_title">दायित्व की सीमा</string>
+    <string name="tos_liability_content">कानून द्वारा अनुमत अधिकतम सीमा तक, डेवलपर्स किसी भी अप्रत्यक्ष, आकस्मिक, विशेष, परिणामी या दंडात्मक नुकसान के लिए उत्तरदायी नहीं होंगे, जिसमें डेटा, लाभ या व्यावसायिक अवसरों की हानि शामिल है।</string>
+    <string name="tos_modifications_title">शर्तों में संशोधन</string>
+    <string name="tos_modifications_content">हम किसी भी समय इन शर्तों को संशोधित करने का अधिकार सुरक्षित रखते हैं। अपडेटेड शर्तों को पोस्ट करने पर परिवर्तन प्रभावी होंगे। परिवर्तनों के बाद ऐप का निरंतर उपयोग नई शर्तों की स्वीकृति का गठन करता है।</string>
+    <string name="tos_termination_title">समाप्ति</string>
+    <string name="tos_termination_content">आप किसी भी समय ऐप को अनइंस्टॉल करके उपयोग समाप्त कर सकते हैं। दायित्व सीमाओं और बौद्धिक संपदा प्रावधानों से संबंधित ये शर्तें समाप्ति के बाद भी लागू रहेंगी।</string>
+    <string name="tos_contact_title">संपर्क जानकारी</string>
+    <string name="tos_contact_content">इन शर्तों के बारे में प्रश्नों के लिए, कृपया ऐप समर्थन चैनल या GitHub रिपॉजिटरी के माध्यम से हमसे संपर्क करें।</string>
+    <string name="tos_last_updated">अंतिम अपडेट: 29 अक्टूबर 2025</string>
 </resources>

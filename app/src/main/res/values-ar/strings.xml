@@ -651,41 +651,11 @@
     <!-- Legal -->
     <string name="legal">قانوني</string>
     <string name="privacy_policy">سياسة الخصوصية</string>
-    <string name="privacy_policy_title">سياسة الخصوصية</string>
     <string name="privacy_policy_subtitle">عرض ممارسات الخصوصية لدينا</string>
     <string name="privacy_effective_date">تاريخ السريان: ٠١ نوفمبر ٢٠٢٥</string>
-    <string name="privacy_policy_effective_date">تاريخ السريان: ١ نوفمبر ٢٠٢٥</string>
-    <string name="privacy_policy_intro_title">مقدمة</string>
-    <string name="privacy_policy_intro">DAVy هو تطبيق مفتوح المصدر يركز على الخصوصية لمزامنة CalDAV وCardDAV. نحن نأخذ خصوصيتك على محمل الجد. يوضح هذا المستند كيفية تعامل التطبيق مع بياناتك.</string>
-    <string name="privacy_policy_info_title">المعلومات التي نجمعها</string>
-    <string name="privacy_policy_info">لا يجمع DAVy أي بيانات شخصية أو يرسلها إلى مطوري التطبيق أو أطراف ثالثة. تبقى جميع البيانات على جهازك أو تتم مزامنتها مباشرة مع خادم CalDAV/CardDAV الذي تختاره.</string>
-    <string name="privacy_policy_storage_title">تخزين البيانات</string>
-    <string name="privacy_policy_storage">يتم تخزين بيانات اعتماد الحساب بأمان في مدير حسابات Android. يتم تخزين أحداث التقويم وجهات الاتصال محليًا على جهازك ومزامنتها مع الخادم الذي تحدده.</string>
-    <string name="privacy_policy_permissions_title">الأذونات</string>
-    <string name="privacy_policy_permissions">يطلب التطبيق فقط الأذونات اللازمة للتقويم وجهات الاتصال والمزامنة. لا نصل إلى أي بيانات خارج هذه الأذونات.</string>
-    <string name="privacy_policy_third_party_title">خدمات الطرف الثالث</string>
-    <string name="privacy_policy_third_party">لا يتضمن DAVy أي تتبع أو تحليلات أو إعلانات تابعة لجهات خارجية. التواصل الشبكي الوحيد هو مع خوادم CalDAV/CardDAV الخاصة بك.</string>
-    <string name="privacy_policy_changes_title">التغييرات على هذه السياسة</string>
-    <string name="privacy_policy_changes">قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سيتم نشر أي تغييرات في هذه الصفحة مع تاريخ سريان محدث.</string>
-    <string name="privacy_policy_contact_title">اتصل بنا</string>
-    <string name="privacy_policy_contact">إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا عبر مستودع GitHub الخاص بنا.</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">شروط الخدمة</string>
-    <string name="terms_of_service_title">شروط الخدمة</string>
-    <string name="terms_of_service_effective_date">تاريخ السريان: ١ نوفمبر ٢٠٢٥</string>
-    <string name="terms_of_service_acceptance_title">قبول الشروط</string>
-    <string name="terms_of_service_acceptance">باستخدام DAVy، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي جزء من هذه الشروط، يرجى عدم استخدام التطبيق.</string>
-    <string name="terms_of_service_license_title">الترخيص</string>
-    <string name="terms_of_service_license">DAVy هو برنامج مفتوح المصدر مرخص بموجب رخصة GNU العامة الإصدار 3 (GPLv3). يمكنك استخدام البرنامج وتعديله وتوزيعه بحرية وفقًا لشروط هذا الترخيص.</string>
-    <string name="terms_of_service_disclaimer_title">إخلاء المسؤولية</string>
-    <string name="terms_of_service_disclaimer">يتم توفير DAVy \"كما هو\" دون أي ضمانات من أي نوع. لا يكون المطورون مسؤولين عن أي أضرار ناتجة عن استخدام هذا البرنامج.</string>
-    <string name="terms_of_service_user_responsibilities_title">مسؤوليات المستخدم</string>
-    <string name="terms_of_service_user_responsibilities">أنت مسؤول عن الحفاظ على أمان بيانات اعتماد حسابك واختيار خوادم CalDAV/CardDAV الموثوقة والتأكد من أن استخدامك يتوافق مع القوانين المعمول بها.</string>
-    <string name="terms_of_service_limitations_title">القيود</string>
-    <string name="terms_of_service_limitations">لا يضمن المطورون استمرارية الخدمة أو التوافق مع جميع الخوادم. قد تختلف الوظائف بناءً على تنفيذ الخادم.</string>
-    <string name="terms_of_service_changes_title">التغييرات على الشروط</string>
-    <string name="terms_of_service_changes">قد نقوم بتحديث هذه الشروط من وقت لآخر. الاستمرار في استخدام التطبيق بعد التغييرات يشكل قبولًا للشروط الجديدة.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">تخطي</string>
@@ -702,4 +672,69 @@
     <string name="onboarding_calendar_description">تتم مزامنة جميع أحداثك مع تطبيق التقويم في Android تلقائيًا</string>
     <string name="onboarding_contacts_title">إدارة جهات الاتصال الخاصة بك</string>
     <string name="onboarding_contacts_description">تتم مزامنة جهات الاتصال الخاصة بك مع تطبيق جهات الاتصال في Android، جاهزة للاستخدام في كل مكان</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">إرسال ملاحظات</string>
+    <string name="send_feedback_subtitle">الإبلاغ عن المشاكل أو اقتراح تحسينات</string>
+    <string name="feedback_email_subject">ملاحظات DAVy (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">عرض الكود المصدري والإبلاغ عن المشاكل</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">ما الجديد</string>
+    <string name="whats_new_title">ما الجديد في v%1$s</string>
+    <string name="whats_new_dismiss">فهمت</string>
+    <string name="whats_new_v1_0_0">• الإصدار الأول\n• مزامنة تقويم CalDAV\n• مزامنة جهات اتصال CardDAV\n• دعم اشتراكات WebCal\n• دعم حسابات متعددة\n• مزامنة في الخلفية مع فترات قابلة للتكوين\n• خيار المزامنة عبر WiFi فقط\n• تصميم Material 3\n• دعم الوضع الداكن</string>
+    <string name="whats_new_v1_0_1">• إضافة سياسة الخصوصية وشروط الخدمة\n• تجربة ترحيب جديدة للمستخدمين الجدد\n• حوار \"ما الجديد\" بعد التحديثات\n• خيار \"إرسال ملاحظات\" في الإعدادات\n• روابط GitHub في صفحة عن التطبيق والأسئلة الشائعة\n• أسئلة شائعة موسعة مع أقسام المصدر المفتوح والمساعدة\n• روابط URL قابلة للنقر في إجابات الأسئلة الشائعة\n• خيارات اختبار للمطورين\n• ترجمات كاملة لجميع اللغات الـ 15\n• الترجمات الألمانية الآن بأسلوب غير رسمي \"Du\"</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">مقدمة</string>
+    <string name="privacy_introduction_content">DAVy (\"التطبيق\") هو تطبيق مزامنة CalDAV وCardDAV وWebCal لنظام Android. توضح سياسة الخصوصية هذه ما هي المعلومات التي يجمعها التطبيق، وكيف تُستخدم، وحقوقك فيما يتعلق ببياناتك.\n\nنحن ملتزمون بحماية خصوصيتك. تم تصميم DAVy لمزامنة بيانات التقويم وجهات الاتصال والمهام مع خوادمك الخاصة - نحن لا نجمع أو نخزن أو نشارك أي من بياناتك الشخصية على خوادمنا.</string>
+    <string name="privacy_info_collect_title">المعلومات التي نجمعها</string>
+    <string name="privacy_info_collect_content">يجمع DAVy ويخزن المعلومات التالية محلياً على جهازك:\n\n• بيانات اعتماد الخادم (URL، اسم المستخدم، كلمة المرور/رموز OAuth)\n• أحداث التقويم وجهات الاتصال والمهام من خوادمك\n• إعدادات التطبيق والتفضيلات\n• حالة المزامنة وسجلات الأخطاء\n\nهذه البيانات مخزنة بشكل آمن على جهازك ويتم نقلها فقط إلى الخوادم التي تقوم بتكوينها.</string>
+    <string name="privacy_how_use_title">كيف نستخدم المعلومات</string>
+    <string name="privacy_how_use_content">المعلومات المجمعة تُستخدم حصرياً من أجل:\n\n• المصادقة مع خوادم CalDAV/CardDAV/WebCal الخاصة بك\n• مزامنة التقويمات وجهات الاتصال والمهام\n• تخزين إعداداتك\n• عرض حالة المزامنة واستكشاف الأخطاء وإصلاحها</string>
+    <string name="privacy_data_storage_title">تخزين البيانات والأمان</string>
+    <string name="privacy_data_storage_content">• جميع البيانات مخزنة محلياً على جهاز Android الخاص بك\n• كلمات المرور مشفرة باستخدام تخزين Android الآمن\n• يتم نقل البيانات عبر HTTPS إذا كانت خوادمك تدعمه\n• لا يتم إرسال أي بيانات إلى مطوري DAVy أو أطراف ثالثة</string>
+    <string name="privacy_data_sharing_title">مشاركة البيانات</string>
+    <string name="privacy_data_sharing_content">DAVy لا يشارك بياناتك مع أطراف ثالثة. بياناتك تُنقل فقط إلى الخوادم التي تقوم بتكوينها صراحةً.</string>
+    <string name="privacy_your_rights_title">حقوقك</string>
+    <string name="privacy_your_rights_content">لديك السيطرة الكاملة على بياناتك:\n\n• حذف الحسابات والبيانات المرتبطة بها في أي وقت\n• تصدير البيانات عبر ميزات النسخ الاحتياطي\n• مسح جميع بيانات التطبيق عبر إعدادات Android\n• إلغاء الأذونات في أي وقت</string>
+    <string name="privacy_permissions_title">الأذونات</string>
+    <string name="privacy_permissions_content">يطلب DAVy الأذونات التالية:\n\n• التقويم: قراءة/كتابة لمزامنة أحداث التقويم\n• جهات الاتصال: قراءة/كتابة لمزامنة جهات الاتصال\n• الإنترنت: الاتصال بخوادم CalDAV/CardDAV الخاصة بك\n• الإشعارات: عرض حالة المزامنة والأخطاء</string>
+    <string name="privacy_third_party_title">خدمات الطرف الثالث</string>
+    <string name="privacy_third_party_content">DAVy لا يتضمن أي خدمات تحليلات أو إعلانات أو تتبع من طرف ثالث. التطبيق يتواصل فقط مع الخوادم التي تقوم بتكوينها.</string>
+    <string name="privacy_children_title">خصوصية الأطفال</string>
+    <string name="privacy_children_content">DAVy لا يجمع عن علم معلومات من الأطفال دون سن 13 عاماً. التطبيق مخصص للاستخدام العام ولا يستهدف الأطفال.</string>
+    <string name="privacy_contact_title">معلومات الاتصال</string>
+    <string name="privacy_contact_content">للأسئلة أو المخاوف بشأن سياسة الخصوصية هذه، يرجى الاتصال بنا عبر قنوات دعم التطبيق أو مستودع GitHub.</string>
+    <string name="privacy_last_updated">آخر تحديث: 29 أكتوبر 2025</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">عرض شروط الاستخدام الخاصة بنا</string>
+    <string name="tos_effective_date">تاريخ السريان: 01 نوفمبر 2025</string>
+    <string name="tos_acceptance_title">قبول الشروط</string>
+    <string name="tos_acceptance_content">بتنزيل DAVy (\"التطبيق\") أو تثبيته أو استخدامه، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على هذه الشروط، فلا تستخدم التطبيق.</string>
+    <string name="tos_service_title">وصف الخدمة</string>
+    <string name="tos_service_content">DAVy هو تطبيق مزامنة CalDAV وCardDAV وWebCal يتيح لك مزامنة التقويمات وجهات الاتصال والمهام بين جهاز Android الخاص بك والخوادم المتوافقة. يعمل التطبيق كعميل لخوادمك ولا يوفر خدمات استضافة.</string>
+    <string name="tos_responsibilities_title">مسؤوليات المستخدم</string>
+    <string name="tos_responsibilities_content">أنت مسؤول عن:\n\n• الحفاظ على أمان بيانات اعتماد الخادم الخاص بك\n• التأكد من أن لديك إذناً للوصول إلى الخوادم التي تقوم بتكوينها\n• نسخ البيانات المهمة احتياطياً\n• استخدام التطبيق وفقاً للقوانين المعمول بها</string>
+    <string name="tos_security_title">أمان الحساب</string>
+    <string name="tos_security_content">أنت مسؤول عن الحفاظ على سرية بيانات اعتماد الخادم الخاصة بك. يخزن DAVy بيانات الاعتماد بشكل آمن على جهازك باستخدام تخزين Android المشفر، ولكن يجب عليك اتخاذ احتياطات إضافية مثل استخدام كلمات مرور قوية وتمكين تشفير الجهاز.</string>
+    <string name="tos_ip_title">الملكية الفكرية</string>
+    <string name="tos_ip_content">DAVy هو برنامج مفتوح المصدر مرخص بموجب Apache License 2.0. يمكنك استخدام التطبيق وتعديله وتوزيعه وفقاً لهذا الترخيص. المكتبات التابعة لطرف ثالث المستخدمة في التطبيق تخضع لتراخيصها الخاصة.</string>
+    <string name="tos_disclaimer_title">إخلاء المسؤولية عن الضمانات</string>
+    <string name="tos_disclaimer_content">يُقدَّم التطبيق \"كما هو\" بدون أي ضمانات من أي نوع. نحن لا نضمن أن التطبيق سيكون خالياً من الأخطاء أو متاحاً بشكل مستمر أو خالياً من المكونات الضارة. استخدامك للتطبيق على مسؤوليتك الخاصة.</string>
+    <string name="tos_liability_title">حدود المسؤولية</string>
+    <string name="tos_liability_content">إلى أقصى حد يسمح به القانون، لن يكون المطورون مسؤولين عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو تأديبية، بما في ذلك فقدان البيانات أو الأرباح أو فرص العمل.</string>
+    <string name="tos_modifications_title">تعديلات الشروط</string>
+    <string name="tos_modifications_content">نحتفظ بالحق في تعديل هذه الشروط في أي وقت. ستصبح التغييرات سارية المفعول عند نشر الشروط المحدثة. استمرارك في استخدام التطبيق بعد التغييرات يشكل قبولاً للشروط الجديدة.</string>
+    <string name="tos_termination_title">إنهاء الخدمة</string>
+    <string name="tos_termination_content">يمكنك إنهاء استخدامك للتطبيق في أي وقت عن طريق إلغاء تثبيته. ستظل هذه الشروط المتعلقة بحدود المسؤولية والملكية الفكرية سارية بعد الإنهاء.</string>
+    <string name="tos_contact_title">معلومات الاتصال</string>
+    <string name="tos_contact_content">للأسئلة حول هذه الشروط، يرجى الاتصال بنا عبر قنوات دعم التطبيق أو مستودع GitHub.</string>
+    <string name="tos_last_updated">آخر تحديث: 29 أكتوبر 2025</string>
 </resources>

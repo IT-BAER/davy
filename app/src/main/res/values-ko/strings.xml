@@ -605,41 +605,11 @@
     <!-- Legal -->
     <string name="legal">법적 정보</string>
     <string name="privacy_policy">개인정보 처리방침</string>
-    <string name="privacy_policy_title">개인정보 처리방침</string>
     <string name="privacy_policy_subtitle">개인정보 보호 정책 보기</string>
     <string name="privacy_effective_date">시행일: 2025년 11월 01일</string>
-    <string name="privacy_policy_effective_date">시행일: 2025년 11월 1일</string>
-    <string name="privacy_policy_intro_title">소개</string>
-    <string name="privacy_policy_intro">DAVy는 CalDAV 및 CardDAV 동기화를 위한 개인정보 보호 중심의 오픈소스 애플리케이션입니다. 우리는 귀하의 개인정보를 진지하게 생각합니다. 이 문서는 앱이 귀하의 데이터를 어떻게 처리하는지 설명합니다.</string>
-    <string name="privacy_policy_info_title">수집하는 정보</string>
-    <string name="privacy_policy_info">DAVy는 개인 데이터를 수집하거나 앱 개발자 또는 제3자에게 전송하지 않습니다. 모든 데이터는 귀하의 기기에 남아 있거나 선택한 CalDAV/CardDAV 서버와 직접 동기화됩니다.</string>
-    <string name="privacy_policy_storage_title">데이터 저장</string>
-    <string name="privacy_policy_storage">계정 자격 증명은 Android의 계정 관리자에 안전하게 저장됩니다. 캘린더 이벤트와 연락처는 기기에 로컬로 저장되며 지정한 서버와 동기화됩니다.</string>
-    <string name="privacy_policy_permissions_title">권한</string>
-    <string name="privacy_policy_permissions">앱은 캘린더, 연락처 및 동기화에 필요한 권한만 요청합니다. 이러한 권한 외의 데이터에는 액세스하지 않습니다.</string>
-    <string name="privacy_policy_third_party_title">제3자 서비스</string>
-    <string name="privacy_policy_third_party">DAVy에는 제3자 추적, 분석 또는 광고가 포함되어 있지 않습니다. 유일한 네트워크 통신은 귀하의 CalDAV/CardDAV 서버와의 통신입니다.</string>
-    <string name="privacy_policy_changes_title">이 정책의 변경</string>
-    <string name="privacy_policy_changes">이 개인정보 처리방침은 수시로 업데이트될 수 있습니다. 변경 사항은 업데이트된 시행일과 함께 이 페이지에 게시됩니다.</string>
-    <string name="privacy_policy_contact_title">문의하기</string>
-    <string name="privacy_policy_contact">이 개인정보 처리방침에 대해 질문이 있으시면 GitHub 저장소를 통해 문의해 주세요.</string>
 
     <!-- Terms of Service -->
     <string name="terms_of_service">서비스 약관</string>
-    <string name="terms_of_service_title">서비스 약관</string>
-    <string name="terms_of_service_effective_date">시행일: 2025년 11월 1일</string>
-    <string name="terms_of_service_acceptance_title">약관 동의</string>
-    <string name="terms_of_service_acceptance">DAVy를 사용함으로써 귀하는 이 약관에 구속되는 것에 동의합니다. 이 약관의 어떤 부분에도 동의하지 않으시면 앱을 사용하지 마세요.</string>
-    <string name="terms_of_service_license_title">라이선스</string>
-    <string name="terms_of_service_license">DAVy는 GNU General Public License 버전 3(GPLv3) 하에서 라이선스된 오픈소스 소프트웨어입니다. 이 라이선스 조건에 따라 소프트웨어를 자유롭게 사용, 수정 및 배포할 수 있습니다.</string>
-    <string name="terms_of_service_disclaimer_title">면책 조항</string>
-    <string name="terms_of_service_disclaimer">DAVy는 어떠한 종류의 보증도 없이 \"있는 그대로\" 제공됩니다. 개발자는 이 소프트웨어 사용으로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다.</string>
-    <string name="terms_of_service_user_responsibilities_title">사용자 책임</string>
-    <string name="terms_of_service_user_responsibilities">귀하는 계정 자격 증명의 보안을 유지하고, 신뢰할 수 있는 CalDAV/CardDAV 서버를 선택하며, 사용이 관련 법률을 준수하는지 확인할 책임이 있습니다.</string>
-    <string name="terms_of_service_limitations_title">제한 사항</string>
-    <string name="terms_of_service_limitations">개발자는 서비스의 지속성이나 모든 서버와의 호환성을 보장하지 않습니다. 기능은 서버 구현에 따라 다를 수 있습니다.</string>
-    <string name="terms_of_service_changes_title">약관 변경</string>
-    <string name="terms_of_service_changes">이 약관은 수시로 업데이트될 수 있습니다. 변경 후에도 앱을 계속 사용하면 새로운 약관에 동의하는 것으로 간주됩니다.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">건너뛰기</string>
@@ -656,4 +626,69 @@
     <string name="onboarding_calendar_description">모든 이벤트가 Android 캘린더 앱에 자동으로 동기화됩니다</string>
     <string name="onboarding_contacts_title">연락처 관리</string>
     <string name="onboarding_contacts_description">연락처가 Android 연락처 앱에 동기화되어 어디서나 사용할 수 있습니다</string>
+
+    <!-- Feedback -->
+    <string name="send_feedback">피드백 보내기</string>
+    <string name="send_feedback_subtitle">문제를 보고하거나 개선 사항을 제안하세요</string>
+    <string name="feedback_email_subject">DAVy 피드백 (v%1$s)</string>
+
+    <!-- GitHub -->
+    <string name="github">GitHub</string>
+    <string name="github_subtitle">소스 코드 보기 및 문제 보고</string>
+    <string name="github_url">https://github.com/IT-BAER/davy</string>
+
+    <!-- What\'s New -->
+    <string name="whats_new">새로운 기능</string>
+    <string name="whats_new_title">v%1$s의 새로운 기능</string>
+    <string name="whats_new_dismiss">확인</string>
+    <string name="whats_new_v1_0_0">• 첫 번째 릴리스\n• CalDAV 캘린더 동기화\n• CardDAV 연락처 동기화\n• WebCal 구독 지원\n• 다중 계정 지원\n• 구성 가능한 간격으로 백그라운드 동기화\n• WiFi 전용 동기화 옵션\n• Material 3 디자인\n• 다크 테마 지원</string>
+    <string name="whats_new_v1_0_1">• 개인정보 보호정책 및 서비스 약관 추가\n• 신규 사용자를 위한 새로운 환영 경험\n• 업데이트 후 \"새로운 기능\" 대화 상자\n• 설정에 \"피드백 보내기\" 옵션\n• 정보 및 FAQ에 GitHub 링크\n• 오픈 소스 및 도움말 섹션이 포함된 확장 FAQ\n• FAQ 답변에서 클릭 가능한 URL\n• 개발자를 위한 테스트 옵션\n• 15개 언어 전체 번역\n• 독일어 번역이 비격식 \"Du\" 스타일로 변경</string>
+
+    <!-- Privacy Policy (new format) -->
+    <string name="privacy_introduction_title">소개</string>
+    <string name="privacy_introduction_content">DAVy(\"앱\")는 Android용 CalDAV, CardDAV 및 WebCal 동기화 앱입니다. 이 개인정보 보호정책은 앱이 수집하는 정보, 사용 방법 및 데이터에 관한 귀하의 권리를 설명합니다.\n\n당사는 귀하의 개인정보 보호를 위해 최선을 다하고 있습니다. DAVy는 귀하의 캘린더, 연락처 및 작업 데이터를 귀하 자신의 서버와 동기화하도록 설계되었습니다. 당사 서버에서 귀하의 개인 데이터를 수집, 저장 또는 공유하지 않습니다.</string>
+    <string name="privacy_info_collect_title">수집하는 정보</string>
+    <string name="privacy_info_collect_content">DAVy는 다음 정보를 기기에 로컬로 수집 및 저장합니다:\n\n• 서버 자격 증명(URL, 사용자 이름, 비밀번호/OAuth 토큰)\n• 서버의 캘린더 이벤트, 연락처 및 작업\n• 앱 설정 및 기본 설정\n• 동기화 상태 및 오류 로그\n\n이 데이터는 기기에 안전하게 저장되며 구성한 서버에만 전송됩니다.</string>
+    <string name="privacy_how_use_title">정보 사용 방법</string>
+    <string name="privacy_how_use_content">수집된 정보는 다음 용도로만 사용됩니다:\n\n• CalDAV/CardDAV/WebCal 서버 인증\n• 캘린더, 연락처 및 작업 동기화\n• 설정 저장\n• 동기화 상태 표시 및 오류 문제 해결</string>
+    <string name="privacy_data_storage_title">데이터 저장 및 보안</string>
+    <string name="privacy_data_storage_content">• 모든 데이터는 Android 기기에 로컬로 저장됩니다\n• 비밀번호는 Android 보안 저장소를 사용하여 암호화됩니다\n• 서버가 지원하는 경우 데이터는 HTTPS를 통해 전송됩니다\n• DAVy 개발자나 제3자에게 데이터가 전송되지 않습니다</string>
+    <string name="privacy_data_sharing_title">데이터 공유</string>
+    <string name="privacy_data_sharing_content">DAVy는 귀하의 데이터를 제3자와 공유하지 않습니다. 데이터는 명시적으로 구성한 서버에만 전송됩니다.</string>
+    <string name="privacy_your_rights_title">귀하의 권리</string>
+    <string name="privacy_your_rights_content">데이터를 완전히 제어할 수 있습니다:\n\n• 언제든지 계정 및 관련 데이터 삭제\n• 백업 기능을 통해 데이터 내보내기\n• Android 설정을 통해 모든 앱 데이터 지우기\n• 언제든지 권한 취소</string>
+    <string name="privacy_permissions_title">권한</string>
+    <string name="privacy_permissions_content">DAVy는 다음 권한을 요청합니다:\n\n• 캘린더: 캘린더 이벤트 동기화를 위한 읽기/쓰기\n• 연락처: 연락처 동기화를 위한 읽기/쓰기\n• 인터넷: CalDAV/CardDAV 서버에 연결\n• 알림: 동기화 상태 및 오류 표시</string>
+    <string name="privacy_third_party_title">제3자 서비스</string>
+    <string name="privacy_third_party_content">DAVy에는 제3자 분석, 광고 또는 추적 서비스가 포함되어 있지 않습니다. 앱은 구성한 서버와만 통신합니다.</string>
+    <string name="privacy_children_title">아동 개인정보</string>
+    <string name="privacy_children_content">DAVy는 의도적으로 13세 미만 아동의 정보를 수집하지 않습니다. 이 앱은 일반적인 용도로 사용되며 아동을 대상으로 하지 않습니다.</string>
+    <string name="privacy_contact_title">연락처 정보</string>
+    <string name="privacy_contact_content">이 개인정보 보호정책에 대한 질문이나 우려 사항이 있으시면 앱 지원 채널 또는 GitHub 저장소를 통해 문의하세요.</string>
+    <string name="privacy_last_updated">마지막 업데이트: 2025년 10월 29일</string>
+
+    <!-- Terms of Service (new format) -->
+    <string name="terms_of_service_subtitle">서비스 약관 보기</string>
+    <string name="tos_effective_date">시행일: 2025년 11월 1일</string>
+    <string name="tos_acceptance_title">약관 동의</string>
+    <string name="tos_acceptance_content">DAVy(\"앱\")를 다운로드, 설치 또는 사용함으로써 귀하는 이 약관에 동의하는 것입니다. 이 약관에 동의하지 않으시면 앱을 사용하지 마세요.</string>
+    <string name="tos_service_title">서비스 설명</string>
+    <string name="tos_service_content">DAVy는 Android 기기와 호환되는 서버 간에 캘린더, 연락처 및 작업을 동기화할 수 있는 CalDAV, CardDAV 및 WebCal 동기화 앱입니다. 앱은 서버의 클라이언트 역할을 하며 호스팅 서비스를 제공하지 않습니다.</string>
+    <string name="tos_responsibilities_title">사용자 책임</string>
+    <string name="tos_responsibilities_content">귀하는 다음에 대한 책임이 있습니다:\n\n• 서버 자격 증명의 보안 유지\n• 구성된 서버에 액세스할 권한이 있는지 확인\n• 중요한 데이터 백업\n• 해당 법률에 따라 앱 사용</string>
+    <string name="tos_security_title">계정 보안</string>
+    <string name="tos_security_content">서버 자격 증명의 기밀성을 유지할 책임은 귀하에게 있습니다. DAVy는 Android의 암호화된 저장소를 사용하여 기기에 자격 증명을 안전하게 저장하지만 강력한 비밀번호 사용 및 기기 암호화 활성화와 같은 추가 예방 조치를 취해야 합니다.</string>
+    <string name="tos_ip_title">지적 재산권</string>
+    <string name="tos_ip_content">DAVy는 Apache License 2.0에 따라 라이선스가 부여된 오픈 소스 소프트웨어입니다. 이 라이선스에 따라 앱을 사용, 수정 및 배포할 수 있습니다. 앱에서 사용하는 제3자 라이브러리는 해당 라이선스의 적용을 받습니다.</string>
+    <string name="tos_disclaimer_title">보증 부인</string>
+    <string name="tos_disclaimer_content">앱은 어떠한 종류의 보증 없이 \"있는 그대로\" 제공됩니다. 앱이 오류가 없거나 중단되지 않거나 유해한 구성 요소가 없을 것을 보장하지 않습니다. 앱 사용은 전적으로 귀하의 책임입니다.</string>
+    <string name="tos_liability_title">책임 제한</string>
+    <string name="tos_liability_content">법률이 허용하는 최대 범위 내에서 개발자는 데이터, 이익 또는 비즈니스 기회 손실을 포함하여 간접적, 부수적, 특수, 결과적 또는 징벌적 손해에 대해 책임을 지지 않습니다.</string>
+    <string name="tos_modifications_title">약관 수정</string>
+    <string name="tos_modifications_content">당사는 언제든지 이 약관을 수정할 권리를 보유합니다. 변경 사항은 업데이트된 약관이 게시되면 효력이 발생합니다. 변경 후 앱을 계속 사용하면 새 약관에 동의하는 것으로 간주됩니다.</string>
+    <string name="tos_termination_title">종료</string>
+    <string name="tos_termination_content">언제든지 앱을 제거하여 사용을 종료할 수 있습니다. 책임 제한 및 지적 재산권 조항과 관련된 이 약관은 종료 후에도 유효합니다.</string>
+    <string name="tos_contact_title">연락처 정보</string>
+    <string name="tos_contact_content">이 약관에 대한 질문이 있으시면 앱 지원 채널 또는 GitHub 저장소를 통해 문의하세요.</string>
+    <string name="tos_last_updated">마지막 업데이트: 2025년 10월 29일</string>
 </resources>
