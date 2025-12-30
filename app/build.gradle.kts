@@ -221,7 +221,6 @@ dependencies {
 
     // Testing - Unit
     testImplementation(libs.bundles.testing.unit)
-    testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.vintage.engine)
     testImplementation(libs.room.testing)
     testImplementation(libs.orgjson)

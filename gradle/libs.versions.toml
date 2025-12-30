@@ -51,6 +51,7 @@ browserCustomTabs = "1.8.0"
 
 # Testing
 junit = "5.10.2"
+junit4 = "4.13.2"
 junitVintage = "5.10.2"
 mockk = "1.13.9"
 truth = "1.4.0"
@@ -145,10 +146,12 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 orgjson = { module = "org.json:json", version.ref = "orgJson" }
 
 # Testing - JUnit 5
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junitVintage" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
 
 # Testing - MockK and Truth
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
@@ -180,6 +183,6 @@ compose = ["compose-ui", "compose-ui-tooling-preview", "compose-material", "comp
 lifecycle = ["androidx-lifecycle-runtime-ktx", "androidx-lifecycle-runtime-compose", "androidx-lifecycle-viewmodel-ktx", "androidx-lifecycle-viewmodel-compose"]
 room = ["room-runtime", "room-ktx"]
 network = ["okhttp", "okhttp-logging-interceptor", "retrofit", "retrofit-converter-moshi", "moshi", "moshi-kotlin"]
-testing-unit = ["junit-jupiter-api", "junit-jupiter-params", "mockk", "truth", "kotlin-coroutines-test", "turbine"]
-testing-android = ["androidx-test-core", "androidx-test-runner", "androidx-test-rules", "androidx-test-ext-junit", "androidx-espresso-core", "mockk-android"]
+testing-unit = ["junit-jupiter", "mockk", "truth", "kotlin-coroutines-test", "turbine"]
+testing-android = ["junit4", "androidx-test-core", "androidx-test-runner", "androidx-test-rules", "androidx-test-ext-junit", "androidx-espresso-core", "mockk-android"]
 testing-compose = ["compose-ui-test-junit4"]
