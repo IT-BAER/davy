@@ -145,7 +145,8 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/upload.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > upload.keystore
+          echo "✅ Keystore created at $(pwd)/upload.keystore"
 
       - name: Create keystore.properties
         run: |
