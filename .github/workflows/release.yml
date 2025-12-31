@@ -126,6 +126,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # Quick code quality checks before building release
+      - name: Run Android Lint
+        run: ./gradlew --build-cache lintRelease
+
+      - name: Run Unit Tests
+        run: ./gradlew --build-cache testReleaseUnitTest
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/upload.keystore
