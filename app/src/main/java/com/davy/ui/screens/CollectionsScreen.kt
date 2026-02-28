@@ -99,7 +99,7 @@ fun CollectionsScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondBoundsPageCount = 3,  // Preload all tabs (4 total pages)
+                beyondViewportPageCount = 3,  // Preload all tabs (4 total pages)
                 key = { it }  // Stable key for composition
             ) { page ->
                 when (page) {

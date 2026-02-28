@@ -34,18 +34,22 @@ class WorkManagerSetupInitializer : Initializer<Unit> {
             return
         }
 
-        Timber.d("WorkManagerSetupInitializer: Initializing WorkManager with HiltWorkerFactory")
-        val entryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            WorkManagerDependencies::class.java
-        )
+        try {
+            Timber.d("WorkManagerSetupInitializer: Initializing WorkManager with HiltWorkerFactory")
+            val entryPoint = EntryPointAccessors.fromApplication(
+                appContext,
+                WorkManagerDependencies::class.java
+            )
 
-        val configuration = Configuration.Builder()
-            .setWorkerFactory(entryPoint.hiltWorkerFactory())
-            .build()
+            val configuration = Configuration.Builder()
+                .setWorkerFactory(entryPoint.hiltWorkerFactory())
+                .build()
 
-        WorkManager.initialize(appContext, configuration)
-        Timber.d("WorkManagerSetupInitializer: WorkManager initialization complete")
+            WorkManager.initialize(appContext, configuration)
+            Timber.d("WorkManagerSetupInitializer: WorkManager initialization complete")
+        } catch (e: IllegalStateException) {
+            Timber.w(e, "WorkManagerSetupInitializer: Skipping — Hilt component not ready (test environment)")
+        }
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()

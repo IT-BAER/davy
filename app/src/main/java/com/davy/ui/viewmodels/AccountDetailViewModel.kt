@@ -6,10 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.davy.domain.model.Account
 import com.davy.domain.model.AddressBook
 import com.davy.domain.model.Calendar
+import com.davy.domain.model.Task
+import com.davy.domain.model.TaskList
+import com.davy.domain.model.TaskPriority
+import com.davy.domain.model.TaskStatus
 import com.davy.domain.model.WebCalSubscription
 import com.davy.data.repository.AccountRepository
 import com.davy.data.repository.AddressBookRepository
 import com.davy.data.repository.CalendarRepository
+import com.davy.data.repository.TaskListRepository
+import com.davy.data.repository.TaskRepository
 import com.davy.data.repository.WebCalSubscriptionRepository
 import com.davy.data.remote.caldav.PrincipalDiscovery
 import com.davy.data.remote.caldav.CalDAVClient
@@ -31,6 +37,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
@@ -46,6 +53,8 @@ class AccountDetailViewModel @Inject constructor(
     private val calendarRepository: CalendarRepository,
     private val addressBookRepository: AddressBookRepository,
     private val webCalSubscriptionRepository: WebCalSubscriptionRepository,
+    private val taskListRepository: TaskListRepository,
+    private val taskRepository: TaskRepository,
     private val caldavPrincipalDiscovery: PrincipalDiscovery,
     private val caldavClient: CalDAVClient,
     private val carddavClient: com.davy.data.remote.carddav.CardDAVClient,
@@ -71,10 +80,12 @@ class AccountDetailViewModel @Inject constructor(
     private val _account = MutableStateFlow<Account?>(null)
     private val _calendars = MutableStateFlow<List<Calendar>>(emptyList())
     private val _addressBooks = MutableStateFlow<List<AddressBook>>(emptyList())
+    private val _taskLists = MutableStateFlow<List<TaskList>>(emptyList())
     private val _webCalSubscriptions = MutableStateFlow<List<WebCalSubscription>>(emptyList())
     private val _isSyncing = MutableStateFlow(false)
     private val _syncingCalendarIds = MutableStateFlow<Set<Long>>(emptySet())
     private val _syncingAddressBookIds = MutableStateFlow<Set<Long>>(emptySet())
+    private val _syncingTaskListIds = MutableStateFlow<Set<Long>>(emptySet())
     private val _isRefreshingCollections = MutableStateFlow(false)
     private val _accountDeleted = MutableStateFlow(false)
     private val _isTestingCredentials = MutableStateFlow(false)
@@ -102,10 +113,12 @@ class AccountDetailViewModel @Inject constructor(
         _account,
         _calendars,
         _addressBooks,
+        _taskLists,
         _webCalSubscriptions,
         _isSyncing,
         _syncingCalendarIds,
         _syncingAddressBookIds,
+        _syncingTaskListIds,
         _isRefreshingCollections,
         _accountDeleted,
         _isTestingCredentials,
@@ -116,15 +129,17 @@ class AccountDetailViewModel @Inject constructor(
             account = flows[0] as Account?,
             calendars = flows[1] as List<Calendar>,
             addressBooks = flows[2] as List<AddressBook>,
-            webCalSubscriptions = flows[3] as List<WebCalSubscription>,
-            isSyncing = flows[4] as Boolean,
-            syncingCalendarIds = flows[5] as Set<Long>,
-            syncingAddressBookIds = flows[6] as Set<Long>,
-            isRefreshingCollections = flows[7] as Boolean,
-            accountDeleted = flows[8] as Boolean,
-            isTestingCredentials = flows[9] as Boolean,
-            credentialTestResult = flows[10] as String?,
-            errorMessage = flows[11] as String?
+            taskLists = flows[3] as List<TaskList>,
+            webCalSubscriptions = flows[4] as List<WebCalSubscription>,
+            isSyncing = flows[5] as Boolean,
+            syncingCalendarIds = flows[6] as Set<Long>,
+            syncingAddressBookIds = flows[7] as Set<Long>,
+            syncingTaskListIds = flows[8] as Set<Long>,
+            isRefreshingCollections = flows[9] as Boolean,
+            accountDeleted = flows[10] as Boolean,
+            isTestingCredentials = flows[11] as Boolean,
+            credentialTestResult = flows[12] as String?,
+            errorMessage = flows[13] as String?
         )
     }.stateIn(
         scope = viewModelScope,
@@ -177,6 +192,15 @@ class AccountDetailViewModel @Inject constructor(
                     } else {
                         books
                     }
+                }
+            }
+        }
+        
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                // Load task lists - Flow collection on IO thread
+                taskListRepository.getByAccountId(accountId).collect { taskLists ->
+                    _taskLists.value = taskLists
                 }
             }
         }
@@ -1408,6 +1432,7 @@ class AccountDetailViewModel @Inject constructor(
                 // Track discovered identifiers to prune stale local entries afterwards
                 val discoveredCalendarUrls = mutableSetOf<String>()
                 val discoveredWebCalUrls = mutableSetOf<String>()
+                val discoveredTaskListUrls = mutableSetOf<String>()
 
                 // Process discovered calendars and webcal subscriptions
                 discoveredCalendars.forEach { calendarInfo ->
@@ -1479,6 +1504,36 @@ class AccountDetailViewModel @Inject constructor(
                             calendarRepository.update(updated)
                             Timber.tag("AccountDetailViewModel").d("Updated calendar: %s", calendarInfo.displayName)
                         }
+                        
+                        // Create/update TaskList for calendars that support VTODO
+                        if (calendarInfo.supportsVTODO) {
+                            discoveredTaskListUrls += calendarInfo.url
+                            val existingTaskList = taskListRepository.getByUrl(calendarInfo.url)
+                            if (existingTaskList == null) {
+                                // New task list - insert it
+                                val colorHex = calendarInfo.color ?: "#2196F3"
+                                val taskList = TaskList(
+                                    id = 0,
+                                    accountId = account.id,
+                                    url = calendarInfo.url,
+                                    displayName = calendarInfo.displayName,
+                                    color = colorHex,
+                                    syncEnabled = true,
+                                    visible = true
+                                )
+                                taskListRepository.insert(taskList)
+                                Timber.tag("AccountDetailViewModel").d("Created task list for VTODO calendar: %s", calendarInfo.displayName)
+                            } else {
+                                // Update existing task list
+                                val colorHex = calendarInfo.color ?: existingTaskList.color
+                                val updatedTaskList = existingTaskList.copy(
+                                    displayName = calendarInfo.displayName,
+                                    color = colorHex
+                                )
+                                taskListRepository.update(updatedTaskList)
+                                Timber.tag("AccountDetailViewModel").d("Updated task list: %s", calendarInfo.displayName)
+                            }
+                        }
                     }
                 }
 
@@ -1547,6 +1602,27 @@ class AccountDetailViewModel @Inject constructor(
                     }
                 } catch (e: Exception) {
                     Timber.tag("AccountDetailViewModel").e(e, "Error while pruning removed WebCal subscriptions")
+                }
+                
+                // PRUNING (TaskLists): Remove task lists for calendars that no longer support VTODO
+                try {
+                    val localTaskLists = taskListRepository.getByAccountId(account.id).first()
+                    val taskListsToRemove = localTaskLists.filter { taskList ->
+                        !discoveredTaskListUrls.contains(taskList.url)
+                    }
+                    if (taskListsToRemove.isNotEmpty()) {
+                        Timber.tag("AccountDetailViewModel").d("Pruning %s task lists no longer on server", taskListsToRemove.size)
+                    }
+                    taskListsToRemove.forEach { taskList ->
+                        try {
+                            taskListRepository.delete(taskList)
+                            Timber.tag("AccountDetailViewModel").d("Pruned task list '%s' (%s)", taskList.displayName, taskList.url)
+                        } catch (e: Exception) {
+                            Timber.tag("AccountDetailViewModel").e(e, "Failed to delete pruned task list %s", taskList.displayName)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("AccountDetailViewModel").e(e, "Error while pruning task lists")
                 }
                 
                 Timber.tag("AccountDetailViewModel").d("Collection refresh complete")
@@ -1638,6 +1714,141 @@ class AccountDetailViewModel @Inject constructor(
     suspend fun restoreBackup(backupJson: String, overwriteExisting: Boolean = false): com.davy.domain.manager.BackupRestoreManager.RestoreResult {
         return withContext(Dispatchers.IO) {
             restoreBackupUseCase(backupJson, overwriteExisting)
+        }
+    }
+
+    // ============================================
+    // TASK MANAGEMENT METHODS
+    // ============================================
+    
+    /**
+     * Load tasks for a specific task list and invoke callback with results.
+     */
+    fun loadTasksForTaskList(taskListId: Long, onTasksLoaded: (List<Task>) -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                taskRepository.getByTaskListId(taskListId).collect { tasks ->
+                    withContext(Dispatchers.Main) {
+                        onTasksLoaded(tasks.filter { !it.deleted })
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Sync all task lists for the current account.
+     */
+    fun syncAllTaskLists() {
+        viewModelScope.launch {
+            val accountId = currentAccountId ?: return@launch
+            syncManager.syncNow(accountId, SyncWorker.SYNC_TYPE_TASKS)
+        }
+    }
+    
+    /**
+     * Toggle sync enabled for a task list.
+     */
+    fun toggleTaskListSync(taskListId: Long) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val taskList = _taskLists.value.find { it.id == taskListId } ?: return@withContext
+                taskListRepository.update(taskList.copy(syncEnabled = !taskList.syncEnabled))
+            }
+        }
+    }
+    
+    /**
+     * Toggle task completion status.
+     */
+    fun toggleTaskCompletion(task: Task) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val newStatus = if (task.isCompleted()) TaskStatus.NEEDS_ACTION else TaskStatus.COMPLETED
+                val completedTime = if (newStatus == TaskStatus.COMPLETED) System.currentTimeMillis() else null
+                val updatedTask = task.copy(
+                    status = newStatus,
+                    completed = completedTime,
+                    percentComplete = if (newStatus == TaskStatus.COMPLETED) 100 else task.percentComplete,
+                    dirty = true
+                )
+                taskRepository.update(updatedTask)
+            }
+            // Sync to push changes to server
+            val accountId = currentAccountId ?: return@launch
+            syncManager.syncNow(accountId, SyncWorker.SYNC_TYPE_TASKS)
+        }
+    }
+    
+    /**
+     * Delete a task (mark as deleted for sync).
+     */
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                // Mark as deleted instead of actually deleting - will be synced to server
+                taskRepository.update(task.copy(deleted = true, dirty = true))
+            }
+            // Sync to push deletion to server
+            val accountId = currentAccountId ?: return@launch
+            syncManager.syncNow(accountId, SyncWorker.SYNC_TYPE_TASKS)
+        }
+    }
+    
+    /**
+     * Create a new task.
+     */
+    fun createTask(
+        taskListId: Long,
+        summary: String,
+        description: String?,
+        dueDate: Long?,
+        priority: TaskPriority,
+        status: TaskStatus
+    ) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val taskList = _taskLists.value.find { it.id == taskListId } ?: return@withContext
+                val uid = java.util.UUID.randomUUID().toString()
+                val now = System.currentTimeMillis()
+                
+                val newTask = Task(
+                    id = 0, // Will be assigned by Room
+                    taskListId = taskListId,
+                    url = "${taskList.url}${uid}.ics",
+                    uid = uid,
+                    summary = summary,
+                    description = description,
+                    due = dueDate,
+                    priority = priority,
+                    status = status,
+                    created = now,
+                    lastModified = now,
+                    dirty = true, // Mark for upload to server
+                    deleted = false
+                )
+                taskRepository.insert(newTask)
+            }
+            // Sync to push new task to server
+            val accountId = currentAccountId ?: return@launch
+            syncManager.syncNow(accountId, SyncWorker.SYNC_TYPE_TASKS)
+        }
+    }
+    
+    /**
+     * Update an existing task.
+     */
+    fun updateTask(task: Task) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                taskRepository.update(task.copy(
+                    lastModified = System.currentTimeMillis(),
+                    dirty = true
+                ))
+            }
+            // Sync to push updated task to server
+            val accountId = currentAccountId ?: return@launch
+            syncManager.syncNow(accountId, SyncWorker.SYNC_TYPE_TASKS)
         }
     }
 

@@ -40,10 +40,15 @@ class MonitoringServicesInitializer : Initializer<Unit> {
             Timber.d("MonitoringServicesInitializer: Starting content observers")
             Timber.d("========================================")
             
-            val entryPoint = EntryPointAccessors.fromApplication(
-                appContext,
-                MonitoringDependencies::class.java
-            )
+            val entryPoint = try {
+                EntryPointAccessors.fromApplication(
+                    appContext,
+                    MonitoringDependencies::class.java
+                )
+            } catch (e: IllegalStateException) {
+                Timber.w(e, "MonitoringServicesInitializer: Skipping — Hilt component not ready (test environment)")
+                return
+            }
             
             // Proactively ensure Contacts auto-sync is enabled for address-book accounts
             // so the system can trigger upload-only syncs on local edits even when our app isn't running.

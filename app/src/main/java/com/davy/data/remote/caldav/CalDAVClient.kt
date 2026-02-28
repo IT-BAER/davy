@@ -126,6 +126,62 @@ class CalDAVClient @Inject constructor(
     }
     
     /**
+     * REPORT calendar-query request for efficient task (VTODO) fetching.
+     * Queries all VTODO components in the calendar collection.
+     * 
+     * @param taskListUrl URL of the task list (calendar collection)
+     * @param username CalDAV username
+     * @param password CalDAV password
+     * @param includeCompleted Whether to include completed tasks (default: true)
+     * @return CalDAVResponse containing calendar-data for all VTODO components
+     */
+    fun reportTaskQuery(
+        taskListUrl: String,
+        username: String,
+        password: String,
+        includeCompleted: Boolean = true
+    ): CalDAVResponse {
+        // Note: Some servers support filtering by COMPLETED status using prop-filter,
+        // but for maximum compatibility we fetch all and filter locally if needed
+        val requestBody = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+                <d:prop>
+                    <d:getetag/>
+                    <c:calendar-data/>
+                </d:prop>
+                <c:filter>
+                    <c:comp-filter name="VCALENDAR">
+                        <c:comp-filter name="VTODO"/>
+                    </c:comp-filter>
+                </c:filter>
+            </c:calendar-query>
+        """.trimIndent()
+        
+        return executeReport(taskListUrl, username, password, requestBody)
+    }
+    
+    /**
+     * REPORT calendar-multiget request to fetch multiple tasks at once.
+     * Works the same as multigetEvents but semantically for VTODO components.
+     * 
+     * @param taskListUrl Base task list (calendar collection) URL
+     * @param taskHrefs List of task resource paths (relative or absolute)
+     * @param username CalDAV username
+     * @param password CalDAV password
+     * @return CalDAVResponse containing calendar-data for all requested tasks
+     */
+    fun multigetTasks(
+        taskListUrl: String,
+        taskHrefs: List<String>,
+        username: String,
+        password: String
+    ): CalDAVResponse {
+        // VTODO uses the same calendar-multiget REPORT as VEVENT
+        return multigetEvents(taskListUrl, taskHrefs, username, password)
+    }
+    
+    /**
     * REPORT calendar-multiget request to fetch multiple events at once.
     * This is significantly more efficient than individual GET requests.
     * Batch up to MAX_MULTIGET_RESOURCES events per request.

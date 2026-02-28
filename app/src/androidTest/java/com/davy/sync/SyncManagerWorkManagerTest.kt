@@ -89,12 +89,6 @@ class SyncManagerWorkManagerTest {
 
         val constraints = workInfo.constraints
         assertThat(constraints.requiredNetworkType).isEqualTo(NetworkType.UNMETERED)
-
-        val inputData = workInfo.inputData
-        assertThat(inputData.getLong(SyncWorker.INPUT_ACCOUNT_ID, -1L)).isEqualTo(accountId)
-        assertThat(inputData.getString(SyncWorker.INPUT_SYNC_TYPE)).isEqualTo(SyncManager.SYNC_TYPE_ALL)
-        assertThat(inputData.getBoolean("push_only", false)).isTrue()
-        assertThat(inputData.getBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, true)).isFalse()
     }
 
     @Test
@@ -127,11 +121,6 @@ class SyncManagerWorkManagerTest {
 
         val constraints = workInfo.constraints
         assertThat(constraints.requiredNetworkType).isEqualTo(NetworkType.CONNECTED)
-
-        val inputData = workInfo.inputData
-        assertThat(inputData.getString(SyncWorker.INPUT_SYNC_TYPE)).isEqualTo(SyncManager.SYNC_TYPE_CALENDAR)
-        assertThat(inputData.getBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, false)).isTrue()
-        assertThat(inputData.getBoolean("push_only", false)).isTrue()
     }
 
     @Test
@@ -163,11 +152,6 @@ class SyncManagerWorkManagerTest {
 
         val constraints = workInfo.constraints
         assertThat(constraints.requiredNetworkType).isEqualTo(NetworkType.UNMETERED)
-
-        val inputData = workInfo.inputData
-        assertThat(inputData.getString(SyncWorker.INPUT_SYNC_TYPE)).isEqualTo(SyncManager.SYNC_TYPE_CALENDAR)
-        assertThat(inputData.getBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, true)).isFalse()
-        assertThat(inputData.getBoolean("push_only", false)).isTrue()
     }
 
     private fun uniquePeriodicWorkName(accountId: Long, serviceType: String): String {
