@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ktlint)
@@ -36,10 +37,10 @@ android {
         applicationId = "com.davy"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "1.0.2"
+        versionCode = 5
+        versionName = "1.1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.davy.HiltTestRunner"
         
         // AppAuth redirect scheme for OAuth flows
         manifestPlaceholders["appAuthRedirectScheme"] = "com.davy"
@@ -73,6 +74,7 @@ android {
             )
         }
         debug {
+            applicationIdSuffix = ".debug"
             // Disable minification for debug builds to preserve logging
             isMinifyEnabled = false
             isShrinkResources = false
@@ -113,20 +115,13 @@ android {
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            // Enable strong skipping mode for better Compose performance
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=true"
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         )
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     packaging {
@@ -136,6 +131,8 @@ android {
             excludes += "META-INF/*.SF"
             excludes += "META-INF/*.DSA"
             excludes += "META-INF/*.RSA"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
             // Merge duplicate Groovy extension modules from ical4j and groovy-dateutil
             merges += "META-INF/groovy/org.codehaus.groovy.runtime.ExtensionModule"
             merges += "META-INF/groovy-release-info.properties"
@@ -230,6 +227,10 @@ dependencies {
     androidTestImplementation(libs.bundles.testing.android)
     androidTestImplementation(libs.bundles.testing.compose)
     androidTestImplementation(libs.androidx.work.testing)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.mockk.android)
+    kspAndroidTest(libs.hilt.compiler)
 
     // Core library desugaring for java.time and newer JDK APIs on older Android
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")

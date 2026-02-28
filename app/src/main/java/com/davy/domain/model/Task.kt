@@ -26,8 +26,24 @@ import androidx.compose.runtime.Immutable
  * @property lastModified Last modified date (milliseconds since epoch)
  * @property rrule Recurrence rule for recurring tasks
  * @property parentTaskId Parent task ID (for subtasks/related tasks)
+ * @property parentTaskUid Parent task UID from RELATED-TO (for resolution after sync)
  * @property location Task location
+ * @property geoLat Latitude from GEO property
+ * @property geoLng Longitude from GEO property
+ * @property taskColor Task color from COLOR property (ARGB int)
+ * @property todoUrl URL property from VTODO (informational, not CalDAV resource URL)
+ * @property organizer Organizer URI or email from ORGANIZER property
+ * @property sequence SEQUENCE revision number for conflict detection
+ * @property duration DURATION string (ISO 8601, e.g. "PT1H30M")
+ * @property comment COMMENT property text
+ * @property isAllDay Whether this is an all-day task (DATE vs DATE-TIME)
+ * @property timezone IANA timezone ID for date properties
  * @property categories Task categories/tags
+ * @property classification Access classification (PUBLIC, PRIVATE, CONFIDENTIAL)
+ * @property exdates Exception dates for recurrence (list of epoch milliseconds)
+ * @property rdates Additional recurrence dates (list of epoch milliseconds)
+ * @property alarms Task alarms/reminders
+ * @property unknownProperties Unknown iCalendar properties to preserve during round-trip
  * @property dirty Whether task has local changes pending upload
  * @property deleted Whether task is marked for deletion
  */
@@ -50,8 +66,24 @@ data class Task(
     val lastModified: Long? = null,
     val rrule: String? = null,
     val parentTaskId: Long? = null,
+    val parentTaskUid: String? = null,
     val location: String? = null,
+    val geoLat: Double? = null,
+    val geoLng: Double? = null,
+    val taskColor: Int? = null,
+    val todoUrl: String? = null,
+    val organizer: String? = null,
+    val sequence: Int? = null,
+    val duration: String? = null,
+    val comment: String? = null,
+    val isAllDay: Boolean = false,
+    val timezone: String? = null,
     val categories: List<String> = emptyList(),
+    val classification: TaskClassification = TaskClassification.PUBLIC,
+    val exdates: List<Long> = emptyList(),
+    val rdates: List<Long> = emptyList(),
+    val alarms: List<TaskAlarm> = emptyList(),
+    val unknownProperties: Map<String, String> = emptyMap(),
     val dirty: Boolean = false,
     val deleted: Boolean = false
 ) {
@@ -165,6 +197,34 @@ data class Task(
     fun hasLocation(): Boolean = !location.isNullOrBlank()
 
     /**
+     * Checks if task has geo coordinates.
+     *
+     * @return True if both latitude and longitude are set
+     */
+    fun hasGeo(): Boolean = geoLat != null && geoLng != null
+
+    /**
+     * Checks if task has a custom color.
+     *
+     * @return True if task color is set
+     */
+    fun hasColor(): Boolean = taskColor != null
+
+    /**
+     * Checks if task has an associated URL.
+     *
+     * @return True if todo URL is not blank
+     */
+    fun hasTodoUrl(): Boolean = !todoUrl.isNullOrBlank()
+
+    /**
+     * Checks if task has a comment.
+     *
+     * @return True if comment is not blank
+     */
+    fun hasComment(): Boolean = !comment.isNullOrBlank()
+
+    /**
      * Checks if task has categories.
      *
      * @return True if has at least one category
@@ -182,4 +242,59 @@ data class Task(
         val diff = dueDate - now
         return (diff / (24 * 60 * 60 * 1000)).toInt()
     }
+    
+    /**
+     * Checks if task has alarms.
+     *
+     * @return True if has at least one alarm
+     */
+    fun hasAlarms(): Boolean = alarms.isNotEmpty()
+    
+    /**
+     * Checks if task is private.
+     *
+     * @return True if classification is PRIVATE or CONFIDENTIAL
+     */
+    fun isPrivate(): Boolean = classification == TaskClassification.PRIVATE || 
+                               classification == TaskClassification.CONFIDENTIAL
+    
+    /**
+     * Gets the first/soonest alarm trigger time in milliseconds.
+     * Returns null if no alarms or no due/start date for relative alarms.
+     */
+    fun getNextAlarmTrigger(): Long? {
+        if (alarms.isEmpty()) return null
+        
+        val referenceTime = due ?: dtStart ?: return null
+        
+        return alarms.mapNotNull { alarm ->
+            when {
+                alarm.triggerAbsolute != null -> alarm.triggerAbsolute
+                alarm.triggerMinutesBefore != null -> referenceTime - (alarm.triggerMinutesBefore * 60 * 1000L)
+                else -> null
+            }
+        }.minOrNull()
+    }
+}
+
+/**
+ * Task access classification (CLASS property in iCalendar).
+ */
+enum class TaskClassification {
+    PUBLIC,
+    PRIVATE,
+    CONFIDENTIAL;
+    
+    companion object {
+        fun fromValue(value: String?): TaskClassification {
+            return when (value?.uppercase()) {
+                "PUBLIC" -> PUBLIC
+                "PRIVATE" -> PRIVATE
+                "CONFIDENTIAL" -> CONFIDENTIAL
+                else -> PUBLIC
+            }
+        }
+    }
+    
+    fun toICalValue(): String = name
 }

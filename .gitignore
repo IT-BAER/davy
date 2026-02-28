@@ -98,12 +98,11 @@ jacocoTestReport/
 
 # Secret files
 secrets/
+
+# Project context documentation (auto-generated, contains sensitive info)
+context.md
 .env
 .env.local
-
-# Reference repositories
-d[a][v][x]5/
-
 
 screenshots
 tasksync
@@ -119,3 +118,4 @@ benchmark
 .editorconfig
 
 *.pdf
+.github/copilot-instructions.md

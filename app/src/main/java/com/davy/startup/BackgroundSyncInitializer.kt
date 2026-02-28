@@ -27,10 +27,15 @@ class BackgroundSyncInitializer : Initializer<Unit> {
 
     override fun create(context: Context) {
         val appContext = context.applicationContext
-        val entryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            BackgroundSyncDependencies::class.java
-        )
+        val entryPoint = try {
+            EntryPointAccessors.fromApplication(
+                appContext,
+                BackgroundSyncDependencies::class.java
+            )
+        } catch (e: IllegalStateException) {
+            Timber.w(e, "BackgroundSyncInitializer: Skipping — Hilt component not ready (test environment)")
+            return
+        }
 
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

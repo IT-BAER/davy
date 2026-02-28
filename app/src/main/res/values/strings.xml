@@ -305,6 +305,8 @@
     <string name="reset_full_sync">Reset &amp; Full Sync</string>
     <string name="sync_calendars_only">Sync Calendars Only</string>
     <string name="sync_contacts_only">Sync Contacts Only</string>
+    <string name="sync_tasks">Sync Tasks</string>
+    <string name="toggle_sync">Toggle Sync</string>
     <string name="manage">Manage</string>
     <string name="choose_location">Choose Location</string>
     <string name="choose_file">Choose File</string>
@@ -734,4 +736,40 @@
     <string name="whats_new_v1_0_0">• Initial release\n• CalDAV calendar synchronization\n• CardDAV contact synchronization\n• WebCal subscription support\n• Multiple account support\n• Background sync with configurable intervals\n• WiFi-only sync option\n• Material 3 design\n• Dark mode support</string>
     <string name="whats_new_v1_0_1">• Added Privacy Policy and Terms of Service\n• New onboarding experience for first-time users\n• What\'s New dialog after updates\n• Send Feedback option in Settings\n• GitHub links in About and FAQ\n• Expanded FAQ with Open Source and Help sections\n• Clickable URLs in FAQ answers\n• Developer testing options for Onboarding and What\'s New\n• Complete translations for all 15 languages\n• German translations now use informal \"Du\" style</string>
     <string name="whats_new_v1_0_2">• Complete internationalization for all 15 languages\n• Translated Privacy Policy and Terms of Service\n• New Feedback and GitHub links in all languages\n• Improved translations throughout the app\n• Fixed CI/CD dependencies</string>
+    
+    <!-- Task Management -->
+    <string name="no_task_lists_found">No task lists found. Sync to fetch task lists from server.</string>
+    <string name="no_tasks_in_list">No tasks in this list</string>
+    <string name="edit_task">Edit Task</string>
+    <string name="delete_task">Delete Task</string>
+    <string name="delete_task_confirmation">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="task_summary">Summary</string>
+    <string name="task_description">Description</string>
+    <string name="due_date">Due Date</string>
+    <string name="priority">Priority</string>
+    <string name="due_today">Due today</string>
+    <string name="due_tomorrow">Due tomorrow</string>
+    <string name="overdue_today">Overdue!</string>
+    <plurals name="task_count">
+        <item quantity="zero">No tasks</item>
+        <item quantity="one">1 task</item>
+        <item quantity="other">%d tasks</item>
+    </plurals>
+    <plurals name="days_overdue">
+        <item quantity="one">%d day overdue</item>
+        <item quantity="other">%d days overdue</item>
+    </plurals>
+    <plurals name="due_in_days">
+        <item quantity="one">Due in %d day</item>
+        <item quantity="other">Due in %d days</item>
+    </plurals>
+    <plurals name="reminder_count">
+        <item quantity="one">%d reminder</item>
+        <item quantity="other">%d reminders</item>
+    </plurals>
+    <plurals name="subtask_count">
+        <item quantity="one">%d subtask</item>
+        <item quantity="other">%d subtasks</item>
+    </plurals>
+    <string name="subtask">Subtask</string>
 </resources>

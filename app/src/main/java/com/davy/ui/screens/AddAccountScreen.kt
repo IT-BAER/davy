@@ -59,12 +59,14 @@ import com.davy.data.remote.oauth.LoginFlowInitiation
 import com.davy.data.repository.AccountRepository
 import com.davy.data.repository.AddressBookRepository
 import com.davy.data.repository.CalendarRepository
+import com.davy.data.repository.TaskListRepository
 import com.davy.data.repository.WebCalSubscriptionRepository
 import com.davy.data.local.CredentialStore
 import com.davy.domain.model.Account
 import com.davy.domain.model.AddressBook
 import com.davy.domain.model.AuthType
 import com.davy.domain.model.Calendar
+import com.davy.domain.model.TaskList
 import com.davy.domain.model.WebCalSubscription
 import com.davy.domain.validator.ServerUrlValidator
 import com.davy.domain.validator.ValidationResult
@@ -172,6 +174,30 @@ fun AddAccountScreen(
             )
         }
     ) { paddingValues ->
+        // Staggered entrance animation state
+        var showHeader by remember { mutableStateOf(false) }
+        var showNextcloudCard by remember { mutableStateOf(false) }
+        var showICloudCard by remember { mutableStateOf(false) }
+        var showFastmailCard by remember { mutableStateOf(false) }
+        var showManualCard by remember { mutableStateOf(false) }
+        var showWebCalCard by remember { mutableStateOf(false) }
+        
+        // Trigger staggered animations on screen entry
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(100)
+            showHeader = true
+            kotlinx.coroutines.delay(100)
+            showNextcloudCard = true
+            kotlinx.coroutines.delay(80)
+            showICloudCard = true
+            kotlinx.coroutines.delay(80)
+            showFastmailCard = true
+            kotlinx.coroutines.delay(80)
+            showManualCard = true
+            kotlinx.coroutines.delay(80)
+            showWebCalCard = true
+        }
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,15 +207,38 @@ fun AddAccountScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Login method selection with animated expanding forms
-            Text(
-                text = stringResource(R.string.choose_login_method),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            // Animated header with slide in and fade
+            AnimatedVisibility(
+                visible = showHeader,
+                enter = slideInVertically(
+                    initialOffsetY = { -it / 2 },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(400)),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                Text(
+                    text = stringResource(R.string.choose_login_method),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
             
-            // Nextcloud button
+            // Animated Nextcloud button
+            AnimatedVisibility(
+                visible = showNextcloudCard,
+                enter = slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(350)),
+                exit = slideOutHorizontally() + fadeOut()
+            ) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { 
@@ -237,6 +286,7 @@ fun AddAccountScreen(
                     )
                 }
             }
+            } // End AnimatedVisibility for Nextcloud card
             
             // Animated Nextcloud form expansion
             AnimatedVisibility(
@@ -319,7 +369,18 @@ fun AddAccountScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // iCloud Card
+            // Animated iCloud Card with slide in effect
+            AnimatedVisibility(
+                visible = showICloudCard,
+                enter = slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(350)),
+                exit = slideOutHorizontally() + fadeOut()
+            ) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { 
@@ -367,6 +428,7 @@ fun AddAccountScreen(
                     )
                 }
             }
+            } // End AnimatedVisibility for iCloud card
             
             // Animated iCloud form expansion
             AnimatedVisibility(
@@ -566,7 +628,18 @@ fun AddAccountScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Fastmail Card
+            // Animated Fastmail Card with slide in effect
+            AnimatedVisibility(
+                visible = showFastmailCard,
+                enter = slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(350)),
+                exit = slideOutHorizontally() + fadeOut()
+            ) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { 
@@ -614,6 +687,7 @@ fun AddAccountScreen(
                     )
                 }
             }
+            } // End AnimatedVisibility for Fastmail card
             
             // Animated Fastmail form expansion
             AnimatedVisibility(
@@ -813,7 +887,18 @@ fun AddAccountScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Other Server button
+            // Animated Other Server button with slide in effect
+            AnimatedVisibility(
+                visible = showManualCard,
+                enter = slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                ) + fadeIn(animationSpec = tween(350)),
+                exit = slideOutHorizontally() + fadeOut()
+            ) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { 
@@ -861,6 +946,7 @@ fun AddAccountScreen(
                     )
                 }
             }
+            } // End AnimatedVisibility for Other Server card
             
             // Animated Other Server form expansion
             AnimatedVisibility(
@@ -1537,6 +1623,7 @@ class AddAccountViewModel @Inject constructor(
     private val calendarRepository: CalendarRepository,
     private val addressBookRepository: AddressBookRepository,
     private val webCalSubscriptionRepository: WebCalSubscriptionRepository,
+    private val taskListRepository: TaskListRepository,
     private val authenticationManager: AuthenticationManager,
     private val caldavPrincipalDiscovery: CalDAVPrincipalDiscovery,
     private val carddavPrincipalDiscovery: CardDAVPrincipalDiscovery,
@@ -1839,6 +1926,22 @@ class AddAccountViewModel @Inject constructor(
                                 )
                                 calendarRepository.insert(calendar)
                                 Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                                
+                                // Create TaskList for calendars that support VTODO
+                                if (calendarInfo.supportsVTODO) {
+                                    val colorHex = calendarInfo.color ?: "#2196F3"
+                                    val taskList = TaskList(
+                                        id = 0,
+                                        accountId = accountId,
+                                        url = calendarInfo.url,
+                                        displayName = calendarInfo.displayName,
+                                        color = colorHex,
+                                        syncEnabled = true,
+                                        visible = true
+                                    )
+                                    taskListRepository.insert(taskList)
+                                    Timber.d("Created task list for VTODO calendar: %s", calendarInfo.displayName)
+                                }
                             }
                         }
                         
@@ -2227,6 +2330,21 @@ class AddAccountViewModel @Inject constructor(
                 sampleCalendars.forEach { calendar ->
                     val calendarId = calendarRepository.insert(calendar)
                     Timber.d("Created demo calendar: %s (ID: %d)", calendar.displayName, calendarId)
+                    
+                    // Create TaskList for calendars that support VTODO
+                    if (calendar.supportsVTODO) {
+                        val taskList = TaskList(
+                            id = 0,
+                            accountId = accountId,
+                            url = calendar.calendarUrl,
+                            displayName = calendar.displayName,
+                            color = String.format("#%06X", 0xFFFFFF and calendar.color),
+                            syncEnabled = true,
+                            visible = true
+                        )
+                        taskListRepository.insert(taskList)
+                        Timber.d("Created demo task list for calendar: %s", calendar.displayName)
+                    }
                 }
                 
                 try {
@@ -2672,6 +2790,22 @@ class AddAccountViewModel @Inject constructor(
                             )
                             calendarRepository.insert(calendar)
                             Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                            
+                            // Create TaskList for calendars that support VTODO
+                            if (calendarInfo.supportsVTODO) {
+                                val colorHex = calendarInfo.color ?: "#2196F3"
+                                val taskList = TaskList(
+                                    id = 0,
+                                    accountId = accountId,
+                                    url = calendarInfo.url,
+                                    displayName = calendarInfo.displayName,
+                                    color = colorHex,
+                                    syncEnabled = true,
+                                    visible = true
+                                )
+                                taskListRepository.insert(taskList)
+                                Timber.d("Created task list for VTODO calendar: %s", calendarInfo.displayName)
+                            }
                         }
                     }
 
@@ -2929,6 +3063,22 @@ class AddAccountViewModel @Inject constructor(
                             )
                             calendarRepository.insert(calendar)
                             Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                            
+                            // Create TaskList for calendars that support VTODO
+                            if (calendarInfo.supportsVTODO) {
+                                val colorHex = calendarInfo.color ?: "#2196F3"
+                                val taskList = TaskList(
+                                    id = 0,
+                                    accountId = accountId,
+                                    url = calendarInfo.url,
+                                    displayName = calendarInfo.displayName,
+                                    color = colorHex,
+                                    syncEnabled = true,
+                                    visible = true
+                                )
+                                taskListRepository.insert(taskList)
+                                Timber.d("Created task list for VTODO calendar: %s", calendarInfo.displayName)
+                            }
                         }
                     }
 
@@ -3195,6 +3345,22 @@ class AddAccountViewModel @Inject constructor(
                             )
                             calendarRepository.insert(calendar)
                             Timber.d("Saved calendar: %s", calendarInfo.displayName)
+                            
+                            // Create TaskList for calendars that support VTODO
+                            if (calendarInfo.supportsVTODO) {
+                                val colorHex = calendarInfo.color ?: "#2196F3"
+                                val taskList = TaskList(
+                                    id = 0,
+                                    accountId = accountId,
+                                    url = calendarInfo.url,
+                                    displayName = calendarInfo.displayName,
+                                    color = colorHex,
+                                    syncEnabled = true,
+                                    visible = true
+                                )
+                                taskListRepository.insert(taskList)
+                                Timber.d("Created task list for VTODO calendar: %s", calendarInfo.displayName)
+                            }
                         }
                     }
 

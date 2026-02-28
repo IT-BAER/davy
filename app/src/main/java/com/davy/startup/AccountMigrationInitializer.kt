@@ -31,10 +31,15 @@ class AccountMigrationInitializer : Initializer<Unit> {
 
     override fun create(context: Context) {
         val appContext = context.applicationContext
-        val entryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            AccountMigrationDependencies::class.java
-        )
+        val entryPoint = try {
+            EntryPointAccessors.fromApplication(
+                appContext,
+                AccountMigrationDependencies::class.java
+            )
+        } catch (e: IllegalStateException) {
+            Timber.w(e, "AccountMigrationInitializer: Skipping — Hilt component not ready (test environment)")
+            return
+        }
 
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

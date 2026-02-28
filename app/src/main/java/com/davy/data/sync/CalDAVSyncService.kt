@@ -9,17 +9,21 @@ import com.davy.data.remote.caldav.CalDAVXMLParser
 import com.davy.data.remote.caldav.ICalendarParser
 import com.davy.data.repository.CalendarEventRepository
 import com.davy.data.repository.CalendarRepository
+import com.davy.data.repository.TaskRepository
 import com.davy.domain.model.Account
 import com.davy.domain.model.Calendar
 import com.davy.domain.model.CalendarEvent
+import com.davy.domain.model.Task
 import com.davy.domain.model.toICalendar
 import com.davy.ui.util.AppError
 import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.util.LinkedHashSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +37,7 @@ class CalDAVSyncService @Inject constructor(
     private val calDAVClient: CalDAVClient,
     private val calendarRepository: CalendarRepository,
     private val eventRepository: CalendarEventRepository,
+    private val taskRepository: TaskRepository,
     private val credentialStore: CredentialStore,
     private val syncLock: com.davy.sync.SyncLock
 ) {
@@ -913,28 +918,323 @@ class CalDAVSyncService @Inject constructor(
      * Sync tasks for a specific task list.
      * Returns a Pair of (tasksDownloaded, tasksUploaded).
      * 
-     * Note: This is a placeholder implementation that follows the same pattern as calendar sync.
-     * Full VTODO sync implementation requires:
-     * - VTODO parsing from iCalendar format
-     * - Task-specific fields mapping (status, priority, percent-complete, due date, etc.)
-     * - Recurrence rule handling for recurring tasks
-     * - Subtask/parent-child relationship handling
+     * Implements full bidirectional VTODO sync following the same pattern as calendar sync:
+     * 1. Upload dirty tasks (local changes) first
+     * 2. Delete tasks marked for deletion from server
+     * 3. Query server for all VTODOs in the task list
+     * 4. Download and parse new/modified VTODOs
+     * 5. Store tasks in local database
      */
     suspend fun syncTaskList(account: Account, taskList: com.davy.domain.model.TaskList): Pair<Int, Int> {
-        Timber.d("Syncing task list: ${taskList.displayName}")
-        Timber.d("Task list URL: ${taskList.url}")
+        Timber.d("========================================")
+        Timber.d("🔄 STARTING TASK LIST SYNC")
+        Timber.d("   Task List: ${taskList.displayName}")
+        Timber.d("   URL: ${taskList.url}")
+        Timber.d("========================================")
         
-        // TODO: Implement full VTODO sync with CalDAV protocol
-        // This should follow the same pattern as syncCalendarEvents:
-        // 1. Check for local dirty/deleted tasks and upload them first
-        // 2. Query server for task list (calendar-query REPORT with VTODO filter)
-        // 3. Download new/modified VTODOs
-        // 4. Parse VTODO components using iCalendar parser
-        // 5. Store tasks in local database
-        // 6. Handle sync tokens for incremental sync
+        val password = credentialStore.getPassword(account.id)
+        if (password == null) {
+            Timber.e("No password found for account ${account.id}")
+            return 0 to 0
+        }
         
-        Timber.w("VTODO sync not yet fully implemented - returning placeholder result")
-        return 0 to 0
+        var tasksDownloaded = 0
+        var tasksUploaded = 0
+        
+        try {
+            // Step 1: Upload dirty tasks first (local changes take precedence)
+            tasksUploaded = uploadDirtyTasks(account, taskList, password)
+            Timber.d("Uploaded $tasksUploaded dirty tasks")
+            
+            // Step 2: Delete tasks marked for deletion
+            val deletedTasks = deleteMarkedTasks(account, taskList, password)
+            Timber.d("Deleted $deletedTasks tasks from server")
+            
+            // Step 3: Query server for all VTODOs
+            Timber.d("Querying server for VTODO components...")
+            val response = calDAVClient.reportTaskQuery(
+                taskListUrl = taskList.url,
+                username = account.username,
+                password = password
+            )
+            
+            if (!response.isSuccessful) {
+                Timber.e("Failed to query tasks: ${response.statusCode} - ${response.error}")
+                return tasksDownloaded to tasksUploaded
+            }
+            
+            val responseBody = response.body
+            if (responseBody.isNullOrBlank()) {
+                Timber.d("Empty response from task list query - no tasks on server")
+                return tasksDownloaded to tasksUploaded
+            }
+            
+            // Step 4: Parse the multistatus response to get task URLs and ETags
+            // Reuse parseEventPropfind since VTODO uses same calendar-multiget XML structure
+            val serverTasks = CalDAVXMLParser.parseEventPropfind(responseBody)
+            Timber.d("Found ${serverTasks.size} tasks on server")
+            
+            // Track server URLs for orphan detection
+            val serverUrls = mutableSetOf<String>()
+            
+            // Step 5: Process each task from server
+            for (taskResource in serverTasks) {
+                val href = taskResource.href
+                val etag = taskResource.etag.trim('"')
+                val calendarData = taskResource.calendarData
+                
+                // Build absolute URL
+                val taskUrl = if (href.startsWith("http")) {
+                    href
+                } else {
+                    "${account.serverUrl.trimEnd('/')}${if (href.startsWith("/")) href else "/$href"}"
+                }
+                serverUrls.add(taskUrl)
+                
+                // Check if we already have this task locally
+                val existingTask = taskRepository.getByUrl(taskUrl)
+                
+                if (existingTask != null) {
+                    // Task exists - check if ETag changed
+                    if (existingTask.etag == etag) {
+                        Timber.d("Task unchanged (same ETag): ${existingTask.summary}")
+                        continue
+                    }
+                    
+                    // Skip if local task is dirty (will be uploaded on next sync)
+                    if (existingTask.dirty) {
+                        Timber.d("Skipping server update for dirty task: ${existingTask.summary}")
+                        continue
+                    }
+                    
+                    Timber.d("Task ETag changed, updating: ${existingTask.summary}")
+                }
+                
+                // Parse and store the task
+                if (calendarData != null && calendarData.isNotBlank()) {
+                    val parsedTasks = ICalendarParser.parseTasks(calendarData)
+                    if (parsedTasks.isNotEmpty()) {
+                        val task = parsedTasks.first()
+                        
+                        val taskToSave = if (existingTask != null) {
+                            // Update existing task
+                            task.copy(
+                                id = existingTask.id,
+                                taskListId = taskList.id,
+                                url = taskUrl,
+                                etag = etag,
+                                dirty = false,
+                                deleted = false
+                            )
+                        } else {
+                            // New task
+                            task.copy(
+                                taskListId = taskList.id,
+                                url = taskUrl,
+                                etag = etag,
+                                dirty = false,
+                                deleted = false
+                            )
+                        }
+                        
+                        if (existingTask != null) {
+                            taskRepository.updateWithAlarms(taskToSave)
+                            Timber.d("✓ Updated task: ${taskToSave.summary} (${taskToSave.alarms.size} alarms)")
+                        } else {
+                            taskRepository.insertWithAlarms(taskToSave)
+                            Timber.d("✓ Inserted new task: ${taskToSave.summary} (${taskToSave.alarms.size} alarms)")
+                        }
+                        tasksDownloaded++
+                    }
+                } else {
+                    Timber.w("No calendar-data for task $href")
+                }
+            }
+            
+            // Step 6: Remove local tasks that no longer exist on server
+            // (Only tasks that are not dirty and not marked for deletion)
+            val localTasks = taskRepository.getByTaskListId(taskList.id)
+                .first()
+            for (localTask in localTasks) {
+                if (!serverUrls.contains(localTask.url) && !localTask.dirty && !localTask.deleted) {
+                    Timber.d("🗑️ Removing orphaned local task: ${localTask.summary}")
+                    taskRepository.delete(localTask)
+                }
+            }
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Error syncing task list: ${taskList.displayName}")
+        }
+        
+        Timber.d("========================================")
+        Timber.d("📊 TASK SYNC COMPLETE")
+        Timber.d("   Downloaded: $tasksDownloaded tasks")
+        Timber.d("   Uploaded: $tasksUploaded tasks")
+        Timber.d("========================================")
+        
+        return tasksDownloaded to tasksUploaded
+    }
+    
+    /**
+     * Upload dirty tasks (local changes) to the server.
+     * Returns the number of tasks successfully uploaded.
+     */
+    private suspend fun uploadDirtyTasks(
+        account: Account,
+        taskList: com.davy.domain.model.TaskList,
+        password: String
+    ): Int {
+        val dirtyTasks = taskRepository.getDirtyTasks().filter { it.taskListId == taskList.id }
+        Timber.d("Found ${dirtyTasks.size} dirty tasks to upload")
+        
+        var uploaded = 0
+        
+        for (task in dirtyTasks) {
+            try {
+                val success = uploadTask(task, account, taskList, password)
+                if (success) {
+                    uploaded++
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to upload task: ${task.summary}")
+            }
+        }
+        
+        return uploaded
+    }
+    
+    /**
+     * Upload a single task to the server.
+     */
+    private suspend fun uploadTask(
+        task: Task,
+        account: Account,
+        taskList: com.davy.domain.model.TaskList,
+        password: String
+    ): Boolean {
+        Timber.d("Uploading task: ${task.summary}")
+        
+        try {
+            // Convert task to iCalendar format
+            val icalData = ICalendarParser.taskToICalendar(task)
+            
+            // Build task URL
+            val isNewTask = task.url.isBlank()
+            val taskUrl = if (isNewTask) {
+                // New task - generate URL using UID
+                val uid = if (task.uid.isNotBlank()) task.uid else UUID.randomUUID().toString()
+                "${taskList.url.trimEnd('/')}/$uid.ics"
+            } else {
+                // Existing task - use stored URL
+                if (task.url.startsWith("http")) {
+                    task.url
+                } else {
+                    "${account.serverUrl}${task.url}"
+                }
+            }
+            
+            Timber.d("Task URL: $taskUrl")
+            Timber.d("Task ETag: ${task.etag}")
+            Timber.d("Is new task: $isNewTask")
+            
+            // PUT request to upload/update task
+            var response = calDAVClient.putEvent(
+                eventUrl = taskUrl,
+                username = account.username,
+                password = password,
+                icalendarData = icalData,
+                etag = if (isNewTask) null else task.etag
+            )
+            
+            // If we get 412 Precondition Failed (ETag mismatch), retry without ETag
+            // This will overwrite the server version with local changes
+            if (response.statusCode == 412 && !isNewTask) {
+                Timber.w("ETag mismatch (412), retrying without ETag to force update...")
+                response = calDAVClient.putEvent(
+                    eventUrl = taskUrl,
+                    username = account.username,
+                    password = password,
+                    icalendarData = icalData,
+                    etag = null // No If-Match header - will overwrite
+                )
+            }
+            
+            if (response.isSuccessful) {
+                // Update task with server response (new etag, URL)
+                val newEtag = response.headers["ETag"]?.firstOrNull() 
+                    ?: response.headers["etag"]?.firstOrNull()
+                
+                val updatedTask = task.copy(
+                    url = taskUrl,
+                    etag = newEtag?.trim('"'),
+                    dirty = false
+                )
+                taskRepository.update(updatedTask)
+                
+                Timber.d("✓ Task uploaded successfully: ${task.summary}")
+                return true
+            } else {
+                Timber.e("Failed to upload task: ${response.statusCode} - ${response.error}")
+                return false
+            }
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Exception uploading task: ${task.summary}")
+            return false
+        }
+    }
+    
+    /**
+     * Delete tasks marked for deletion from the server.
+     * Returns the number of tasks successfully deleted.
+     */
+    private suspend fun deleteMarkedTasks(
+        account: Account,
+        taskList: com.davy.domain.model.TaskList,
+        password: String
+    ): Int {
+        val deletedTasks = taskRepository.getDeletedTasks().filter { it.taskListId == taskList.id }
+        Timber.d("Found ${deletedTasks.size} tasks marked for deletion")
+        
+        var deleted = 0
+        
+        for (task in deletedTasks) {
+            try {
+                if (task.url.isBlank()) {
+                    // Task was never uploaded - just remove locally
+                    taskRepository.delete(task)
+                    deleted++
+                    continue
+                }
+                
+                val taskUrl = if (task.url.startsWith("http")) {
+                    task.url
+                } else {
+                    "${account.serverUrl}${task.url}"
+                }
+                
+                val response = calDAVClient.deleteEvent(
+                    eventUrl = taskUrl,
+                    username = account.username,
+                    password = password,
+                    etag = task.etag
+                )
+                
+                if (response.isSuccessful || response.statusCode == 404 || response.statusCode == 410) {
+                    // Delete from local database
+                    taskRepository.delete(task)
+                    deleted++
+                    Timber.d("✓ Deleted task: ${task.summary}")
+                } else {
+                    Timber.e("Failed to delete task from server: ${response.statusCode}")
+                }
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to delete task: ${task.summary}")
+            }
+        }
+        
+        return deleted
     }
 }
 

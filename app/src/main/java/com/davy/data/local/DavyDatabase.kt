@@ -13,6 +13,7 @@ import com.davy.data.local.dao.CalendarEventDao
 import com.davy.data.local.dao.ContactDao
 import com.davy.data.local.dao.SyncConfigurationDao
 import com.davy.data.local.dao.SyncStatusDao
+import com.davy.data.local.dao.TaskAlarmDao
 import com.davy.data.local.dao.TaskDao
 import com.davy.data.local.dao.TaskListDao
 import com.davy.data.local.dao.WebCalSubscriptionDao
@@ -23,6 +24,7 @@ import com.davy.data.local.entity.CalendarEventEntity
 import com.davy.data.local.entity.ContactEntity
 import com.davy.data.local.entity.SyncConfigurationEntity
 import com.davy.data.local.entity.SyncStatusEntity
+import com.davy.data.local.entity.TaskAlarmEntity
 import com.davy.data.local.entity.TaskEntity
 import com.davy.data.local.entity.TaskListEntity
 import com.davy.data.local.entity.WebCalSubscriptionEntity
@@ -56,9 +58,10 @@ import com.davy.data.local.entity.WebCalSubscriptionEntity
         ContactEntity::class,
         TaskListEntity::class,
         TaskEntity::class,
+        TaskAlarmEntity::class,
         WebCalSubscriptionEntity::class
     ],
-    version = 17,  // Bumped to add group support columns to ContactEntity
+    version = 19,  // Bumped to add GEO, URL, ORGANIZER, SEQUENCE, COLOR, DURATION, COMMENT, all-day, timezone support
     autoMigrations = [
         AutoMigration(from = 14, to = 15)
     ],
@@ -113,6 +116,11 @@ abstract class DavyDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     
     /**
+     * DAO for task alarm operations
+     */
+    abstract fun taskAlarmDao(): TaskAlarmDao
+    
+    /**
      * DAO for WebCal subscription operations
      */
     abstract fun webCalSubscriptionDao(): WebCalSubscriptionDao
@@ -147,6 +155,73 @@ abstract class DavyDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE contacts ADD COLUMN categories TEXT")
                 db.execSQL("ALTER TABLE contacts ADD COLUMN is_group INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE contacts ADD COLUMN group_members TEXT")
+            }
+        }
+        
+        /**
+         * Manual migration from version 17 to 18.
+         * Adds enhanced VTODO support:
+         * - classification column for CLASS property (PUBLIC, PRIVATE, CONFIDENTIAL)
+         * - exdates column for recurrence exception dates (JSON array)
+         * - rdates column for additional recurrence dates (JSON array)
+         * - parent_task_uid column for RELATED-TO resolution
+         * - unknown_properties column for preserving unknown iCalendar properties
+         * - task_alarms table for VALARM components
+         */
+        val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add new columns to tasks table
+                db.execSQL("ALTER TABLE tasks ADD COLUMN classification TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN exdates TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN rdates TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN parent_task_uid TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN unknown_properties TEXT")
+                
+                // Create task_alarms table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS task_alarms (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        task_id INTEGER NOT NULL,
+                        action TEXT NOT NULL DEFAULT 'DISPLAY',
+                        trigger_minutes_before INTEGER,
+                        trigger_absolute INTEGER,
+                        trigger_relative_to TEXT NOT NULL DEFAULT 'START',
+                        description TEXT,
+                        summary TEXT,
+                        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+                    )
+                """.trimIndent())
+                
+                // Create index on task_id for faster alarm lookups
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_task_alarms_task_id ON task_alarms(task_id)")
+            }
+        }
+        
+        /**
+         * Manual migration from version 18 to 19.
+         * Adds RFC-compliant VTODO property support:
+         * - geo_lat/geo_lng for GEO property (geographic position)
+         * - task_color for COLOR property (RFC 7986)
+         * - todo_url for URL property
+         * - organizer for ORGANIZER property
+         * - sequence for SEQUENCE property (conflict detection)
+         * - duration for DURATION property (ISO 8601)
+         * - comment for COMMENT property
+         * - is_all_day for DATE vs DATE-TIME distinction
+         * - timezone for VTIMEZONE and TZID support
+         */
+        val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tasks ADD COLUMN geo_lat REAL")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN geo_lng REAL")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN task_color INTEGER")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN todo_url TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN organizer TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN sequence INTEGER")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN duration TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN comment TEXT")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN is_all_day INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE tasks ADD COLUMN timezone TEXT")
             }
         }
     }

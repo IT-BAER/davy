@@ -4,7 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -39,7 +39,7 @@ fun Modifier.clickableWithFeedback(
         enabled = enabled,
         role = role,
         interactionSource = interactionSource,
-        indication = rememberRipple(),
+        indication = ripple(),
         onClick = {
             // Perform haptic feedback before action
             // TextClick is lighter than LongPress - better for frequent interactions
@@ -63,7 +63,7 @@ fun Modifier.longClickableWithFeedback(
     val haptics = LocalHapticFeedback.current
     
     return this.combinedClickable(
-        indication = rememberRipple(),
+        indication = ripple(),
         interactionSource = remember { MutableInteractionSource() },
         onClick = { },
         onLongClick = {

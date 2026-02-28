@@ -10,6 +10,7 @@ import com.davy.data.local.dao.CalendarEventDao
 import com.davy.data.local.dao.ContactDao
 import com.davy.data.local.dao.SyncConfigurationDao
 import com.davy.data.local.dao.SyncStatusDao
+import com.davy.data.local.dao.TaskAlarmDao
 import com.davy.data.local.dao.TaskDao
 import com.davy.data.local.dao.TaskListDao
 import com.davy.data.local.dao.WebCalSubscriptionDao
@@ -45,7 +46,9 @@ object DatabaseModule {
         )
             .addMigrations(
                 DavyDatabase.MIGRATION_15_16,
-                DavyDatabase.MIGRATION_16_17
+                DavyDatabase.MIGRATION_16_17,
+                DavyDatabase.MIGRATION_17_18,
+                DavyDatabase.MIGRATION_18_19
             )
             .fallbackToDestructiveMigration() // For development - remove in production
             .build()
@@ -121,6 +124,14 @@ object DatabaseModule {
         database: DavyDatabase
     ): TaskDao {
         return database.taskDao()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideTaskAlarmDao(
+        database: DavyDatabase
+    ): TaskAlarmDao {
+        return database.taskAlarmDao()
     }
     
     @Provides

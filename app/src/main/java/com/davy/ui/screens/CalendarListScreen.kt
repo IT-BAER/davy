@@ -13,8 +13,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,19 +50,7 @@ fun CalendarListScreen(
     
     Timber.d("UI State collected: %s", uiState)
     
-    val pullToRefreshState = rememberPullToRefreshState()
     var showSyncMenu by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(pullToRefreshState.isRefreshing, isBusy) {
-        if (pullToRefreshState.isRefreshing) {
-            if (!isBusy) {
-                viewModel.refresh()
-                // Simulate refresh completion after a delay
-                kotlinx.coroutines.delay(1000)
-            }
-            pullToRefreshState.endRefresh()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -116,11 +103,12 @@ fun CalendarListScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = isBusy,
+            onRefresh = { viewModel.refresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .nestedScroll(pullToRefreshState.nestedScrollConnection)
         ) {
             when (val state = uiState) {
                 is CalendarListUiState.Loading -> {
@@ -222,12 +210,6 @@ fun CalendarListScreen(
                     }
                 }
             }
-            
-            // Pull-to-refresh container
-            PullToRefreshContainer(
-                state = pullToRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
         }
     }
 }

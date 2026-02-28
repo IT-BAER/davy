@@ -57,6 +57,22 @@ sealed class Route(val route: String) {
             fun createRoute(addressBookId: Long) = "contacts/$addressBookId"
         }
     }
+
+    /**
+     * Task list screen - view and manage task lists
+     */
+    object TaskListScreen : Route("task_lists")
+
+    /**
+     * Task screen - view tasks for a task list
+     * @param taskListId Task list ID as route parameter
+     */
+    data class TaskScreen(val taskListId: Long) : Route("tasks/{taskListId}") {
+        companion object {
+            const val routePattern = "tasks/{taskListId}"
+            fun createRoute(taskListId: Long) = "tasks/$taskListId"
+        }
+    }
     
     /**
      * Sync status screen - view sync status for all accounts

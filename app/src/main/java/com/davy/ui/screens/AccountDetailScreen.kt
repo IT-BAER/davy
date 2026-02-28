@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -53,6 +54,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,17 +64,22 @@ import com.davy.R
 import com.davy.domain.model.Account
 import com.davy.domain.model.AddressBook
 import com.davy.domain.model.Calendar
+import com.davy.domain.model.Task
+import com.davy.domain.model.TaskList
+import com.davy.domain.model.TaskPriority
+import com.davy.domain.model.TaskStatus
 import com.davy.domain.model.WebCalSubscription
 import com.davy.sync.SyncManager
 import com.davy.ui.LocalSyncManager
 import com.davy.ui.components.ColorPickerDialog
 import com.davy.ui.viewmodels.AccountDetailViewModel
+import timber.log.Timber
 import com.davy.util.BatteryOptimizationUtils
 import com.davy.ui.theme.DavyOrange
 import com.davy.ui.theme.DavyBlue
 import kotlinx.coroutines.launch
 
-private enum class AccountDetailTabType { CalDav, CardDav, WebCal }
+private enum class AccountDetailTabType { CalDav, CardDav, Tasks, WebCal }
 
 private data class AccountDetailTabDescriptor(
     val type: AccountDetailTabType,
@@ -89,6 +97,11 @@ private val accountDetailTabs = listOf(
         type = AccountDetailTabType.CardDav,
         title = "CardDAV",
         icon = Icons.Default.Contacts // Contacts icon
+    ),
+    AccountDetailTabDescriptor(
+        type = AccountDetailTabType.Tasks,
+        title = "Tasks",
+        icon = Icons.Default.CheckCircle // Tasks/Todo icon
     ),
     AccountDetailTabDescriptor(
         type = AccountDetailTabType.WebCal,
@@ -316,6 +329,7 @@ fun AccountDetailScreen(
 
     val calDavListState = rememberLazyListState()
     val cardDavListState = rememberLazyListState()
+    val tasksListState = rememberLazyListState()
     val webCalListState = rememberLazyListState()
 
     val pagerState = rememberPagerState(pageCount = { accountDetailTabs.size })
@@ -324,7 +338,8 @@ fun AccountDetailScreen(
     val currentTabItemCount = when (pagerState.currentPage) {
         0 -> uiState.calendars.size // CalDAV tab
         1 -> uiState.addressBooks.size // CardDAV tab
-        2 -> uiState.webCalSubscriptions.size // WebCal tab
+        2 -> uiState.taskLists.size // Tasks tab
+        3 -> uiState.webCalSubscriptions.size // WebCal tab
         else -> 0
     }
     
@@ -372,6 +387,7 @@ fun AccountDetailScreen(
     val currentScrollState = when (currentTab.type) {
         AccountDetailTabType.CalDav -> calDavListState
         AccountDetailTabType.CardDav -> cardDavListState
+        AccountDetailTabType.Tasks -> tasksListState
         AccountDetailTabType.WebCal -> webCalListState
     }
     val showTabIcons = !currentScrollState.canScrollBackward
@@ -527,6 +543,19 @@ fun AccountDetailScreen(
                                         }
                                     )
                                 }
+                                
+                                AccountDetailTabType.Tasks -> {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.sync_tasks)) },
+                                        onClick = {
+                                            showMenuDropdown = false
+                                            if (!isBusy) viewModel.syncAllTaskLists()
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Sync, contentDescription = null)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -557,6 +586,7 @@ fun AccountDetailScreen(
                     val tabTitle = when (tab.type) {
                         AccountDetailTabType.CalDav -> stringResource(id = R.string.caldav)
                         AccountDetailTabType.CardDav -> stringResource(id = R.string.carddav)
+                        AccountDetailTabType.Tasks -> stringResource(id = R.string.tasks)
                         AccountDetailTabType.WebCal -> stringResource(id = R.string.webcal)
                     }
                     val iconContent: (@Composable () -> Unit)? = if (showTabIcons) {
@@ -630,7 +660,7 @@ fun AccountDetailScreen(
 
             HorizontalPager(
                 state = pagerState,
-                beyondBoundsPageCount = 1, // Pre-compose adjacent pages for smooth swiping
+                beyondViewportPageCount = 1, // Pre-compose adjacent pages for smooth swiping
                 flingBehavior = PagerDefaults.flingBehavior(
                     state = pagerState,
                     pagerSnapDistance = PagerSnapDistance.atMost(pages = 1)
@@ -657,6 +687,14 @@ fun AccountDetailScreen(
                         listState = cardDavListState,
                         onNavigateToAddressBookDetails = onNavigateToAddressBookDetails,
                         isBusy = isBusy
+                    )
+
+                    AccountDetailTabType.Tasks -> TasksTabContent(
+                        taskLists = uiState.taskLists,
+                        viewModel = viewModel,
+                        listState = tasksListState,
+                        isBusy = isBusy,
+                        accountId = accountId
                     )
 
                     AccountDetailTabType.WebCal -> WebCalTabContent(
@@ -1057,6 +1095,1014 @@ fun CalDAVTabContent(
                 viewModel.updateCalendarSettings(calendar.id, wifiOnly, readOnly, interval)
             }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@Composable
+fun TasksTabContent(
+    taskLists: List<TaskList>,
+    viewModel: AccountDetailViewModel,
+    listState: LazyListState,
+    isBusy: Boolean = false,
+    accountId: Long
+) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val canScroll by remember(listState) {
+        derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+    }
+    
+    // State for expanded task lists (to show/hide tasks)
+    var expandedTaskListIds by remember { mutableStateOf(setOf<Long>()) }
+    
+    // State for tasks per task list
+    val tasksPerList = remember { mutableStateMapOf<Long, List<Task>>() }
+    
+    // State for add task dialog
+    var showAddTaskDialog by remember { mutableStateOf(false) }
+    var selectedTaskListForAdd by remember { mutableStateOf<TaskList?>(null) }
+    
+    // State for edit task dialog
+    var showEditTaskDialog by remember { mutableStateOf(false) }
+    var selectedTaskForEdit by remember { mutableStateOf<Task?>(null) }
+    
+    // Load tasks when task list is expanded
+    LaunchedEffect(expandedTaskListIds) {
+        expandedTaskListIds.forEach { taskListId ->
+            if (!tasksPerList.containsKey(taskListId)) {
+                viewModel.loadTasksForTaskList(taskListId) { tasks ->
+                    tasksPerList[taskListId] = tasks
+                }
+            }
+        }
+    }
+    
+    // Pull-to-refresh functionality
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            scope.launch {
+                if (!isBusy) {
+                    isRefreshing = true
+                    viewModel.syncAllTaskLists()
+                    // Refresh tasks for expanded lists
+                    expandedTaskListIds.forEach { taskListId ->
+                        viewModel.loadTasksForTaskList(taskListId) { tasks ->
+                            tasksPerList[taskListId] = tasks
+                        }
+                    }
+                    isRefreshing = false
+                }
+            }
+        }
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        if (taskLists.isEmpty()) {
+            // Empty state
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Text(
+                            text = stringResource(id = R.string.tasks),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = stringResource(id = R.string.no_task_lists_found),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                    }
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 200.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                taskLists.forEach { taskList ->
+                    val isExpanded = expandedTaskListIds.contains(taskList.id)
+                    val tasks = tasksPerList[taskList.id] ?: emptyList()
+                    
+                    // Task list header
+                    item(key = "tasklist_${taskList.id}", contentType = "tasklist_header") {
+                        TaskListCard(
+                            taskList = taskList,
+                            isExpanded = isExpanded,
+                            taskCount = tasks.size,
+                            onToggleExpand = {
+                                expandedTaskListIds = if (isExpanded) {
+                                    expandedTaskListIds - taskList.id
+                                } else {
+                                    expandedTaskListIds + taskList.id
+                                }
+                            },
+                            onToggleSync = { viewModel.toggleTaskListSync(taskList.id) },
+                            onAddTask = {
+                                selectedTaskListForAdd = taskList
+                                showAddTaskDialog = true
+                            },
+                            isBusy = isBusy
+                        )
+                    }
+                    
+                    // Tasks under expanded task list
+                    if (isExpanded) {
+                        if (tasks.isEmpty()) {
+                            item(key = "empty_${taskList.id}", contentType = "empty_tasks") {
+                                Text(
+                                    text = stringResource(id = R.string.no_tasks_in_list),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 32.dp, top = 8.dp, bottom = 8.dp)
+                                )
+                            }
+                        } else {
+                            // Build task hierarchy: separate root tasks from subtasks
+                            val visibleTasks = tasks.filter { !it.deleted }
+                            val tasksByUid = visibleTasks.associateBy { it.uid }
+                            
+                            // Root tasks: tasks without parentTaskUid or parent not found in list
+                            val rootTasks = visibleTasks.filter { task ->
+                                task.parentTaskUid.isNullOrEmpty() || !tasksByUid.containsKey(task.parentTaskUid)
+                            }
+                            
+                            // Create map of parent UID -> list of subtasks
+                            val subtasksByParentUid = visibleTasks
+                                .filter { !it.parentTaskUid.isNullOrEmpty() && tasksByUid.containsKey(it.parentTaskUid) }
+                                .groupBy { it.parentTaskUid!! }
+                            
+                            // Display root tasks with their subtasks
+                            rootTasks.forEach { rootTask ->
+                                item(
+                                    key = "task_${rootTask.id}",
+                                    contentType = "task"
+                                ) {
+                                    TaskCard(
+                                        task = rootTask,
+                                        onToggleComplete = { 
+                                            viewModel.toggleTaskCompletion(rootTask)
+                                            viewModel.loadTasksForTaskList(taskList.id) { updatedTasks ->
+                                                tasksPerList[taskList.id] = updatedTasks
+                                            }
+                                        },
+                                        onClick = {
+                                            selectedTaskForEdit = rootTask
+                                            showEditTaskDialog = true
+                                        },
+                                        onDelete = {
+                                            viewModel.deleteTask(rootTask)
+                                            viewModel.loadTasksForTaskList(taskList.id) { updatedTasks ->
+                                                tasksPerList[taskList.id] = updatedTasks
+                                            }
+                                        },
+                                        modifier = Modifier.padding(start = 16.dp)
+                                    )
+                                }
+                                
+                                // Display subtasks for this root task
+                                val subtasks = subtasksByParentUid[rootTask.uid] ?: emptyList()
+                                subtasks.forEach { subtask ->
+                                    item(
+                                        key = "task_${subtask.id}",
+                                        contentType = "subtask"
+                                    ) {
+                                        SubtaskCard(
+                                            task = subtask,
+                                            onToggleComplete = { 
+                                                viewModel.toggleTaskCompletion(subtask)
+                                                viewModel.loadTasksForTaskList(taskList.id) { updatedTasks ->
+                                                    tasksPerList[taskList.id] = updatedTasks
+                                                }
+                                            },
+                                            onClick = {
+                                                selectedTaskForEdit = subtask
+                                                showEditTaskDialog = true
+                                            },
+                                            onDelete = {
+                                                viewModel.deleteTask(subtask)
+                                                viewModel.loadTasksForTaskList(taskList.id) { updatedTasks ->
+                                                    tasksPerList[taskList.id] = updatedTasks
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Pull-to-refresh indicator
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+    
+    // Add Task Dialog
+    if (showAddTaskDialog && selectedTaskListForAdd != null) {
+        val taskListForAdd = selectedTaskListForAdd!!
+        AddEditTaskDialog(
+            taskList = taskListForAdd,
+            task = null,
+            onDismiss = { 
+                showAddTaskDialog = false
+                selectedTaskListForAdd = null
+            },
+            onSave = { summary, description, dueDate, priority, status ->
+                val taskListId = taskListForAdd.id
+                viewModel.createTask(
+                    taskListId = taskListId,
+                    summary = summary,
+                    description = description,
+                    dueDate = dueDate,
+                    priority = priority,
+                    status = status
+                )
+                // Refresh tasks after a small delay to allow the insert to complete
+                viewModel.loadTasksForTaskList(taskListId) { updatedTasks ->
+                    tasksPerList[taskListId] = updatedTasks
+                }
+                showAddTaskDialog = false
+                selectedTaskListForAdd = null
+            }
+        )
+    }
+    
+    // Edit Task Dialog
+    if (showEditTaskDialog && selectedTaskForEdit != null) {
+        val taskToEdit = selectedTaskForEdit!!
+        val taskListForEdit = taskLists.find { it.id == taskToEdit.taskListId }
+        if (taskListForEdit != null) {
+            AddEditTaskDialog(
+                taskList = taskListForEdit,
+                task = taskToEdit,
+                onDismiss = { 
+                    showEditTaskDialog = false
+                    selectedTaskForEdit = null
+                },
+                onSave = { summary, description, dueDate, priority, status ->
+                    val taskListId = taskListForEdit.id
+                    viewModel.updateTask(
+                        task = taskToEdit.copy(
+                            summary = summary,
+                            description = description,
+                            due = dueDate,
+                            priority = priority,
+                            status = status,
+                            dirty = true
+                        )
+                    )
+                    // Refresh tasks
+                    viewModel.loadTasksForTaskList(taskListId) { updatedTasks ->
+                        tasksPerList[taskListId] = updatedTasks
+                    }
+                    showEditTaskDialog = false
+                    selectedTaskForEdit = null
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TaskListCard(
+    taskList: TaskList,
+    isExpanded: Boolean,
+    taskCount: Int,
+    onToggleExpand: () -> Unit,
+    onToggleSync: () -> Unit,
+    onAddTask: () -> Unit,
+    isBusy: Boolean = false
+) {
+    val taskListColor = taskList.color?.let { 
+        try { 
+            androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(it)) 
+        } catch (e: Exception) { 
+            MaterialTheme.colorScheme.primary 
+        } 
+    } ?: MaterialTheme.colorScheme.primary
+    
+    val cardShape = MaterialTheme.shapes.medium
+    val gradientBorder = rememberGradientBorderBrush(taskListColor)
+    
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .customCardBorder(brush = gradientBorder, shape = cardShape, leftWidth = 2.dp, otherWidth = 1.dp),
+        shape = cardShape,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onToggleExpand() }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Task list icon with color
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = taskListColor,
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = taskList.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = pluralStringResource(id = R.plurals.task_count, count = taskCount, taskCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Add task button
+            IconButton(onClick = onAddTask, enabled = !isBusy) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(id = R.string.add_task),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            // Sync toggle
+            IconButton(onClick = onToggleSync, enabled = !isBusy) {
+                Icon(
+                    imageVector = if (taskList.syncEnabled) Icons.Default.Sync else Icons.Default.SyncDisabled,
+                    contentDescription = stringResource(id = R.string.toggle_sync),
+                    tint = if (taskList.syncEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Expand/collapse indicator
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TaskCard(
+    task: Task,
+    onToggleComplete: () -> Unit,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val haptics = LocalHapticFeedback.current
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    
+    // Debug: Log task info on every composition
+    LaunchedEffect(task.id, task.alarms) {
+        Timber.d("TaskCard composing: '${task.summary}' (id=${task.id}), alarms=${task.alarms.size}, hasAlarms=${task.hasAlarms()}")
+    }
+    
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { 
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        showDeleteConfirmation = true 
+                    }
+                )
+                .padding(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            // Checkbox for task completion
+            IconButton(
+                onClick = onToggleComplete,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted()) 
+                        Icons.Default.CheckCircle 
+                    else 
+                        Icons.Default.RadioButtonUnchecked,
+                    contentDescription = if (task.isCompleted()) "Mark as incomplete" else "Mark as complete",
+                    tint = if (task.isCompleted()) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.summary,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (task.isCompleted()) 
+                        TextDecoration.LineThrough 
+                    else 
+                        null,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                if (!task.description.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = task.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                
+                // Due date, priority, and alarm chips row
+                if (task.due != null || task.isHighPriority() || task.hasAlarms()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (task.due != null) {
+                            val isOverdue = task.isOverdue()
+                            val isDueToday = task.isDueToday()
+                            AssistChip(
+                                onClick = {},
+                                label = { 
+                                    Text(
+                                        text = formatDueDate(task.due),
+                                        style = MaterialTheme.typography.labelSmall
+                                    ) 
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = when {
+                                        isOverdue -> MaterialTheme.colorScheme.errorContainer
+                                        isDueToday -> MaterialTheme.colorScheme.tertiaryContainer
+                                        else -> MaterialTheme.colorScheme.surfaceVariant
+                                    },
+                                    labelColor = when {
+                                        isOverdue -> MaterialTheme.colorScheme.onErrorContainer
+                                        isDueToday -> MaterialTheme.colorScheme.onTertiaryContainer
+                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                            )
+                        }
+                        
+                        if (task.isHighPriority()) {
+                            AssistChip(
+                                onClick = {},
+                                label = { 
+                                    Text(
+                                        text = task.priority.label,
+                                        style = MaterialTheme.typography.labelSmall
+                                    ) 
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.PriorityHigh,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    labelColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            )
+                        }
+                        
+                        // Alarm/Reminder indicator
+                        if (task.hasAlarms()) {
+                            AssistChip(
+                                onClick = {},
+                                label = { 
+                                    Text(
+                                        text = pluralStringResource(
+                                            id = R.plurals.reminder_count,
+                                            count = task.alarms.size,
+                                            task.alarms.size
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall
+                                    ) 
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+                
+                // Progress indicator
+                if (task.percentComplete != null && task.percentComplete > 0 && !task.isCompleted()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = { task.percentComplete / 100f },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(id = R.string.delete_task)) },
+            text = { Text(stringResource(id = R.string.delete_task_confirmation, task.summary)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteConfirmation = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+/**
+ * Card for displaying a subtask (task with parent).
+ * Similar to TaskCard but with extra indentation and subtask indicator.
+ */
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@Composable
+private fun SubtaskCard(
+    task: Task,
+    onToggleComplete: () -> Unit,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val haptics = LocalHapticFeedback.current
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 40.dp, end = 0.dp),  // Extra indentation for subtask
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.7f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { 
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        showDeleteConfirmation = true 
+                    }
+                )
+                .padding(10.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            // Subtask indicator
+            Icon(
+                imageVector = Icons.Default.SubdirectoryArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.size(18.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(4.dp))
+            
+            // Checkbox for task completion
+            IconButton(
+                onClick = onToggleComplete,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted()) 
+                        Icons.Default.CheckCircle 
+                    else 
+                        Icons.Default.RadioButtonUnchecked,
+                    contentDescription = if (task.isCompleted()) "Mark as incomplete" else "Mark as complete",
+                    tint = if (task.isCompleted()) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(6.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.summary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textDecoration = if (task.isCompleted()) 
+                        TextDecoration.LineThrough 
+                    else 
+                        null,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                // Due date, priority, and alarm chips
+                val showChips = task.due != null || task.isHighPriority() || task.hasAlarms()
+                if (showChips) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (task.due != null) {
+                            val isOverdue = task.isOverdue()
+                            SuggestionChip(
+                                onClick = {},
+                                label = { 
+                                    Text(
+                                        text = formatDueDate(task.due),
+                                        style = MaterialTheme.typography.labelSmall
+                                    ) 
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = if (isOverdue) 
+                                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f)
+                                    else 
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                                )
+                            )
+                        }
+                        
+                        if (task.hasAlarms()) {
+                            SuggestionChip(
+                                onClick = {},
+                                label = { 
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Notifications,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text(
+                                            text = "${task.alarms.size}",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(id = R.string.delete_task)) },
+            text = { Text(stringResource(id = R.string.delete_task_confirmation, task.summary)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteConfirmation = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun formatDueDate(timestamp: Long): String {
+    val now = System.currentTimeMillis()
+    val diff = timestamp - now
+    val dayInMillis = 24 * 60 * 60 * 1000L
+    
+    return when {
+        diff < 0 -> {
+            val daysAgo = (-diff / dayInMillis).toInt()
+            if (daysAgo == 0) stringResource(id = R.string.overdue_today)
+            else pluralStringResource(id = R.plurals.days_overdue, count = daysAgo, daysAgo)
+        }
+        diff < dayInMillis -> stringResource(id = R.string.due_today)
+        diff < 2 * dayInMillis -> stringResource(id = R.string.due_tomorrow)
+        diff < 7 * dayInMillis -> {
+            val days = (diff / dayInMillis).toInt()
+            pluralStringResource(id = R.plurals.due_in_days, count = days, days)
+        }
+        else -> {
+            val pattern = stringResource(id = R.string.date_format_short)
+            val sdf = java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault())
+            sdf.format(java.util.Date(timestamp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddEditTaskDialog(
+    taskList: TaskList,
+    task: Task?,
+    onDismiss: () -> Unit,
+    onSave: (summary: String, description: String?, dueDate: Long?, priority: TaskPriority, status: TaskStatus) -> Unit
+) {
+    val isEditing = task != null
+    
+    var summary by remember { mutableStateOf(task?.summary ?: "") }
+    var description by remember { mutableStateOf(task?.description ?: "") }
+    var dueDate by remember { mutableStateOf(task?.due) }
+    var priority by remember { mutableStateOf(task?.priority ?: TaskPriority.UNDEFINED) }
+    var status by remember { mutableStateOf(task?.status ?: TaskStatus.NEEDS_ACTION) }
+    
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showPriorityMenu by remember { mutableStateOf(false) }
+    var showStatusMenu by remember { mutableStateOf(false) }
+    
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = dueDate ?: System.currentTimeMillis()
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { 
+            Text(
+                text = if (isEditing) stringResource(id = R.string.edit_task) 
+                       else stringResource(id = R.string.add_task)
+            ) 
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Task list info
+                Text(
+                    text = taskList.displayName,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                // Summary field
+                OutlinedTextField(
+                    value = summary,
+                    onValueChange = { summary = it },
+                    label = { Text(stringResource(id = R.string.task_summary)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Description field
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text(stringResource(id = R.string.task_description)) },
+                    minLines = 2,
+                    maxLines = 4,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Due date field
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = dueDate?.let { 
+                            java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
+                                .format(java.util.Date(it))
+                        } ?: "",
+                        onValueChange = {},
+                        label = { Text(stringResource(id = R.string.due_date)) },
+                        readOnly = true,
+                        trailingIcon = {
+                            Row {
+                                if (dueDate != null) {
+                                    IconButton(onClick = { dueDate = null }) {
+                                        Icon(Icons.Default.Clear, contentDescription = "Clear date")
+                                    }
+                                }
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(Icons.Default.DateRange, contentDescription = "Select date")
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                // Priority dropdown
+                ExposedDropdownMenuBox(
+                    expanded = showPriorityMenu,
+                    onExpandedChange = { showPriorityMenu = it }
+                ) {
+                    OutlinedTextField(
+                        value = priority.label,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(id = R.string.priority)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showPriorityMenu) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = showPriorityMenu,
+                        onDismissRequest = { showPriorityMenu = false }
+                    ) {
+                        TaskPriority.entries.forEach { p ->
+                            DropdownMenuItem(
+                                text = { Text(p.label) },
+                                onClick = {
+                                    priority = p
+                                    showPriorityMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+                
+                // Status dropdown (only for editing)
+                if (isEditing) {
+                    ExposedDropdownMenuBox(
+                        expanded = showStatusMenu,
+                        onExpandedChange = { showStatusMenu = it }
+                    ) {
+                        OutlinedTextField(
+                            value = status.label,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(id = R.string.status)) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showStatusMenu) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = showStatusMenu,
+                            onDismissRequest = { showStatusMenu = false }
+                        ) {
+                            TaskStatus.entries.forEach { s ->
+                                DropdownMenuItem(
+                                    text = { Text(s.label) },
+                                    onClick = {
+                                        status = s
+                                        showStatusMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { 
+                    onSave(
+                        summary, 
+                        description.takeIf { it.isNotBlank() },
+                        dueDate,
+                        priority,
+                        status
+                    )
+                },
+                enabled = summary.isNotBlank()
+            ) {
+                Text(stringResource(id = R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.cancel))
+            }
+        }
+    )
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    dueDate = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) {
+                    Text(stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
 
