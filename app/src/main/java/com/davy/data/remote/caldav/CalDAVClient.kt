@@ -248,13 +248,14 @@ $hrefElements
         val request = requestBuilder.build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to GET event: $eventUrl")
             CalDAVResponse(
@@ -293,13 +294,14 @@ $hrefElements
         val request = requestBuilder.build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful || response.code == 201 || response.code == 204
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful || response.code == 201 || response.code == 204
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to PUT event: $eventUrl")
             CalDAVResponse(
@@ -334,13 +336,14 @@ $hrefElements
         val request = requestBuilder.build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful || response.code == 204
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful || response.code == 204
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to DELETE event: $eventUrl")
             CalDAVResponse(
@@ -419,13 +422,14 @@ $hrefElements
             .build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful || response.code == 201
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful || response.code == 201
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to MKCALENDAR: $calendarUrl")
             CalDAVResponse(
@@ -457,13 +461,14 @@ $hrefElements
             .build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful || response.code == 204 || response.code == 404 || response.code == 410
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful || response.code == 204 || response.code == 404 || response.code == 410
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to DELETE calendar: $calendarUrl")
             CalDAVResponse(
@@ -506,13 +511,14 @@ $hrefElements
             .build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                isSuccessful = response.isSuccessful
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    isSuccessful = response.isSuccessful
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to PROPPATCH collection: $collectionUrl")
             CalDAVResponse(
@@ -575,14 +581,15 @@ $hrefElements
      */
     private fun executeRequest(request: Request): CalDAVResponse {
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CalDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                // WebDAV often uses 207 Multi-Status for PROPFIND/REPORT; treat it as success
-                isSuccessful = response.isSuccessful || response.code == 207
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CalDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    // WebDAV often uses 207 Multi-Status for PROPFIND/REPORT; treat it as success
+                    isSuccessful = response.isSuccessful || response.code == 207
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to execute request: ${request.method} ${request.url}")
             CalDAVResponse(

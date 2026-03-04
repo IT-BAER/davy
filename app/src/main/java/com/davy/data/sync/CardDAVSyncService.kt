@@ -374,7 +374,7 @@ class CardDAVSyncService @Inject constructor(
                 .header("Authorization", Credentials.basic(username, password))
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 Timber.e("PROPFIND failed: ${response.code} ${response.message}")
                 
@@ -403,6 +403,7 @@ class CardDAVSyncService @Inject constructor(
                 null
             } else {
                 ctag
+            }
             }
         } catch (e: Exception) {
             Timber.e(e, "Exception fetching server ctag")
@@ -436,7 +437,7 @@ class CardDAVSyncService @Inject constructor(
                 .header("Authorization", Credentials.basic(username, password))
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 Timber.w("Failed to fetch server contact count: ${response.code}")
                 return@withContext null
@@ -445,6 +446,7 @@ class CardDAVSyncService @Inject constructor(
             val responseXml = response.body?.string() ?: return@withContext null
             val contacts = addressBookQuery.parseQueryResponse(responseXml)
             contacts.size
+            }
         } catch (e: Exception) {
             Timber.e(e, "Exception fetching server contact count")
             null
@@ -465,7 +467,7 @@ class CardDAVSyncService @Inject constructor(
                 .header("Authorization", Credentials.basic(account.username, password))
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 Timber.e("addressbook-query REPORT failed: ${response.code} ${response.message}")
                 
@@ -511,6 +513,7 @@ class CardDAVSyncService @Inject constructor(
                 if (processDownloadedContact(account, addressBook, fetched.url, fetched.vcardData, fetched.etag)) {
                     count++
                 }
+            }
             }
         } catch (e: Exception) {
             Timber.e(e, "Exception downloading contacts")
@@ -857,11 +860,14 @@ class CardDAVSyncService @Inject constructor(
                         requestBuilder.header(key, value)
                     }
                     
-                    var response = httpClient.newCall(requestBuilder.build()).execute()
-                    var putResult = ContactPut.parsePutResponse(
-                        status = response.code,
-                        headers = response.headers.toMultimap()
-                    )
+                    var responseCode = 0
+                    var putResult = httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                        responseCode = response.code
+                        ContactPut.parsePutResponse(
+                            status = response.code,
+                            headers = response.headers.toMultimap()
+                        )
+                    }
                     
                     // Handle HTTP 412 (Precondition Failed) - ETag mismatch
                     if (putResult.isPreconditionFailed) {
@@ -874,8 +880,7 @@ class CardDAVSyncService @Inject constructor(
                             .header("Authorization", Credentials.basic(account.username, password))
                             .build()
                         
-                        val getResponse = httpClient.newCall(getRequest).execute()
-                        
+                        httpClient.newCall(getRequest).execute().use { getResponse ->
                         if (getResponse.isSuccessful) {
                             val freshEtag = ContactPut.extractETag(getResponse.headers.toMultimap())
                             
@@ -898,18 +903,21 @@ class CardDAVSyncService @Inject constructor(
                                     retryRequestBuilder.header(key, value)
                                 }
                                 
-                                response = httpClient.newCall(retryRequestBuilder.build()).execute()
-                                putResult = ContactPut.parsePutResponse(
-                                    status = response.code,
-                                    headers = response.headers.toMultimap()
-                                )
-                                
-                                Timber.d("    Retry result: ${response.code}")
+                                httpClient.newCall(retryRequestBuilder.build()).execute().use { retryResponse ->
+                                    responseCode = retryResponse.code
+                                    putResult = ContactPut.parsePutResponse(
+                                        status = retryResponse.code,
+                                        headers = retryResponse.headers.toMultimap()
+                                    )
+                                    
+                                    Timber.d("    Retry result: ${retryResponse.code}")
+                                }
                             } else {
                                 Timber.w("    No ETag in server response, cannot retry with fresh ETag")
                             }
                         } else {
                             Timber.w("    Failed to fetch contact from server (${getResponse.code}), cannot retry")
+                        }
                         }
                     }
                     
@@ -927,7 +935,7 @@ class CardDAVSyncService @Inject constructor(
                                 .header("Authorization", Credentials.basic(account.username, password))
                                 .build()
                             
-                            val getResponse = httpClient.newCall(getRequest).execute()
+                            httpClient.newCall(getRequest).execute().use { getResponse ->
                             if (getResponse.isSuccessful) {
                                 finalETag = ContactPut.extractETag(getResponse.headers.toMultimap())
                                 if (finalETag != null) {
@@ -937,6 +945,7 @@ class CardDAVSyncService @Inject constructor(
                                 }
                             } else {
                                 Timber.w("    Failed to GET contact after upload (${getResponse.code})")
+                            }
                             }
                         }
                         
@@ -973,7 +982,7 @@ class CardDAVSyncService @Inject constructor(
                         count++
                         Timber.d("    ✓ Uploaded contact: ${contact.displayName}")
                     } else {
-                        Timber.w("    Upload failed for contact: ${contact.displayName}, status: ${response.code}")
+                        Timber.w("    Upload failed for contact: ${contact.displayName}, status: $responseCode")
                     }
                 } catch (e: Exception) {
                     Timber.e(e, "    Failed to upload contact with raw ID: $rawContactId")
@@ -1059,8 +1068,8 @@ class CardDAVSyncService @Inject constructor(
                             requestBuilder.header("If-Match", ContactDelete.buildIfMatchHeader(etag))
                         }
                         
-                        var response = httpClient.newCall(requestBuilder.build()).execute()
-                        var deleteResult = ContactDelete.parseDeleteResponse(response.code)
+                        var responseCode = httpClient.newCall(requestBuilder.build()).execute().use { it.code }
+                        var deleteResult = ContactDelete.parseDeleteResponse(responseCode)
                         
                         // If ETag mismatch (412), retry without If-Match to force delete
                         if (deleteResult.isPreconditionFailed) {
@@ -1070,12 +1079,12 @@ class CardDAVSyncService @Inject constructor(
                                 .delete()
                                 .header("Authorization", Credentials.basic(account.username, password))
                             
-                            response = httpClient.newCall(requestBuilder.build()).execute()
-                            deleteResult = ContactDelete.parseDeleteResponse(response.code)
+                            responseCode = httpClient.newCall(requestBuilder.build()).execute().use { it.code }
+                            deleteResult = ContactDelete.parseDeleteResponse(responseCode)
                         }
                         
                         if (deleteResult.isSuccess()) {
-                            Timber.d("    ✓ Server deletion successful (status: ${response.code})")
+                            Timber.d("    ✓ Server deletion successful (status: $responseCode)")
                             
                             // Delete from DAVy database
                             contactRepository.delete(contact)
@@ -1090,7 +1099,7 @@ class CardDAVSyncService @Inject constructor(
                             count++
                             Timber.d("    ✓ Deleted contact: ${contact.displayName}")
                         } else {
-                            Timber.w("    Server deletion failed with status: ${response.code}")
+                            Timber.w("    Server deletion failed with status: $responseCode")
                         }
                     }
                 } catch (e: Exception) {
@@ -1113,7 +1122,7 @@ class CardDAVSyncService @Inject constructor(
                 .header("Authorization", Credentials.basic(account.username, password))
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val responseXml = response.body?.string() ?: ""
                 val serverContacts = addressBookQuery.parseQueryResponse(responseXml)
@@ -1163,6 +1172,7 @@ class CardDAVSyncService @Inject constructor(
                         }
                     }
                 }
+            }
             }
             
             // Purge old soft-deleted contacts

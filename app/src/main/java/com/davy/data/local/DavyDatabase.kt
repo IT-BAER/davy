@@ -127,7 +127,81 @@ abstract class DavyDatabase : RoomDatabase() {
     
     companion object {
         const val DATABASE_NAME = "davy_database"
-        
+
+        /**
+         * Migration from version 7 to 8.
+         * Adds CalDAV privilege columns to calendars table.
+         */
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN privWriteContent INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE calendars ADD COLUMN privUnbind INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        /**
+         * Migration from version 8 to 9.
+         * Adds forceReadOnly flag to calendars table.
+         */
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN forceReadOnly INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        /**
+         * Migration from version 9 to 10.
+         * Adds VTODO and VJOURNAL capability flags to calendars table.
+         */
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN supportsVTODO INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE calendars ADD COLUMN supportsVJOURNAL INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        /**
+         * Migration from version 10 to 11.
+         * Adds source identifier to calendars table.
+         */
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN source TEXT")
+            }
+        }
+
+        /**
+         * Migration from version 11 to 12.
+         * Adds notes field to accounts table.
+         */
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE accounts ADD COLUMN notes TEXT")
+            }
+        }
+
+        /**
+         * Migration from version 12 to 13.
+         * Adds per-collection WiFi-only sync preference to calendars and address_books.
+         */
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN wifiOnlySync INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE address_books ADD COLUMN wifi_only_sync INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        /**
+         * Migration from version 13 to 14.
+         * Adds per-collection sync interval to calendars and address_books.
+         */
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE calendars ADD COLUMN syncIntervalMinutes INTEGER NOT NULL DEFAULT 60")
+                db.execSQL("ALTER TABLE address_books ADD COLUMN sync_interval_minutes INTEGER NOT NULL DEFAULT 60")
+            }
+        }
+
         /**
          * Manual migration from version 15 to 16.
          * Adds lastSynced column to address_books table.

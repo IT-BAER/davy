@@ -1,17 +1,21 @@
 package com.davy.data.remote.oauth
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * Nextcloud Login Flow v2 implementation.
@@ -40,16 +44,46 @@ class NextcloudLoginFlowV2 @Inject constructor(
         private const val LOGIN_FLOW_V2_PATH = "/index.php/login/v2"
         private const val POLL_INTERVAL_MS = 1000L // Poll every 1 second
         private const val MAX_POLL_ATTEMPTS = 300 // 5 minutes max
+        private const val HTTP_OK = 200
+        private const val HTTP_NOT_FOUND = 404
     }
     
     /**
+     * Executes an OkHttp [Call] asynchronously using [suspendCancellableCoroutine].
+     * The [block] processes the [Response] on OkHttp's callback thread, avoiding
+     * NetworkOnMainThreadException regardless of the calling coroutine's dispatcher.
+     */
+    private suspend fun <T> Call.await(block: (Response) -> T): T =
+        suspendCancellableCoroutine { cont ->
+            cont.invokeOnCancellation { cancel() }
+            enqueue(object : Callback {
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        val result = response.use { block(it) }
+                        cont.resume(result)
+                    } catch (e: Exception) {
+                        cont.resumeWithException(e)
+                    }
+                }
+
+                override fun onFailure(call: Call, e: IOException) {
+                    cont.resumeWithException(e)
+                }
+            })
+        }
+    
+    /**
      * Initiate login flow and get login URL.
+     * 
+     * Uses OkHttp's async enqueue() via suspendCancellableCoroutine to avoid
+     * NetworkOnMainThreadException that can occur when R8 optimizes away
+     * withContext(Dispatchers.IO) in release builds.
      * 
      * @param serverUrl Nextcloud server base URL (e.g., https://cloud.example.com)
      * @return LoginFlowInitiation with login URL and poll token
      * @throws NextcloudLoginException if initiation fails
      */
-    suspend fun initiateLogin(serverUrl: String): LoginFlowInitiation = withContext(Dispatchers.IO) {
+    suspend fun initiateLogin(serverUrl: String): LoginFlowInitiation {
         val normalizedUrl = normalizeServerUrl(serverUrl)
         val initiationUrl = "$normalizedUrl$LOGIN_FLOW_V2_PATH"
         
@@ -61,7 +95,8 @@ class NextcloudLoginFlowV2 @Inject constructor(
             .build()
         
         try {
-            httpClient.newCall(request).execute().use { response ->
+            // Use async enqueue to avoid NetworkOnMainThreadException
+            val responseBody = httpClient.newCall(request).await { response ->
                 if (!response.isSuccessful) {
                     throw NextcloudLoginException(
                         "Failed to initiate login flow: HTTP ${response.code}",
@@ -69,50 +104,50 @@ class NextcloudLoginFlowV2 @Inject constructor(
                     )
                 }
                 
-                val responseBody = response.body?.string()
+                response.body?.string()
                     ?: throw NextcloudLoginException(
                         "Empty response from login flow initiation",
                         ErrorCode.INITIATION_FAILED
                     )
-                
-                Timber.d("Login flow initiation response: %s", responseBody)
+            }
+            
+            Timber.d("Login flow initiation response: %s", responseBody)
 
-                val json = JSONObject(responseBody)
+            val json = JSONObject(responseBody)
 
-                // Parse response - Nextcloud returns flat structure with poll and login objects
-                val pollJson = when (val pollValue = json.opt("poll")) {
-                    is JSONObject -> pollValue
-                    is String -> runCatching { JSONObject(pollValue) }.getOrNull()
-                    else -> null
-                } ?: throw NextcloudLoginException(
-                    "Missing poll object in login flow response",
+            // Parse response - Nextcloud returns flat structure with poll and login objects
+            val pollJson = when (val pollValue = json.opt("poll")) {
+                is JSONObject -> pollValue
+                is String -> runCatching { JSONObject(pollValue) }.getOrNull()
+                else -> null
+            } ?: throw NextcloudLoginException(
+                "Missing poll object in login flow response",
+                ErrorCode.PARSE_ERROR
+            )
+
+            val loginUrl = json.optString("login").takeIf { it.isNotBlank() }
+                ?: throw NextcloudLoginException(
+                    "Missing login URL in login flow response",
                     ErrorCode.PARSE_ERROR
                 )
 
-                val loginUrl = json.optString("login").takeIf { it.isNotBlank() }
-                    ?: throw NextcloudLoginException(
-                        "Missing login URL in login flow response",
-                        ErrorCode.PARSE_ERROR
-                    )
-
-                val pollToken = pollJson.optString("token").takeIf { it.isNotBlank() }
-                    ?: throw NextcloudLoginException(
-                        "Missing poll token in login flow response",
-                        ErrorCode.PARSE_ERROR
-                    )
-
-                val pollEndpoint = pollJson.optString("endpoint").takeIf { it.isNotBlank() }
-                    ?: throw NextcloudLoginException(
-                        "Missing poll endpoint in login flow response",
-                        ErrorCode.PARSE_ERROR
-                    )
-
-                return@use LoginFlowInitiation(
-                    loginUrl = loginUrl,
-                    pollToken = pollToken,
-                    pollEndpoint = pollEndpoint
+            val pollToken = pollJson.optString("token").takeIf { it.isNotBlank() }
+                ?: throw NextcloudLoginException(
+                    "Missing poll token in login flow response",
+                    ErrorCode.PARSE_ERROR
                 )
-            }
+
+            val pollEndpoint = pollJson.optString("endpoint").takeIf { it.isNotBlank() }
+                ?: throw NextcloudLoginException(
+                    "Missing poll endpoint in login flow response",
+                    ErrorCode.PARSE_ERROR
+                )
+
+            return LoginFlowInitiation(
+                loginUrl = loginUrl,
+                pollToken = pollToken,
+                pollEndpoint = pollEndpoint
+            )
         } catch (e: NextcloudLoginException) {
             throw e
         } catch (e: IOException) {
@@ -163,50 +198,49 @@ class NextcloudLoginFlowV2 @Inject constructor(
                     )
                     .build()
                 
-                val result = withContext(Dispatchers.IO) {
-                    httpClient.newCall(request).execute().use { response ->
-                        when (response.code) {
-                            200 -> {
-                                // Login completed successfully
-                                val responseBody = response.body?.string()
-                                    ?: throw NextcloudLoginException(
-                                        "Empty response from poll endpoint",
-                                        ErrorCode.POLL_ERROR
-                                    )
-                                
-                                val json = JSONObject(responseBody)
-                                val serverUrl = json.optString("server").takeIf { it.isNotBlank() }
-                                    ?: throw NextcloudLoginException(
-                                        "Missing server URL in poll response",
-                                        ErrorCode.POLL_ERROR
-                                    )
-                                val loginName = json.optString("loginName").takeIf { it.isNotBlank() }
-                                    ?: throw NextcloudLoginException(
-                                        "Missing login name in poll response",
-                                        ErrorCode.POLL_ERROR
-                                    )
-                                val appPassword = json.optString("appPassword").takeIf { it.isNotBlank() }
-                                    ?: throw NextcloudLoginException(
-                                        "Missing app password in poll response",
-                                        ErrorCode.POLL_ERROR
-                                    )
-                                Timber.d("Login flow completed successfully!")
-                                
-                                LoginFlowCredentials(
-                                    serverUrl = serverUrl,
-                                    loginName = loginName,
-                                    appPassword = appPassword
-                                )
-                            }
-                            
-                            404 -> null // Still waiting for user to complete login
-                            
-                            else -> {
-                                throw NextcloudLoginException(
-                                    "Unexpected response from poll endpoint: HTTP ${response.code}",
+                // Use async enqueue to avoid NetworkOnMainThreadException
+                val result = httpClient.newCall(request).await { response ->
+                    when (response.code) {
+                        HTTP_OK -> {
+                            // Login completed successfully
+                            val responseBody = response.body?.string()
+                                ?: throw NextcloudLoginException(
+                                    "Empty response from poll endpoint",
                                     ErrorCode.POLL_ERROR
                                 )
-                            }
+                            
+                            val json = JSONObject(responseBody)
+                            val serverUrl = json.optString("server").takeIf { it.isNotBlank() }
+                                ?: throw NextcloudLoginException(
+                                    "Missing server URL in poll response",
+                                    ErrorCode.POLL_ERROR
+                                )
+                            val loginName = json.optString("loginName").takeIf { it.isNotBlank() }
+                                ?: throw NextcloudLoginException(
+                                    "Missing login name in poll response",
+                                    ErrorCode.POLL_ERROR
+                                )
+                            val appPassword = json.optString("appPassword").takeIf { it.isNotBlank() }
+                                ?: throw NextcloudLoginException(
+                                    "Missing app password in poll response",
+                                    ErrorCode.POLL_ERROR
+                                )
+                            Timber.d("Login flow completed successfully!")
+                            
+                            LoginFlowCredentials(
+                                serverUrl = serverUrl,
+                                loginName = loginName,
+                                appPassword = appPassword
+                            )
+                        }
+                        
+                        HTTP_NOT_FOUND -> null // Still waiting for user to complete login
+                        
+                        else -> {
+                            throw NextcloudLoginException(
+                                "Unexpected response from poll endpoint: HTTP ${response.code}",
+                                ErrorCode.POLL_ERROR
+                            )
                         }
                     }
                 }

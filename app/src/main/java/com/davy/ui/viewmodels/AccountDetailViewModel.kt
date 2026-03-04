@@ -716,7 +716,7 @@ class AccountDetailViewModel @Inject constructor(
 
                         // Use a short-lived client for this call (CardDAV client not wired here)
                         val client = OkHttpClient()
-                        val response = client.newCall(request).execute()
+                        client.newCall(request).execute().use { response ->
 
                         if (!response.isSuccessful) {
                             val errorMsg = when (response.code) {
@@ -732,6 +732,7 @@ class AccountDetailViewModel @Inject constructor(
                             )
                             _errorMessage.value = errorMsg
                             return@withContext
+                        }
                         }
                     } catch (e: Exception) {
                         Timber.tag("AccountDetailViewModel").e(e, "Exception creating address book on server")

@@ -122,7 +122,7 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
             
             Timber.tag("PrincipalDiscovery").d("Sending PROPFIND to: %s", baseUrl)
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             Timber.tag("PrincipalDiscovery").d("Response code: %s", response.code)
             
@@ -141,6 +141,7 @@ class PrincipalDiscovery @Inject constructor(
             } else {
                 Timber.tag("PrincipalDiscovery").w("Unexpected response code %s: %s", response.code, response.body?.string())
                 null
+            }
             }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error finding current-user-principal")
@@ -182,7 +183,7 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
             
             Timber.tag("PrincipalDiscovery").d("Sending PROPFIND for addressbook-home-set to: %s", principalUrl)
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             Timber.tag("PrincipalDiscovery").d("addressbook-home-set response code: %s", response.code)
             
@@ -197,6 +198,7 @@ class PrincipalDiscovery @Inject constructor(
             } else {
                 Timber.tag("PrincipalDiscovery").w("Failed to get addressbook-home-set: %s - %s", response.code, response.body?.string())
                 null
+            }
             }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error finding addressbook-home-set")
@@ -235,13 +237,14 @@ class PrincipalDiscovery @Inject constructor(
                 .header(DEPTH_HEADER, "0")
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             if (response.isSuccessful) {
                 val responseBody = response.body?.string()
                 responseBody?.let { extractDisplayName(it) }
             } else {
                 null
+            }
             }
         } catch (e: Exception) {
             null
@@ -404,11 +407,12 @@ class PrincipalDiscovery @Inject constructor(
                     .build()
 
                 Timber.tag("CardDAVPrincipalDiscovery").d("Sending PROPFIND Depth: 1 for addressbooks")
-                val response = httpClient.newCall(request).execute()
-                Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response code: %s", response.code)
-                val body = response.body?.string()
-                Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response body:\n%s", body)
-                return response.code to body
+                return httpClient.newCall(request).execute().use { response ->
+                    Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response code: %s", response.code)
+                    val body = response.body?.string()
+                    Timber.tag("CardDAVPrincipalDiscovery").d("Addressbook discovery response body:\n%s", body)
+                    response.code to body
+                }
             }
 
             // First attempt

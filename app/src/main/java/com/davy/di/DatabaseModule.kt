@@ -44,13 +44,20 @@ object DatabaseModule {
             DavyDatabase::class.java,
             DavyDatabase.DATABASE_NAME
         )
+            .fallbackToDestructiveMigrationFrom(1, 2, 3, 4, 5, 6)
             .addMigrations(
+                DavyDatabase.MIGRATION_7_8,
+                DavyDatabase.MIGRATION_8_9,
+                DavyDatabase.MIGRATION_9_10,
+                DavyDatabase.MIGRATION_10_11,
+                DavyDatabase.MIGRATION_11_12,
+                DavyDatabase.MIGRATION_12_13,
+                DavyDatabase.MIGRATION_13_14,
                 DavyDatabase.MIGRATION_15_16,
                 DavyDatabase.MIGRATION_16_17,
                 DavyDatabase.MIGRATION_17_18,
                 DavyDatabase.MIGRATION_18_19
             )
-            .fallbackToDestructiveMigration() // For development - remove in production
             .build()
     }
     

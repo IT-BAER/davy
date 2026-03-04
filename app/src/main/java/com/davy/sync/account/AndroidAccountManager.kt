@@ -5,6 +5,7 @@ import android.accounts.AccountManager
 import android.content.ContentResolver
 import android.content.Context
 import android.provider.CalendarContract
+import com.davy.BuildConfig
 import com.davy.sync.SyncFrameworkIntegration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -24,8 +25,8 @@ class AndroidAccountManager @Inject constructor(
 ) {
     
     companion object {
-        const val ACCOUNT_TYPE = "com.davy"
-        const val ACCOUNT_TYPE_ADDRESS_BOOK = "com.davy.addressbook"
+        val ACCOUNT_TYPE: String = BuildConfig.ACCOUNT_TYPE
+        val ACCOUNT_TYPE_ADDRESS_BOOK: String = BuildConfig.ACCOUNT_TYPE_ADDRESS_BOOK
         private const val CALENDAR_AUTHORITY = "com.android.calendar"
         private const val CONTACTS_AUTHORITY = "com.android.contacts"
         

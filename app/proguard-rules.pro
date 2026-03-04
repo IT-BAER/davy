@@ -99,6 +99,15 @@
 -keepclassmembers class kotlinx.coroutines.** {
     volatile <fields>;
 }
+# Prevent R8 from stripping coroutine dispatcher infrastructure
+-keep class kotlinx.coroutines.android.** { *; }
+-keep class kotlinx.coroutines.CoroutineDispatcher { *; }
+-keep class kotlinx.coroutines.Dispatchers { *; }
+-dontwarn kotlinx.coroutines.**
+
+# Keep OkHttp callback infrastructure (used with suspendCancellableCoroutine)
+-keepclassmembers class okhttp3.Call { *; }
+-keep class okhttp3.Callback { *; }
 
 # Keep rules for Compose
 -keep class androidx.compose.** { *; }

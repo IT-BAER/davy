@@ -13,6 +13,7 @@ import com.davy.data.repository.AccountRepository
 import com.davy.data.repository.CalendarRepository
 import com.davy.data.repository.CalendarEventRepository
 import com.davy.domain.model.EventStatus
+import com.davy.sync.account.AndroidAccountManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +54,7 @@ class CalendarContractSync @Inject constructor(
 ) {
     
     companion object {
-        private const val ACCOUNT_TYPE = "com.davy"
+        private val ACCOUNT_TYPE: String = AndroidAccountManager.ACCOUNT_TYPE
         private const val CALENDAR_COLOR = 0xFF42A5F5.toInt() // Blue
         
         // Mutex to prevent concurrent CalendarContractSync operations

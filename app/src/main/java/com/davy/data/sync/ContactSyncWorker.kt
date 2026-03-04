@@ -127,12 +127,13 @@ class ContactSyncWorker @AssistedInject constructor(
                     .header("Depth", "0")
                     .build()
 
-                val response = httpClient.newCall(request).execute()
-                val responseXml = response.body?.string() ?: return@withContext null
+                httpClient.newCall(request).execute().use { response ->
+                    val responseXml = response.body?.string() ?: return@withContext null
 
-                // Parse response
-                val addressBooks = AddressBookPropFind.parsePropFindResponse(responseXml)
-                addressBooks.firstOrNull()?.ctag
+                    // Parse response
+                    val addressBooks = AddressBookPropFind.parsePropFindResponse(responseXml)
+                    addressBooks.firstOrNull()?.ctag
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to fetch server ctag")
                 e.printStackTrace()
@@ -157,18 +158,19 @@ class ContactSyncWorker @AssistedInject constructor(
                     .header("Depth", "1")
                     .build()
 
-                val response = httpClient.newCall(request).execute()
-                val responseXml = response.body?.string() ?: return@withContext
+                httpClient.newCall(request).execute().use { response ->
+                    val responseXml = response.body?.string() ?: return@withContext
 
-                // Parse response
-                val fetchedContacts: List<FetchedContact> = query.parseQueryResponse(responseXml)
+                    // Parse response
+                    val fetchedContacts: List<FetchedContact> = query.parseQueryResponse(responseXml)
 
-                // Process each contact
-                for (fetched: FetchedContact in fetchedContacts) {
-                    val vcard = fetched.vcardData
-                    val tag = fetched.etag
-                    if (vcard != null && tag != null) {
-                        processDownloadedContact(addressBook, fetched.url, vcard, tag)
+                    // Process each contact
+                    for (fetched: FetchedContact in fetchedContacts) {
+                        val vcard = fetched.vcardData
+                        val tag = fetched.etag
+                        if (vcard != null && tag != null) {
+                            processDownloadedContact(addressBook, fetched.url, vcard, tag)
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -288,22 +290,22 @@ class ContactSyncWorker @AssistedInject constructor(
                         requestBuilder.header(key, value)
                     }
 
-                    val response = httpClient.newCall(requestBuilder.build()).execute()
-
-                    // Parse response
-                    val putResult = ContactPut.parsePutResponse(
-                        status = response.code,
-                        headers = response.headers.toMultimap()
-                    )
-
-                    if (putResult.isSuccess()) {
-                        // Update contact with new etag and URL
-                        val updatedContact = contact.copy(
-                            contactUrl = contactUrl,
-                            etag = putResult.etag ?: contact.etag ?: "",
-                            isDirty = false
+                    httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                        // Parse response
+                        val putResult = ContactPut.parsePutResponse(
+                            status = response.code,
+                            headers = response.headers.toMultimap()
                         )
-                        contactRepository.update(updatedContact)
+
+                        if (putResult.isSuccess()) {
+                            // Update contact with new etag and URL
+                            val updatedContact = contact.copy(
+                                contactUrl = contactUrl,
+                                etag = putResult.etag ?: contact.etag ?: "",
+                                isDirty = false
+                            )
+                            contactRepository.update(updatedContact)
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -344,20 +346,20 @@ class ContactSyncWorker @AssistedInject constructor(
                         requestBuilder.header(key, value)
                     }
 
-                    val response = httpClient.newCall(requestBuilder.build()).execute()
+                    httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                        // Parse response
+                        val deleteResult = ContactDelete.parseDeleteResponse(response.code)
 
-                    // Parse response
-                    val deleteResult = ContactDelete.parseDeleteResponse(response.code)
+                        if (deleteResult.isSuccess()) {
+                            // Remove from local database
+                            contactRepository.delete(contact)
 
-                    if (deleteResult.isSuccess()) {
-                        // Remove from local database
-                        contactRepository.delete(contact)
-
-                        // Remove from Android Contacts
-                        if (contact.androidRawContactId != null) {
-                            // TODO: Need to get address book account name/type for sync adapter
-                            // This code path might not be used anymore since we're using CardDAVSyncService
-                            Timber.w("Delete contact in ContactSyncWorker not fully implemented - missing account info")
+                            // Remove from Android Contacts
+                            if (contact.androidRawContactId != null) {
+                                // TODO: Need to get address book account name/type for sync adapter
+                                // This code path might not be used anymore since we're using CardDAVSyncService
+                                Timber.w("Delete contact in ContactSyncWorker not fully implemented - missing account info")
+                            }
                         }
                     }
                 }

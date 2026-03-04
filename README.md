@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
-A privacy-focused Android application for synchronizing calendars and contacts using CalDAV and CardDAV protocols. Built with Jetpack Compose and Material 3 design.
+A privacy-focused Android application for synchronizing calendars, tasks, and contacts using CalDAV, CardDAV, and WebCal protocols. Built with Jetpack Compose and Material 3 design.
 
 </div>
 
@@ -17,6 +17,10 @@ A privacy-focused Android application for synchronizing calendars and contacts u
 🔄 **Synchronization**
 
 - CalDAV calendar sync (RFC 4791)
+
+- CalDAV task / VTODO sync (RFC 4791)
+
+- WebCal subscription sync
 
 - CardDAV contact sync (RFC 6352)
 
@@ -40,6 +44,10 @@ A privacy-focused Android application for synchronizing calendars and contacts u
 - Contact integration with Android Contacts Provider
 
 - CalDAV calendar sync (RFC 4791)
+
+- CalDAV task / VTODO sync (RFC 4791)
+
+- WebCal subscription sync
 
 - Calendar integration with Android Calendar Provider
 

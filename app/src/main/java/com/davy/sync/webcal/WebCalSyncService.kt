@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import com.davy.data.remote.caldav.ICalendarParser
 import com.davy.data.repository.AccountRepository
 import com.davy.data.repository.WebCalSubscriptionRepository
+import com.davy.sync.account.AndroidAccountManager
 import com.davy.domain.model.CalendarEvent
 import com.davy.domain.model.EventStatus
 import com.davy.domain.model.WebCalSubscription
@@ -43,7 +44,7 @@ class WebCalSyncService @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val ACCOUNT_TYPE = "com.davy"
+        private val ACCOUNT_TYPE: String = AndroidAccountManager.ACCOUNT_TYPE
         private const val CALENDAR_NAME_PREFIX = "webcal:"
     }
     
@@ -71,7 +72,7 @@ class WebCalSyncService @Inject constructor(
             val request = requestBuilder.build()
             
             // Execute request
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             when (response.code) {
                 304 -> {
@@ -235,6 +236,7 @@ class WebCalSyncService @Inject constructor(
                     
                     return@withContext WebCalSyncResult.Error(subscription.id, errorMsg)
                 }
+            }
             }
         } catch (e: IOException) {
             val errorMsg = "Network error: ${e.message}"

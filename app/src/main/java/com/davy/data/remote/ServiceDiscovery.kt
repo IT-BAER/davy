@@ -204,23 +204,23 @@ class ServiceDiscovery @Inject constructor(
                 .followSslRedirects(false)
                 .build()
 
-            val response = noRedirectClient.newCall(request).execute()
-            
-            when {
-                // 301/302 redirect - follow to actual endpoint
-                response.code in 301..302 -> {
-                    response.header("Location")?.let { location ->
-                        if (location.startsWith("http")) {
-                            location
-                        } else {
-                            "$serverUrl$location"
+            noRedirectClient.newCall(request).execute().use { response ->
+                when {
+                    // 301/302 redirect - follow to actual endpoint
+                    response.code in 301..302 -> {
+                        response.header("Location")?.let { location ->
+                            if (location.startsWith("http")) {
+                                location
+                            } else {
+                                "$serverUrl$location"
+                            }
                         }
                     }
+                    // 200 OK - this IS the endpoint
+                    response.isSuccessful -> wellKnownUrl
+                    // Not found or unauthorized
+                    else -> null
                 }
-                // 200 OK - this IS the endpoint
-                response.isSuccessful -> wellKnownUrl
-                // Not found or unauthorized
-                else -> null
             }
         } catch (e: Exception) {
             null // Discovery failed, will try alternatives
@@ -260,7 +260,7 @@ class ServiceDiscovery @Inject constructor(
                 .header(DEPTH_HEADER, "0")
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             val responseCode = response.code
             
             Timber.d("Nextcloud check for %s returned code: %s", davUrl, responseCode)
@@ -307,6 +307,7 @@ class ServiceDiscovery @Inject constructor(
                     false
                 }
             }
+            }
         } catch (e: Exception) {
             // Log exception for debugging
             Timber.e(e, "Error checking Nextcloud/ownCloud endpoint %s: %s", davUrl, e.message)
@@ -340,7 +341,7 @@ class ServiceDiscovery @Inject constructor(
                 .header(DEPTH_HEADER, "0")
                 .build()
 
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             val responseCode = response.code
 
             when (responseCode) {
@@ -368,6 +369,7 @@ class ServiceDiscovery @Inject constructor(
                 401 -> true
                 // All other codes rejected (including 403, 405, 429 which could be non-DAV servers)
                 else -> false
+            }
             }
         } catch (e: Exception) {
             false
@@ -403,22 +405,22 @@ class ServiceDiscovery @Inject constructor(
                 .header(DEPTH_HEADER, "0")
                 .build()
             
-            val response = httpClient.newCall(request).execute()
-            
-            // Only accept 207 Multi-Status as valid DAV response
-            // This ensures we're actually talking to a DAV server
-            if (response.code == 207) {
-                val responseBody = response.body?.string()
-                if (responseBody != null && validatePropfindResponse(responseBody, isCalDAV)) {
-                    Timber.d("Validated %s endpoint at: %s", if (isCalDAV) "CalDAV" else "CardDAV", endpointUrl)
-                    endpointUrl
+            httpClient.newCall(request).execute().use { response ->
+                // Only accept 207 Multi-Status as valid DAV response
+                // This ensures we're actually talking to a DAV server
+                if (response.code == 207) {
+                    val responseBody = response.body?.string()
+                    if (responseBody != null && validatePropfindResponse(responseBody, isCalDAV)) {
+                        Timber.d("Validated %s endpoint at: %s", if (isCalDAV) "CalDAV" else "CardDAV", endpointUrl)
+                        endpointUrl
+                    } else {
+                        Timber.w("Invalid DAV response from %s - missing required properties", endpointUrl)
+                        null
+                    }
                 } else {
-                    Timber.w("Invalid DAV response from %s - missing required properties", endpointUrl)
+                    Timber.w("Non-DAV response code %d from %s", response.code, endpointUrl)
                     null
                 }
-            } else {
-                Timber.w("Non-DAV response code %d from %s", response.code, endpointUrl)
-                null
             }
         } catch (e: Exception) {
             Timber.w(e, "Failed to validate endpoint: %s", endpointUrl)

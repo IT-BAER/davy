@@ -37,13 +37,20 @@ android {
         applicationId = "com.davy"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 6
-        versionName = "1.1.0"
+        versionCode = 10
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "com.davy.HiltTestRunner"
         
         // AppAuth redirect scheme for OAuth flows
         manifestPlaceholders["appAuthRedirectScheme"] = "com.davy"
+        
+        // Account types — build-variant-aware so release and debug can coexist.
+        // These generate both BuildConfig fields (for Kotlin) and string resources (for XML).
+        buildConfigField("String", "ACCOUNT_TYPE", "\"com.davy\"")
+        buildConfigField("String", "ACCOUNT_TYPE_ADDRESS_BOOK", "\"com.davy.addressbook\"")
+        resValue("string", "account_type", "com.davy")
+        resValue("string", "account_type_address_book", "com.davy.addressbook")
         
         vectorDrawables {
             useSupportLibrary = true
@@ -81,6 +88,12 @@ android {
             isDebuggable = true
             enableUnitTestCoverage = false
             enableAndroidTestCoverage = false
+            
+            // Separate account types so debug and release can coexist on the same device
+            buildConfigField("String", "ACCOUNT_TYPE", "\"com.davy.debug\"")
+            buildConfigField("String", "ACCOUNT_TYPE_ADDRESS_BOOK", "\"com.davy.debug.addressbook\"")
+            resValue("string", "account_type", "com.davy.debug")
+            resValue("string", "account_type_address_book", "com.davy.debug.addressbook")
         }
     }
 

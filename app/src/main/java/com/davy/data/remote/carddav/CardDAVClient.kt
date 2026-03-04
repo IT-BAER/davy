@@ -38,14 +38,15 @@ class CardDAVClient @Inject constructor(
             .build()
         
         return try {
-            val response = okHttpClient.newCall(request).execute()
-            CardDAVResponse(
-                statusCode = response.code,
-                body = response.body?.string(),
-                headers = response.headers.names().associateWith { name -> response.headers.values(name) },
-                // 404 Not Found or 410 Gone means resource is already deleted → success
-                isSuccessful = response.isSuccessful || response.code == 204 || response.code == 404 || response.code == 410
-            )
+            okHttpClient.newCall(request).execute().use { response ->
+                CardDAVResponse(
+                    statusCode = response.code,
+                    body = response.body?.string(),
+                    headers = response.headers.names().associateWith { name -> response.headers.values(name) },
+                    // 404 Not Found or 410 Gone means resource is already deleted → success
+                    isSuccessful = response.isSuccessful || response.code == 204 || response.code == 404 || response.code == 410
+                )
+            }
         } catch (e: IOException) {
             Timber.e(e, "Failed to DELETE address book: $addressBookUrl")
             CardDAVResponse(

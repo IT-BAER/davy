@@ -8,6 +8,7 @@ import com.davy.data.repository.CalendarEventRepository
 import com.davy.data.repository.CalendarRepository
 import com.davy.sync.SyncLock
 import com.davy.sync.SyncManager
+import com.davy.sync.account.AndroidAccountManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +46,7 @@ class CalendarChangeHandler @Inject constructor(
     private var pendingChangeUri: Uri? = null
     
     companion object {
-        private const val ACCOUNT_TYPE = "com.davy"
+        private val ACCOUNT_TYPE: String = AndroidAccountManager.ACCOUNT_TYPE
     }
     
     /**

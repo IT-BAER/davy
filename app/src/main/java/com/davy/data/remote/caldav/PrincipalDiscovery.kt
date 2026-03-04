@@ -123,7 +123,7 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
             
             Timber.tag("PrincipalDiscovery").d("Sending PROPFIND to: %s", baseUrl)
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             Timber.tag("PrincipalDiscovery").d("Response code: %s", response.code)
             
@@ -142,6 +142,7 @@ class PrincipalDiscovery @Inject constructor(
             } else {
                 Timber.tag("PrincipalDiscovery").w("Unexpected response code %s: %s", response.code, response.body?.string())
                 null
+            }
             }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error finding current-user-principal")
@@ -183,7 +184,7 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
             
             Timber.tag("PrincipalDiscovery").d("Sending PROPFIND for calendar-home-set to: %s", principalUrl)
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             Timber.tag("PrincipalDiscovery").d("calendar-home-set response code: %s", response.code)
             
@@ -198,6 +199,7 @@ class PrincipalDiscovery @Inject constructor(
             } else {
                 Timber.tag("PrincipalDiscovery").w("Failed to get calendar-home-set: %s - %s", response.code, response.body?.string())
                 null
+            }
             }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error finding calendar-home-set")
@@ -236,13 +238,14 @@ class PrincipalDiscovery @Inject constructor(
                 .header(DEPTH_HEADER, "0")
                 .build()
             
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             if (response.isSuccessful) {
                 val responseBody = response.body?.string()
                 responseBody?.let { extractDisplayName(it) }
             } else {
                 null
+            }
             }
         } catch (e: Exception) {
             null
@@ -408,7 +411,7 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
             
             Timber.tag("PrincipalDiscovery").d("Sending PROPFIND Depth: 1 for calendars")
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             
             Timber.tag("PrincipalDiscovery").d("Calendar discovery response code: %s", response.code)
             
@@ -473,6 +476,7 @@ class PrincipalDiscovery @Inject constructor(
                 
                 throw PrincipalDiscoveryException("Failed to discover calendars: HTTP ${response.code}")
             }
+            }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error discovering calendars")
             e.printStackTrace()
@@ -514,13 +518,14 @@ class PrincipalDiscovery @Inject constructor(
                 .build()
 
             Timber.tag("PrincipalDiscovery").d("Hydrating collection (Depth:0): %s", collectionUrl)
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).execute().use { response ->
             if (response.code == 207 || response.code == 200) {
                 val body = response.body?.string()
                 body?.let { parseSingleCalendarCollection(it, collectionUrl) }
             } else {
                 Timber.tag("PrincipalDiscovery").w("Failed to hydrate %s: %s", collectionUrl, response.code)
                 null
+            }
             }
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").w(e, "Hydration error for %s", collectionUrl)

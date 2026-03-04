@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.1.1 (04.03.2026)
+
+<en-US>
+Hotfix v1.1.1
+
+🔧 Critical Fix
+• Fixed a bug introduced in v1.1.0 where upgrading from earlier versions could reset all app data (accounts, calendars, contacts, tasks). All existing user data is now safely preserved across updates.
+• Added complete database migration path covering all versions from the initial release to the current schema (v7 → v19).
+</en-US>
+
+<de-DE>
+Hotfix v1.1.1
+
+🔧 Kritische Fehlerbehebung
+• Fehler behoben, durch den beim Update von älteren Versionen alle App-Daten (Konten, Kalender, Kontakte, Aufgaben) zurückgesetzt werden konnten. Alle vorhandenen Benutzerdaten werden jetzt beim Update korrekt beibehalten.
+• Vollständiger Datenbankmigrationsweg für alle Versionen seit der Erstveröffentlichung hinzugefügt (v7 → v19).
+</de-DE>
+
 ## v1.1.0 (28.02.2026)
 
 <en-US>
@@ -17,7 +35,7 @@ New in v1.1.0
 • Kotlin 2.0.21, Compose 1.7.6, Material 3 1.3.1 upgrade
 • Database schema v19 with safe migration
 • Improved enum handling for task status values
-• Better compatibility with DAVx5 and industry CalDAV standards
+• Better compatibility with industry CalDAV standards
 • Stability improvements and bug fixes
 </en-US>
 
@@ -36,7 +54,7 @@ Neu in v1.1.0
 • Kotlin 2.0.21, Compose 1.7.6, Material 3 1.3.1 Upgrade
 • Datenbankschema v19 mit sicherer Migration
 • Verbesserte Enum-Verarbeitung für Aufgabenstatus-Werte
-• Bessere Kompatibilität mit DAVx5 und CalDAV-Industriestandards
+• Bessere Kompatibilität mit CalDAV-Industriestandards
 • Stabilitätsverbesserungen und Fehlerbehebungen
 </de-DE>
 

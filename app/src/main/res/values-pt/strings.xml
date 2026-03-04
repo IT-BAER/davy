@@ -1,10 +1,6 @@
 <resources>
     <string name="app_name">DAVy</string>
     
-    <!-- Account types -->
-    <string name="account_type">com.davy</string>
-    <string name="account_type_address_book">com.davy.addressbook</string>
-    
     <!-- Account preferences -->
     <string name="account_prefs_use_app">Por favor, use o aplicativo DAVy para adicionar contas</string>
     
@@ -687,4 +683,7 @@
     <string name="tos_contact_title">Informações de Contato</string>
     <string name="tos_contact_content">Para perguntas sobre estes Termos de Serviço, entre em contato conosco através dos canais de suporte do app ou do repositório GitHub.</string>
     <string name="tos_last_updated">Última Atualização: 29 de outubro de 2025</string>
+    <string name="whats_new_v1_1_0">• Full CalDAV task sync with VTODO standard compliance\n• 10 new task properties including location, URL, and recurrence\n• Improved iCalendar parsing with robust date handling\n• Proper timezone support for task dates\n• Overdue task indicators\n• Kotlin 2.0.21, Compose 1.7.6, Material 3 1.3.1 upgrade</string>
+    <string name="whats_new_v1_1_1">• Critical bug fix: Upgrading from earlier versions no longer resets user data\n• Added complete backward-compatible database migration path</string>
 </resources>
+
