@@ -72,6 +72,9 @@ fun getChangelogForVersion(version: String): String {
             // Add more versions as needed:
             // version.startsWith("1.2") -> stringResource(id = R.string.whats_new_v1_2_0)
             else -> stringResource(id = R.string.whats_new_v1_1_1) // Default to latest
+    }
+}
+
 /**
  * What's New dialog shown after app updates
  */
