@@ -136,8 +136,7 @@ private fun Modifier.customCardBorder(
     shape: androidx.compose.ui.graphics.Shape,
     leftWidth: androidx.compose.ui.unit.Dp = 2.dp,
     otherWidth: androidx.compose.ui.unit.Dp = 1.dp
-): Modifier = this.then(
-    drawWithCache {
+): Modifier = this.drawWithCache {
         val leftPx = leftWidth.toPx()
         val otherPx = otherWidth.toPx()
         
@@ -232,7 +231,6 @@ private fun Modifier.customCardBorder(
             }
         }
     }
-)
 
 @Composable
 private fun rememberUnifiedBackgroundBrush(currentPage: Int, pageOffsetFraction: Float): Brush {
