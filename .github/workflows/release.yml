@@ -182,6 +182,8 @@ jobs:
     needs: [validate-changelog, build-release]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     # Only run if:
     # 1. Manual dispatch with "RELEASE" confirmation, OR
     # 2. Tag push
