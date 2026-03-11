@@ -1,7 +1,9 @@
 package com.davy.ui.screens
 
 import android.app.Activity
+import android.net.Uri
 import android.security.KeyChain
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
@@ -25,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.davy.ui.viewmodels.AccountDetailViewModel
 import com.davy.ui.util.rememberDebounced
+import com.davy.domain.model.AuthType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -107,7 +110,9 @@ fun AccountSettingsScreen(
                 },
                 onTestCredentials = { serverUrl, username, password ->
                     viewModel.onTestCredentialsClicked(serverUrl, username, password)
-                }
+                },
+                onReAuth = { viewModel.reAuthenticateWithNextcloud() },
+                onCancelReAuth = { viewModel.cancelReAuth() }
             )
         }
     }
@@ -125,7 +130,9 @@ private fun AccountSettingsContent(
     onDeleteOldEvents: (Int) -> Unit,
     onCreateBackup: suspend (Long) -> com.davy.domain.manager.BackupRestoreManager.BackupResult,
     onRestoreBackup: suspend (String) -> com.davy.domain.manager.BackupRestoreManager.RestoreResult,
-    onTestCredentials: (String, String, String) -> Unit
+    onTestCredentials: (String, String, String) -> Unit,
+    onReAuth: () -> Unit,
+    onCancelReAuth: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val prefs = remember { context.getSharedPreferences("sync_config_${account.id}", android.content.Context.MODE_PRIVATE) }
@@ -160,6 +167,27 @@ private fun AccountSettingsContent(
                     certificateFingerprint = debouncedCertificatePath.ifBlank { null }
                 )
                 onUpdateAccount(updatedAccount, null)
+            }
+        }
+    }
+
+    // Re-auth: Open Custom Tab when login URL becomes available
+    LaunchedEffect(uiState.reAuthLoginUrl) {
+        uiState.reAuthLoginUrl?.let { loginUrl ->
+            try {
+                val customTabsIntent = CustomTabsIntent.Builder()
+                    .setShowTitle(true)
+                    .build()
+                customTabsIntent.launchUrl(context, Uri.parse(loginUrl))
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to open Nextcloud login in Custom Tab")
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        "Failed to open browser: ${e.message}",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                onCancelReAuth()
             }
         }
     }
@@ -331,7 +359,75 @@ private fun AccountSettingsContent(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
-        
+
+        if (account.authType == AuthType.APP_PASSWORD) {
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = stringResource(id = com.davy.R.string.app_password_account_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+
+            // Re-authenticate with Nextcloud button
+            if (uiState.isReAuthenticating) {
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Text(
+                            text = stringResource(id = com.davy.R.string.re_auth_waiting),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        TextButton(onClick = onCancelReAuth) {
+                            Text(stringResource(id = android.R.string.cancel))
+                        }
+                    }
+                }
+            } else {
+                FilledTonalButton(
+                    onClick = onReAuth,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(id = com.davy.R.string.re_authenticate_nextcloud))
+                }
+            }
+        }
+
         com.davy.ui.screens.UsernameTextFieldWithAutofill(
             value = username,
             onValueChange = { username = it },

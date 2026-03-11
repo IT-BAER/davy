@@ -20,6 +20,8 @@ import com.davy.data.repository.WebCalSubscriptionRepository
 import com.davy.data.remote.caldav.PrincipalDiscovery
 import com.davy.data.remote.caldav.CalDAVClient
 import com.davy.data.local.CredentialStore
+import com.davy.data.remote.oauth.NextcloudLoginFlowV2
+import com.davy.data.remote.oauth.LoginFlowInitiation
 import com.davy.sync.SyncManager
 import com.davy.sync.SyncWorker
 import com.davy.sync.webcal.WebCalSyncService
@@ -40,10 +42,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
 private const val DEMO_SERVER_URL = "https://demo.local"
 
@@ -73,6 +78,7 @@ class AccountDetailViewModel @Inject constructor(
     private val restoreBackupUseCase: com.davy.domain.usecase.RestoreBackupUseCase,
     private val listBackupsUseCase: com.davy.domain.usecase.ListBackupsUseCase,
     private val authenticationManager: com.davy.data.remote.AuthenticationManager,
+    private val nextcloudLoginFlow: NextcloudLoginFlowV2,
     @Suppress("UNUSED_PARAMETER") savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -91,6 +97,11 @@ class AccountDetailViewModel @Inject constructor(
     private val _isTestingCredentials = MutableStateFlow(false)
     private val _credentialTestResult = MutableStateFlow<String?>(null)
     private val _errorMessage = MutableStateFlow<String?>(null)
+    private val _isReAuthenticating = MutableStateFlow(false)
+    private val _reAuthLoginUrl = MutableStateFlow<String?>(null)
+
+    private var loginFlowInitiation: LoginFlowInitiation? = null
+    private var reAuthPollingJob: Job? = null
     
     // Batch selection state for multi-select sync operations
     private val _isBatchSelectionMode = MutableStateFlow(false)
@@ -123,7 +134,9 @@ class AccountDetailViewModel @Inject constructor(
         _accountDeleted,
         _isTestingCredentials,
         _credentialTestResult,
-        _errorMessage
+        _errorMessage,
+        _isReAuthenticating,
+        _reAuthLoginUrl
     ) { flows: Array<Any?> ->
         AccountDetailUiState(
             account = flows[0] as Account?,
@@ -139,7 +152,9 @@ class AccountDetailViewModel @Inject constructor(
             accountDeleted = flows[10] as Boolean,
             isTestingCredentials = flows[11] as Boolean,
             credentialTestResult = flows[12] as String?,
-            errorMessage = flows[13] as String?
+            errorMessage = flows[13] as String?,
+            isReAuthenticating = flows[14] as Boolean,
+            reAuthLoginUrl = flows[15] as String?
         )
     }.stateIn(
         scope = viewModelScope,
@@ -258,6 +273,78 @@ class AccountDetailViewModel @Inject constructor(
             
             _isTestingCredentials.value = false
         }
+    }
+
+    fun reAuthenticateWithNextcloud() {
+        val account = _account.value ?: return
+        if (account.authType != com.davy.domain.model.AuthType.APP_PASSWORD) return
+
+        viewModelScope.launch {
+            _isReAuthenticating.value = true
+            _reAuthLoginUrl.value = null
+            _errorMessage.value = null
+
+            try {
+                val initiation = withContext(Dispatchers.IO) {
+                    nextcloudLoginFlow.initiateLogin(account.serverUrl)
+                }
+                loginFlowInitiation = initiation
+                _reAuthLoginUrl.value = initiation.loginUrl
+                startReAuthPolling(account)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to initiate Nextcloud re-authentication")
+                _errorMessage.value = "Failed to start re-authentication: ${e.message}"
+                _isReAuthenticating.value = false
+            }
+        }
+    }
+
+    private fun startReAuthPolling(account: Account) {
+        reAuthPollingJob?.cancel()
+        val initiation = loginFlowInitiation ?: return
+
+        reAuthPollingJob = viewModelScope.launch {
+            try {
+                val credentials = withTimeout(5.minutes) {
+                    withContext(Dispatchers.IO) {
+                        nextcloudLoginFlow.pollForCredentials(initiation)
+                    }
+                }
+
+                // Store new app password
+                withContext(Dispatchers.IO) {
+                    credentialStore.storePassword(account.id, credentials.appPassword)
+                    accountRepository.update(
+                        account.copy(
+                            username = credentials.loginName,
+                            lastAuthenticatedAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+
+                _reAuthLoginUrl.value = null
+                _isReAuthenticating.value = false
+                _credentialTestResult.value = "✓ Re-authenticated successfully"
+                loginFlowInitiation = null
+
+                // Trigger sync with new credentials
+                syncManager.syncAllNow()
+            } catch (e: Exception) {
+                Timber.e(e, "Nextcloud re-authentication polling failed")
+                _reAuthLoginUrl.value = null
+                _isReAuthenticating.value = false
+                _errorMessage.value = "Re-authentication failed: ${e.message}"
+                loginFlowInitiation = null
+            }
+        }
+    }
+
+    fun cancelReAuth() {
+        reAuthPollingJob?.cancel()
+        reAuthPollingJob = null
+        loginFlowInitiation = null
+        _reAuthLoginUrl.value = null
+        _isReAuthenticating.value = false
     }
     
     fun updateSyncConfiguration(accountId: Long) {

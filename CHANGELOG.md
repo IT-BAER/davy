@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.1.2 (11.03.2026)
+
+<en-US>
+Hotfix v1.1.2
+
+🔐 Authentication Fix
+• Added "Re-authenticate with Nextcloud" button in account settings — re-establishes credentials via Nextcloud Login Flow V2 when app passwords are revoked server-side
+• Fixed deep-link navigation not working when the app was already running
+• Added informational hint for App Password accounts explaining the authentication method
+</en-US>
+
+<de-DE>
+Hotfix v1.1.2
+
+🔐 Authentifizierungsfix
+• Schaltfläche „Erneut mit Nextcloud authentifizieren" in den Kontoeinstellungen hinzugefügt — stellt die Anmeldedaten über Nextcloud Login Flow V2 wieder her, wenn App-Passwörter serverseitig widerrufen wurden
+• Deep-Link-Navigation korrigiert, wenn die App bereits im Vordergrund lief
+• Informationshinweis für App-Passwort-Konten hinzugefügt, der die Authentifizierungsmethode erklärt
+</de-DE>
+
 ## v1.1.1 (04.03.2026)
 
 <en-US>

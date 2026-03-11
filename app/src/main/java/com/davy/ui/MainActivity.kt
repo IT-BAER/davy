@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var syncManager: SyncManager
     
+    /** Pending navigation target from notification deep-links (observable by Compose) */
+    private val pendingNavigation = mutableStateOf<String?>(null)
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen but don't block with keepOnScreenCondition
         // Let the splash naturally dismiss when first frame is ready
@@ -61,14 +64,18 @@ class MainActivity : AppCompatActivity() {
         handleShortcutIntent(intent)
         
         // Extract navigation target from intent (e.g., from notifications)
-        val navigateTo = intent.getStringExtra("navigate_to")
+        pendingNavigation.value = intent.getStringExtra("navigate_to")
         
         // PERFORMANCE: Set content FIRST to show UI immediately
         setContent {
+            val destination by pendingNavigation
             // Provide SyncManager through CompositionLocal to avoid
             // creating it in remember blocks (performance issue)
             CompositionLocalProvider(LocalSyncManager provides syncManager) {
-                DavyApp(startDestination = navigateTo)
+                DavyApp(
+                    startDestination = destination,
+                    onNavigated = { pendingNavigation.value = null }
+                )
             }
         }
     }
@@ -76,6 +83,11 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         handleShortcutIntent(intent)
+        // Handle deep-link navigation from notifications when app is already running
+        intent.getStringExtra("navigate_to")?.let { target ->
+            Timber.d("onNewIntent: navigating to $target")
+            pendingNavigation.value = target
+        }
     }
     
     private fun handleShortcutIntent(intent: android.content.Intent?) {
@@ -97,7 +109,7 @@ class MainActivity : AppCompatActivity() {
  * @param startDestination Optional deep link destination (e.g., from notifications)
  */
 @Composable
-fun DavyApp(startDestination: String? = null) {
+fun DavyApp(startDestination: String? = null, onNavigated: () -> Unit = {}) {
     val context = LocalContext.current
     var hasPermissions by remember { mutableStateOf(hasAllPermissions(context)) }
     var showBatteryOptDialog by remember { mutableStateOf(false) }
@@ -172,6 +184,7 @@ fun DavyApp(startDestination: String? = null) {
                 LaunchedEffect(startDestination, onboardingComplete) {
                     if (startDestination != null) {
                         navController.navigate(startDestination)
+                        onNavigated()
                     } else if (!onboardingComplete) {
                         navController.navigate("onboarding_tour") {
                             popUpTo("accounts") { inclusive = true }

@@ -30,7 +30,9 @@ data class AccountDetailUiState(
     val accountDeleted: Boolean = false,
     val isTestingCredentials: Boolean = false,
     val credentialTestResult: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isReAuthenticating: Boolean = false,
+    val reAuthLoginUrl: String? = null
 ) {
     /**
      * Derived property using inline computation - no additional state tracking needed.

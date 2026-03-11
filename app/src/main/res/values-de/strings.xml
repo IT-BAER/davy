@@ -357,6 +357,9 @@
     <string name="server_with_value">Server: %1$s</string>
     <string name="authentication">Authentifizierung</string>
     <string name="leave_empty_keep_password">Leer lassen, um aktuelles Passwort zu behalten</string>
+    <string name="app_password_account_hint">Dieses Konto verwendet ein Nextcloud App-Passwort. Zum erneuten Authentifizieren erstellen Sie ein neues App-Passwort in Ihren Nextcloud-Einstellungen unter Sicherheit → Geräte &amp; Sitzungen und fügen Sie es unten ein.</string>
+    <string name="re_authenticate_nextcloud">Erneut mit Nextcloud authentifizieren</string>
+    <string name="re_auth_waiting">Warte auf Authentifizierung im Browser…</string>
     <string name="testing">Wird getestet...</string>
     <string name="valid">Gültig</string>
     <string name="failed">Fehlgeschlagen</string>
