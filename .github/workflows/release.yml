@@ -221,9 +221,11 @@ jobs:
           VERSION=${{ needs.validate-changelog.outputs.version_name }}
           
           # Extract English release notes between <en-US> tags for this version
-          NOTES=$(awk "/## v$VERSION/,/## v[0-9]/" CHANGELOG.md | \
+          # Supports both Keep a Changelog format: ## [1.2.3] - YYYY-MM-DD
+          # and legacy format: ## v1.2.3 (DD.MM.YYYY)
+          NOTES=$(awk "/## \[${VERSION}\]/,/## \[/" CHANGELOG.md | \
                   awk '/<en-US>/,/<\/en-US>/' | \
-                  sed '/<en-US>/d; /<\/en-US>/d' | \
+                  sed '/<en-US>/d; /<\/en-US>/d; /^### /d' | \
                   head -c 500)
           
           if [ -z "$NOTES" ]; then

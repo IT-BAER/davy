@@ -90,6 +90,13 @@ sealed class AppError(val message: String, val cause: Throwable? = null) {
     )
     
     companion object {
+        // Word-boundary patterns to match HTTP status codes without false positives
+        // e.g., "HTTP 401" or "status 401" match, but "4012" or "14013" do not
+        private val HTTP_401 = Regex("\\b401\\b")
+        private val HTTP_403 = Regex("\\b403\\b")
+        private val HTTP_404 = Regex("\\b404\\b")
+        private val HTTP_500 = Regex("\\b500\\b")
+
         /**
          * Convert a throwable to an appropriate AppError.
          */
@@ -99,10 +106,10 @@ sealed class AppError(val message: String, val cause: Throwable? = null) {
                 throwable is java.net.SocketTimeoutException -> TimeoutError()
                 throwable is java.net.ConnectException -> ServerUnreachable()
                 throwable is java.io.IOException -> NetworkError(throwable.message, throwable)
-                throwable.message?.contains("401", ignoreCase = true) == true -> AuthenticationFailed()
-                throwable.message?.contains("403", ignoreCase = true) == true -> AuthenticationFailed("Access denied")
-                throwable.message?.contains("404", ignoreCase = true) == true -> ServerUnreachable("Resource not found")
-                throwable.message?.contains("500", ignoreCase = true) == true -> NetworkError("Server error")
+                throwable.message?.contains(HTTP_401) == true -> AuthenticationFailed()
+                throwable.message?.contains(HTTP_403) == true -> AuthenticationFailed("Access denied")
+                throwable.message?.contains(HTTP_404) == true -> ServerUnreachable("Resource not found")
+                throwable.message?.contains(HTTP_500) == true -> NetworkError("Server error")
                 else -> UnexpectedError(throwable.message, throwable)
             }
         }

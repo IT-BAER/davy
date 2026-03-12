@@ -1,7 +1,6 @@
 package com.davy.data.remote.carddav
 
 import android.content.Context
-import com.davy.ui.util.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -423,12 +422,6 @@ class PrincipalDiscovery @Inject constructor(
                 addressbooks = body?.let { parseAddressbookCollections(it, addressbookHomeSetUrl) } ?: emptyList()
             } else {
                 Timber.tag("CardDAVPrincipalDiscovery").w("Failed to discover addressbooks: %s - %s", status, body)
-                if (status == 401 || status == 403) {
-                    NotificationHelper.showHttpErrorNotification(
-                        context,
-                        status
-                    )
-                }
                 throw PrincipalDiscoveryException("Failed to discover addressbooks: HTTP ${status}")
             }
 
