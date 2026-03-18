@@ -9,16 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <en-US>
 ### Fixed
-- Added explicit Cloudflare detection for blocked CalDAV/CardDAV requests and show a specific fix hint instead of a generic authentication error
-- Preserved Cloudflare blocking across service discovery, principal discovery, and sync notifications so blocked WebDAV methods are no longer reported as invalid credentials
-- Improved DAV discovery and sync fallback handling so 403/404 responses are not misclassified as authentication failures
+- Detect Cloudflare blocks for CalDAV/CardDAV and show a specific fix hint
+- Prevent blocked WebDAV requests from appearing as generic authentication failures
+- Improve DAV discovery and sync fallback handling for 403/404 responses
 </en-US>
 
 <de-DE>
 ### Behoben
-- Explizite Cloudflare-Erkennung für blockierte CalDAV/CardDAV-Anfragen hinzugefügt und einen konkreten Lösungshinweis statt einer generischen Authentifizierungsfehlermeldung angezeigt
-- Cloudflare-Blockierungen werden jetzt durch Service Discovery, Principal Discovery und Sync-Benachrichtigungen korrekt weitergegeben, sodass blockierte WebDAV-Methoden nicht mehr als ungültige Zugangsdaten erscheinen
-- DAV-Erkennung und Sync-Fallback verbessert, damit 403/404-Antworten nicht mehr fälschlich als Authentifizierungsfehler behandelt werden
+- Erkennt Cloudflare-Blockierungen bei CalDAV/CardDAV und zeigt einen konkreten Lösungshinweis
+- Verhindert, dass blockierte WebDAV-Anfragen als allgemeine Authentifizierungsfehler erscheinen
+- Verbessert DAV-Erkennung und Sync-Fallback bei 403/404-Antworten
 </de-DE>
 
 ## [1.1.3] - 2026-03-12

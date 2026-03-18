@@ -72,19 +72,19 @@ jobs:
           VERSION_CODE=${{ steps.version.outputs.code }}
           STRING_KEY="whats_new_v${VERSION_CODE}"
           
-          echo "🔍 Looking for string: $STRING_KEY"
-          
-          if grep -q "name=\"$STRING_KEY\"" app/src/main/res/values/strings.xml; then
-            echo "✅ Found $STRING_KEY in strings.xml"
-          else
-            echo "❌ ERROR: Missing $STRING_KEY in strings.xml"
-            echo ""
-            echo "Please add the following to app/src/main/res/values/strings.xml:"
-            echo "  <string name=\"$STRING_KEY\">• Your changelog here</string>"
-            echo ""
-            echo "And update getChangelogForVersion() in WhatsNewDialog.kt"
-            exit 1
-          fi
+          echo "🔍 Looking for required release-note strings: $STRING_KEY"
+
+          for file in app/src/main/res/values/strings.xml app/src/main/res/values-de/strings.xml; do
+            if grep -q "name=\"$STRING_KEY\"" "$file"; then
+              echo "✅ Found $STRING_KEY in $file"
+            else
+              echo "❌ ERROR: Missing $STRING_KEY in $file"
+              echo ""
+              echo "Please add the following string and update WhatsNewDialog.kt if needed:"
+              echo "  <string name=\"$STRING_KEY\">• Your changelog here</string>"
+              exit 1
+            fi
+          done
 
       - name: Verify string in all locales
         run: |
@@ -160,6 +160,63 @@ jobs:
       - name: Build Release AAB
         run: ./gradlew --build-cache --configuration-cache bundleRelease
 
+      - name: Validate release bundle safety
+        run: |
+          set -euo pipefail
+
+          AAB_PATH=$(find app/build/outputs/bundle/release -maxdepth 1 -name '*.aab' | head -n 1)
+          if [ -z "$AAB_PATH" ]; then
+            echo "❌ No release AAB found"
+            exit 1
+          fi
+
+          echo "🔍 Inspecting $AAB_PATH"
+          jarsigner -verify -certs "$AAB_PATH" > /dev/null
+
+          python - "$AAB_PATH" <<'PY'
+          import re
+          import sys
+          import zipfile
+          from pathlib import Path
+
+          aab_path = Path(sys.argv[1])
+          forbidden_entry_patterns = [r"upload\.keystore", r"keystore\.properties"]
+          forbidden_markers = [
+              "com.davy.debug",
+              "com.davy.debug.addressbook",
+              "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
+              "KEYSTORE_PASSWORD",
+              "KEY_PASSWORD",
+              "storePassword=",
+          ]
+          excluded_from_content_scan = {
+              "BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map",
+          }
+
+          with zipfile.ZipFile(aab_path) as bundle:
+              names = [entry.filename for entry in bundle.infolist()]
+
+              for name in names:
+                  if any(re.search(pattern, name) for pattern in forbidden_entry_patterns):
+                      raise SystemExit(f"Sensitive signing file leaked into the release AAB: {name}")
+
+              if "BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map" in names:
+                  print("ℹ️ Obfuscation metadata is embedded in the AAB; keep GitHub release asset upload disabled.")
+
+              for entry in bundle.infolist():
+                  if entry.is_dir() or entry.filename in excluded_from_content_scan:
+                      continue
+
+                  content = bundle.read(entry).decode("latin-1", errors="ignore")
+                  for marker in forbidden_markers:
+                      if marker in content:
+                          raise SystemExit(
+                              f"Forbidden marker '{marker}' found in {entry.filename}"
+                          )
+
+          print("✅ Release AAB passed signature and secret scans for Play upload")
+          PY
+
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -215,30 +272,118 @@ jobs:
           name: mapping
           path: ./mapping
 
-      - name: Extract Release Notes from CHANGELOG
-        id: changelog
+      - name: Generate localized release notes
+        id: notes
+        env:
+          VERSION: ${{ needs.validate-changelog.outputs.version_name }}
         run: |
-          VERSION=${{ needs.validate-changelog.outputs.version_name }}
-          
-          # Extract English release notes between <en-US> tags for this version
-          # Supports both Keep a Changelog format: ## [1.2.3] - YYYY-MM-DD
-          # and legacy format: ## v1.2.3 (DD.MM.YYYY)
-          NOTES=$(awk "/## \[${VERSION}\]/,/## \[/" CHANGELOG.md | \
-                  awk '/<en-US>/,/<\/en-US>/' | \
-                  sed '/<en-US>/d; /<\/en-US>/d; /^### /d' | \
-                  head -c 500)
-          
-          if [ -z "$NOTES" ]; then
-            NOTES="Bug fixes and performance improvements."
-          fi
-          
-          # Escape for GitHub Actions
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          
-          echo "📝 Release notes:"
-          echo "$NOTES"
+          set -euo pipefail
+
+          python <<'PY'
+          import os
+          import re
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          string_key = f"whats_new_v{version.replace('.', '_')}"
+
+          def extract_version_block(lines: list[str]) -> list[str]:
+            in_version = False
+            block: list[str] = []
+            header_pattern = re.compile(rf"^## \[{re.escape(version)}\] - ")
+            for line in lines:
+              if header_pattern.match(line):
+                in_version = True
+                continue
+              if in_version and line.startswith("## ["):
+                break
+              if in_version:
+                block.append(line)
+            if not block:
+              raise SystemExit(f"Missing changelog section for {version}")
+            return block
+
+          def extract_tagged_notes(block: list[str], tag: str) -> str:
+            start = f"<{tag}>"
+            end = f"</{tag}>"
+            in_tag = False
+            notes: list[str] = []
+            for line in block:
+              stripped = line.strip()
+              if stripped == start:
+                in_tag = True
+                continue
+              if stripped == end:
+                break
+              if in_tag:
+                if stripped.startswith("### "):
+                  continue
+                if stripped:
+                  notes.append(line)
+            text = "\n".join(notes).strip()
+            if not text:
+              raise SystemExit(f"Missing {tag} release notes for {version}")
+            return text
+
+          def decode_android_string(text: str) -> str:
+            return (
+              text.replace("\\n", "\n")
+              .replace('\\"', '"')
+              .replace("\\'", "'")
+              .replace("\\@", "@")
+              .replace("\\?", "?")
+              .strip()
+            )
+
+          def extract_android_string(path: str) -> str:
+            root = ET.parse(path).getroot()
+            for node in root.findall("string"):
+              if node.attrib.get("name") == string_key:
+                value = "".join(node.itertext())
+                if not value:
+                  raise SystemExit(f"Empty string {string_key} in {path}")
+                decoded = decode_android_string(value)
+                if len(decoded) > 500:
+                  raise SystemExit(f"{path} {string_key} exceeds 500 characters after decoding")
+                return decoded
+            raise SystemExit(f"Missing string {string_key} in {path}")
+
+          changelog_lines = Path("CHANGELOG.md").read_text(encoding="utf-8").splitlines()
+          block = extract_version_block(changelog_lines)
+          en_changelog = extract_tagged_notes(block, "en-US")
+          de_changelog = extract_tagged_notes(block, "de-DE")
+          en_whats_new = extract_android_string("app/src/main/res/values/strings.xml")
+          de_whats_new = extract_android_string("app/src/main/res/values-de/strings.xml")
+
+          output_root = Path("build/release-notes")
+          play_dir = output_root / "play"
+          play_dir.mkdir(parents=True, exist_ok=True)
+
+          (play_dir / "whatsnew-en-US").write_text(en_whats_new + "\n", encoding="utf-8")
+          (play_dir / "whatsnew-de-DE").write_text(de_whats_new + "\n", encoding="utf-8")
+
+          github_body = output_root / "github_release.md"
+          github_body.write_text(
+              "## What's New (English)\n\n"
+              f"{en_changelog}\n\n"
+              "## Neu in dieser Version (Deutsch)\n\n"
+              f"{de_changelog}\n\n"
+              "---\n"
+              "Release bundle is uploaded to Google Play and kept as a workflow artifact only.\n"
+              "Full changelog: CHANGELOG.md\n",
+              encoding="utf-8",
+          )
+          PY
+
+          echo "github_body=build/release-notes/github_release.md" >> $GITHUB_OUTPUT
+          echo "play_notes_dir=build/release-notes/play" >> $GITHUB_OUTPUT
+
+          echo "📝 GitHub release body:"
+          cat build/release-notes/github_release.md
+          echo ""
+          echo "🛒 Play what's new files:"
+          ls -1 build/release-notes/play
 
       - name: Determine deployment track
         id: track
@@ -256,24 +401,20 @@ jobs:
           packageName: com.davy
           releaseFiles: ./aab/*.aab
           track: ${{ steps.track.outputs.track }}
+          releaseName: DAVy v${{ needs.validate-changelog.outputs.version_name }}
           status: draft
+          whatsNewDirectory: ${{ steps.notes.outputs.play_notes_dir }}
           mappingFile: ./mapping/mapping.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.validate-changelog.outputs.version_name }}
+          target_commitish: ${{ github.sha }}
           name: DAVy v${{ needs.validate-changelog.outputs.version_name }}
-          body: |
-            ## What's New
-            ${{ steps.changelog.outputs.notes }}
-            
-            ---
-            📦 **Download:** Available on Google Play (internal track)
-            🔗 **Full Changelog:** See CHANGELOG.md
+          body_path: ${{ steps.notes.outputs.github_body }}
           draft: true
           prerelease: false
-          files: |
-            ./aab/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
