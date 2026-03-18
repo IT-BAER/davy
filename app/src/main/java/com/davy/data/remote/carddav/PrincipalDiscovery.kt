@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import java.io.StringReader
+import com.davy.data.remote.AuthenticationException
 import timber.log.Timber
 
 /**
@@ -138,6 +139,11 @@ class PrincipalDiscovery @Inject constructor(
                 Timber.tag("PrincipalDiscovery").w("Server rate limiting (429) - endpoint is valid but temporarily blocked. Wait a few minutes and try again.")
                 null
             } else {
+                // Detect Cloudflare blocking WebDAV methods
+                if (com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(response)) {
+                    Timber.tag("PrincipalDiscovery").e("Cloudflare blocking PROPFIND to %s (cf-ray: %s)", baseUrl, response.header("cf-ray"))
+                    throw com.davy.data.remote.CloudflareBlockingException()
+                }
                 Timber.tag("PrincipalDiscovery").w("Unexpected response code %s: %s", response.code, response.body?.string())
                 null
             }
@@ -422,7 +428,9 @@ class PrincipalDiscovery @Inject constructor(
                 addressbooks = body?.let { parseAddressbookCollections(it, addressbookHomeSetUrl) } ?: emptyList()
             } else {
                 Timber.tag("CardDAVPrincipalDiscovery").w("Failed to discover addressbooks: %s - %s", status, body)
-                throw PrincipalDiscoveryException("Failed to discover addressbooks: HTTP ${status}")
+                // 401 = wrong credentials; anything else (403, 404...) = wrong path, not an auth error
+                if (status == 401) throw AuthenticationException("Invalid credentials")
+                // treat as empty — caller can decide whether to retry with a different base URL
             }
 
             // Some servers (e.g., Nextcloud) can delay address book provisioning or metadata on first access.
@@ -442,10 +450,12 @@ class PrincipalDiscovery @Inject constructor(
 
             Timber.tag("CardDAVPrincipalDiscovery").d("Discovered %s addressbooks: %s", addressbooks.size, addressbooks.map { it.displayName })
             addressbooks
+        } catch (e: AuthenticationException) {
+            throw e
         } catch (e: Exception) {
             Timber.tag("CardDAVPrincipalDiscovery").e(e, "Error discovering addressbooks")
             e.printStackTrace()
-            throw PrincipalDiscoveryException("Addressbook discovery failed: ${e.message}", e)
+            throw PrincipalDiscoveryException("Addressbook discovery failed", e)
         }
     }
 

@@ -116,9 +116,12 @@ class ServiceDiscovery @Inject constructor(
         
         Timber.d("Starting service discovery for: %s", normalizedUrl)
         
+        // Track if any response was from Cloudflare (blocking WebDAV methods)
+        var cloudflareDetected = false
+        
         // Try well-known URIs first (most common for modern servers)
-        var calDavUrl = discoverWellKnownEndpoint(normalizedUrl, CALDAV_WELL_KNOWN, username, password)
-        var cardDavUrl = discoverWellKnownEndpoint(normalizedUrl, CARDDAV_WELL_KNOWN, username, password)
+        var calDavUrl = discoverWellKnownEndpoint(normalizedUrl, CALDAV_WELL_KNOWN, username, password) { cloudflareDetected = true }
+        var cardDavUrl = discoverWellKnownEndpoint(normalizedUrl, CARDDAV_WELL_KNOWN, username, password) { cloudflareDetected = true }
         
     Timber.d("Well-known discovery - CalDAV: %s, CardDAV: %s", calDavUrl, cardDavUrl)
         
@@ -130,7 +133,7 @@ class ServiceDiscovery @Inject constructor(
             val nextcloudDavUrl = "$normalizedUrl/$NEXTCLOUD_DAV_PATH"
             
             // Try Nextcloud/ownCloud path
-            if (isNextcloudOrOwnCloud(nextcloudDavUrl, username, password)) {
+            if (isNextcloudOrOwnCloud(nextcloudDavUrl, username, password) { cloudflareDetected = true }) {
                 Timber.d("Nextcloud/ownCloud detected at: %s", nextcloudDavUrl)
                 calDavUrl = nextcloudDavUrl
                 cardDavUrl = nextcloudDavUrl
@@ -138,7 +141,7 @@ class ServiceDiscovery @Inject constructor(
             } else {
                 // Try ownCloud-specific path
                 val owncloudDavUrl = "$normalizedUrl/$OWNCLOUD_DAV_PATH"
-                if (isNextcloudOrOwnCloud(owncloudDavUrl, username, password)) {
+                if (isNextcloudOrOwnCloud(owncloudDavUrl, username, password) { cloudflareDetected = true }) {
                     Timber.d("ownCloud detected at: %s", owncloudDavUrl)
                     calDavUrl = owncloudDavUrl
                     cardDavUrl = owncloudDavUrl
@@ -146,14 +149,17 @@ class ServiceDiscovery @Inject constructor(
                 } else {
                     Timber.w("Neither Nextcloud nor ownCloud path responded")
 
-                    // As a last resort, probe a few common DAV endpoints used by various servers
-                    for (path in COMMON_DAV_PATHS) {
-                        val candidate = "$normalizedUrl/$path"
-                        if (probeDavEndpoint(candidate, username, password)) {
-                            Timber.d("Detected DAV endpoint at common path: %s", candidate)
-                            calDavUrl = candidate
-                            cardDavUrl = candidate
-                            break
+                    // If Cloudflare was already detected, don't waste time probing more paths
+                    if (!cloudflareDetected) {
+                        // As a last resort, probe a few common DAV endpoints used by various servers
+                        for (path in COMMON_DAV_PATHS) {
+                            val candidate = "$normalizedUrl/$path"
+                            if (probeDavEndpoint(candidate, username, password)) {
+                                Timber.d("Detected DAV endpoint at common path: %s", candidate)
+                                calDavUrl = candidate
+                                cardDavUrl = candidate
+                                break
+                            }
                         }
                     }
                 }
@@ -162,10 +168,14 @@ class ServiceDiscovery @Inject constructor(
         
         // Validate discovered endpoints with PROPFIND
         // Always validate to ensure it's actually a DAV server, not just any HTTP endpoint
-        val validatedCalDav = calDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = true) }
-        val validatedCardDav = cardDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = false) }
+        val validatedCalDav = calDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = true) { cloudflareDetected = true } }
+        val validatedCardDav = cardDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = false) { cloudflareDetected = true } }
         
         if (validatedCalDav == null && validatedCardDav == null) {
+            // If Cloudflare was blocking requests, throw specific exception
+            if (cloudflareDetected) {
+                throw CloudflareBlockingException()
+            }
             throw ServiceDiscoveryException("No CalDAV or CardDAV services found at $serverUrl")
         }
         
@@ -188,7 +198,8 @@ class ServiceDiscovery @Inject constructor(
         serverUrl: String,
         wellKnownPath: String,
         username: String,
-        password: String
+        password: String,
+        onCloudflareDetected: () -> Unit = {}
     ): String? = withContext(Dispatchers.IO) {
         val wellKnownUrl = "$serverUrl/$wellKnownPath"
         
@@ -218,8 +229,14 @@ class ServiceDiscovery @Inject constructor(
                     }
                     // 200 OK - this IS the endpoint
                     response.isSuccessful -> wellKnownUrl
-                    // Not found or unauthorized
-                    else -> null
+                    // Cloudflare blocking WebDAV methods
+                    else -> {
+                        if (CloudflareBlockingException.isCloudflareBlock(response)) {
+                            Timber.w("Cloudflare blocking well-known endpoint: %s (cf-ray: %s)", wellKnownUrl, response.header("cf-ray"))
+                            onCloudflareDetected()
+                        }
+                        null
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -238,7 +255,8 @@ class ServiceDiscovery @Inject constructor(
     private suspend fun isNextcloudOrOwnCloud(
         davUrl: String,
         username: String,
-        password: String
+        password: String,
+        onCloudflareDetected: () -> Unit = {}
     ): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
             Timber.d("Checking if %s is Nextcloud/ownCloud", davUrl)
@@ -303,7 +321,12 @@ class ServiceDiscovery @Inject constructor(
                     true
                 }
                 else -> {
-                    Timber.w("Unexpected response code %s from %s", responseCode, davUrl)
+                    if (CloudflareBlockingException.isCloudflareBlock(response)) {
+                        Timber.w("Cloudflare blocking PROPFIND to %s (cf-ray: %s)", davUrl, response.header("cf-ray"))
+                        onCloudflareDetected()
+                    } else {
+                        Timber.w("Unexpected response code %s from %s", responseCode, davUrl)
+                    }
                     false
                 }
             }
@@ -389,7 +412,8 @@ class ServiceDiscovery @Inject constructor(
         endpointUrl: String,
         username: String,
         password: String,
-        isCalDAV: Boolean
+        isCalDAV: Boolean,
+        onCloudflareDetected: () -> Unit = {}
     ): String? = withContext(Dispatchers.IO) {
         val propfindBody = if (isCalDAV) {
             createCalDAVPropfindBody()
@@ -418,7 +442,12 @@ class ServiceDiscovery @Inject constructor(
                         null
                     }
                 } else {
-                    Timber.w("Non-DAV response code %d from %s", response.code, endpointUrl)
+                    if (CloudflareBlockingException.isCloudflareBlock(response)) {
+                        Timber.w("Cloudflare blocking PROPFIND validation to %s (cf-ray: %s)", endpointUrl, response.header("cf-ray"))
+                        onCloudflareDetected()
+                    } else {
+                        Timber.w("Non-DAV response code %d from %s", response.code, endpointUrl)
+                    }
                     null
                 }
             }

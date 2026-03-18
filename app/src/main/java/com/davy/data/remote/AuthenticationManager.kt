@@ -43,6 +43,8 @@ class AuthenticationManager @Inject constructor(
         // Step 1: Discover service endpoints
         val serviceEndpoints = try {
             serviceDiscovery.discoverServices(serverUrl, username, password)
+        } catch (e: CloudflareBlockingException) {
+            throw e  // Let Cloudflare blocking propagate without wrapping
         } catch (e: Exception) {
             throw AuthenticationException(
                 "Service discovery failed: ${e.message}",
@@ -61,6 +63,8 @@ class AuthenticationManager @Inject constructor(
         val caldavPrincipal = serviceEndpoints.calDavUrl?.let { calDavUrl ->
             try {
                 caldavPrincipalDiscovery.discoverPrincipal(calDavUrl, username, password)
+            } catch (e: CloudflareBlockingException) {
+                throw e
             } catch (e: Exception) {
                 throw AuthenticationException(
                     "CalDAV principal discovery failed: ${e.message}",
@@ -73,6 +77,8 @@ class AuthenticationManager @Inject constructor(
         val carddavPrincipal = serviceEndpoints.cardDavUrl?.let { cardDavUrl ->
             try {
                 carddavPrincipalDiscovery.discoverPrincipal(cardDavUrl, username, password)
+            } catch (e: CloudflareBlockingException) {
+                throw e
             } catch (e: Exception) {
                 throw AuthenticationException(
                     "CardDAV principal discovery failed: ${e.message}",

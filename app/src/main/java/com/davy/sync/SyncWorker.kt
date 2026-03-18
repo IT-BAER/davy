@@ -330,6 +330,9 @@ class SyncWorker @AssistedInject constructor(
                                     
                                     Timber.d("Full discovery succeeded for pruning, using calendarHomeSet: ${authResult.calDavPrincipal.calendarHomeSet}")
                                     authResult.calDavPrincipal
+                                } catch (e: com.davy.data.remote.CloudflareBlockingException) {
+                                    // Don't waste time with fallback — Cloudflare blocks all WebDAV methods
+                                    throw e
                                 } catch (e: Exception) {
                                     // Fallback to direct principal discovery
                                     Timber.w(e, "Full discovery failed for pruning, falling back to direct principal discovery")
@@ -380,6 +383,9 @@ class SyncWorker @AssistedInject constructor(
                             // Propagate cancellation without error noise
                             Timber.i("Calendar prune cancelled")
                             return
+                        } catch (e: com.davy.data.remote.CloudflareBlockingException) {
+                            // Cloudflare blocks WebDAV methods — skip pruning silently
+                            Timber.w("Skipping calendar pruning: Cloudflare blocking WebDAV requests")
                         } catch (e: Exception) {
                             Timber.e(e, "Error during pruning after account sync")
                         }

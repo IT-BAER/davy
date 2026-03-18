@@ -739,6 +739,7 @@
     <string name="whats_new_v1_1_1">• Critical bug fix: Upgrading from earlier versions no longer resets user data\n• Added complete backward-compatible database migration path</string>
     <string name="whats_new_v1_1_2">• Re-authenticate with Nextcloud when app password is revoked\n• Fixed deep-link navigation after authentication\n• Added app password guidance hint</string>
     <string name="whats_new_v1_1_3">• Fixed false \"authentication failed\" notifications during successful sync\n• Improved HTTP error classification to prevent false positives</string>
+    <string name="whats_new_v1_1_4">• Detects Cloudflare blocks for CalDAV/CardDAV and shows a specific fix hint\n• Prevents blocked WebDAV requests from appearing as generic authentication failures\n• Improves DAV discovery and sync fallback handling for 403/404 responses</string>
 
     <!-- Task Management -->
     <string name="no_task_lists_found">No task lists found. Sync to fetch task lists from server.</string>

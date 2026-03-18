@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import java.io.StringReader
+import com.davy.data.remote.AuthenticationException
 import timber.log.Timber
 
 /**
@@ -139,6 +140,11 @@ class PrincipalDiscovery @Inject constructor(
                 Timber.tag("PrincipalDiscovery").w("Server rate limiting (429) - endpoint is valid but temporarily blocked. Wait a few minutes and try again.")
                 null
             } else {
+                // Detect Cloudflare blocking WebDAV methods
+                if (com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(response)) {
+                    Timber.tag("PrincipalDiscovery").e("Cloudflare blocking PROPFIND to %s (cf-ray: %s)", baseUrl, response.header("cf-ray"))
+                    throw com.davy.data.remote.CloudflareBlockingException()
+                }
                 Timber.tag("PrincipalDiscovery").w("Unexpected response code %s: %s", response.code, response.body?.string())
                 null
             }
@@ -464,14 +470,17 @@ class PrincipalDiscovery @Inject constructor(
                 }
             } else {
                 Timber.tag("PrincipalDiscovery").w("Failed to discover calendars: %s - %s", response.code, response.body?.string())
-                
-                throw PrincipalDiscoveryException("Failed to discover calendars: HTTP ${response.code}")
+                // 401 = wrong credentials; anything else (403, 404...) = wrong path, not an auth error
+                if (response.code == 401) throw AuthenticationException("Invalid credentials")
+                return@withContext emptyList()
             }
             }
+        } catch (e: AuthenticationException) {
+            throw e
         } catch (e: Exception) {
             Timber.tag("PrincipalDiscovery").e(e, "Error discovering calendars")
             e.printStackTrace()
-            throw PrincipalDiscoveryException("Calendar discovery failed: ${e.message}", e)
+            throw PrincipalDiscoveryException("Calendar discovery failed", e)
         }
     }
 

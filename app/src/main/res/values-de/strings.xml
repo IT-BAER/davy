@@ -736,4 +736,5 @@
     <string name="whats_new_v1_1_1">• Kritische Fehlerbehebung: Update von älteren Versionen setzt Benutzerdaten nicht mehr zurück\n• Vollständiger abwärtskompatibler Datenbankmigrationsweg hinzugefügt</string>
     <string name="whats_new_v1_1_2">• Erneutes Authentifizieren mit Nextcloud bei widerrufenem App-Passwort\n• Deep-Link-Navigation nach der Authentifizierung behoben\n• Hinweiskarte für App-Passwort hinzugefügt</string>
     <string name="whats_new_v1_1_3">• Falsche „Authentifizierung fehlgeschlagen"-Benachrichtigungen bei erfolgreicher Synchronisation behoben\n• Verbesserte HTTP-Fehlerklassifizierung zur Vermeidung von Fehlalarmen</string>
+    <string name="whats_new_v1_1_4">• Erkennt Cloudflare-Blockierungen bei CalDAV/CardDAV und zeigt einen konkreten Lösungshinweis\n• Verhindert, dass blockierte WebDAV-Anfragen als allgemeine Authentifizierungsfehler erscheinen\n• Verbessert DAV-Erkennung und Sync-Fallback bei 403/404-Antworten</string>
 </resources>

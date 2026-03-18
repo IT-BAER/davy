@@ -289,13 +289,17 @@ class CalDAVSyncService @Inject constructor(
             if (!response.isSuccessful) {
                 Timber.e("Collection Sync REPORT failed: ${response.statusCode}")
                 
-                // Show notification for auth errors
+                // Show notification for auth/access errors
                 if (response.statusCode == 401 || response.statusCode == 403) {
+                    val isCloudflare = com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(
+                        response.statusCode, response.headers
+                    )
                     NotificationHelper.showHttpErrorNotification(
                         context,
                         response.statusCode,
                         account.accountName,
-                        account.id
+                        account.id,
+                        isCloudflareBlock = isCloudflare
                     )
                 }
                 
@@ -441,13 +445,17 @@ class CalDAVSyncService @Inject constructor(
             if (!eventsPropfind.isSuccessful) {
                 Timber.e("Events PROPFIND failed for ${calendar.displayName}")
                 
-                // Show notification for auth errors
+                // Show notification for auth/access errors
                 if (eventsPropfind.statusCode == 401 || eventsPropfind.statusCode == 403) {
+                    val isCloudflare = com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(
+                        eventsPropfind.statusCode, eventsPropfind.headers
+                    )
                     NotificationHelper.showHttpErrorNotification(
                         context,
                         eventsPropfind.statusCode,
                         account.accountName,
-                        account.id
+                        account.id,
+                        isCloudflareBlock = isCloudflare
                     )
                 }
                 

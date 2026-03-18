@@ -378,13 +378,15 @@ class CardDAVSyncService @Inject constructor(
             if (!response.isSuccessful) {
                 Timber.e("PROPFIND failed: ${response.code} ${response.message}")
                 
-                // Show notification for auth errors
+                // Show notification for auth/access errors
                 if (response.code == 401 || response.code == 403) {
+                    val isCloudflare = com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(response)
                     NotificationHelper.showHttpErrorNotification(
                         context,
                         response.code,
                         accountName,
-                        accountId
+                        accountId,
+                        isCloudflareBlock = isCloudflare
                     )
                 }
                 
@@ -471,13 +473,15 @@ class CardDAVSyncService @Inject constructor(
             if (!response.isSuccessful) {
                 Timber.e("addressbook-query REPORT failed: ${response.code} ${response.message}")
                 
-                // Show notification for auth errors
+                // Show notification for auth/access errors
                 if (response.code == 401 || response.code == 403) {
+                    val isCloudflare = com.davy.data.remote.CloudflareBlockingException.isCloudflareBlock(response)
                     NotificationHelper.showHttpErrorNotification(
                         context,
                         response.code,
                         account.accountName,
-                        account.id
+                        account.id,
+                        isCloudflareBlock = isCloudflare
                     )
                 }
                 

@@ -37,8 +37,8 @@ android {
         applicationId = "com.davy"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 12
-        versionName = "1.1.3"
+            versionCode = 13
+            versionName = "1.1.4"
 
         testInstrumentationRunner = "com.davy.HiltTestRunner"
         

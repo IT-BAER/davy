@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-03-18
+
+<en-US>
+### Fixed
+- Added explicit Cloudflare detection for blocked CalDAV/CardDAV requests and show a specific fix hint instead of a generic authentication error
+- Preserved Cloudflare blocking across service discovery, principal discovery, and sync notifications so blocked WebDAV methods are no longer reported as invalid credentials
+- Improved DAV discovery and sync fallback handling so 403/404 responses are not misclassified as authentication failures
+</en-US>
+
+<de-DE>
+### Behoben
+- Explizite Cloudflare-Erkennung für blockierte CalDAV/CardDAV-Anfragen hinzugefügt und einen konkreten Lösungshinweis statt einer generischen Authentifizierungsfehlermeldung angezeigt
+- Cloudflare-Blockierungen werden jetzt durch Service Discovery, Principal Discovery und Sync-Benachrichtigungen korrekt weitergegeben, sodass blockierte WebDAV-Methoden nicht mehr als ungültige Zugangsdaten erscheinen
+- DAV-Erkennung und Sync-Fallback verbessert, damit 403/404-Antworten nicht mehr fälschlich als Authentifizierungsfehler behandelt werden
+</de-DE>
+
 ## [1.1.3] - 2026-03-12
 
 <en-US>

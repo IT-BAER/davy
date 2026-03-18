@@ -160,16 +160,18 @@ object NotificationHelper {
         context: Context,
         statusCode: Int,
         accountName: String? = null,
-        accountId: Long? = null
+        accountId: Long? = null,
+        isCloudflareBlock: Boolean = false
     ) {
-        val error = when (statusCode) {
-            401, 403 -> AppError.AuthenticationFailed(
+        val error = when {
+            isCloudflareBlock -> AppError.CloudflareBlocked()
+            statusCode == 401 || statusCode == 403 -> AppError.AuthenticationFailed(
                 "Authentication failed for ${accountName ?: "account"}. Please check your credentials."
             )
-            404 -> AppError.ServerUnreachable(
+            statusCode == 404 -> AppError.ServerUnreachable(
                 "Server not found (HTTP 404). Please check the server URL."
             )
-            500, 502, 503 -> AppError.ServerUnreachable(
+            statusCode == 500 || statusCode == 502 || statusCode == 503 -> AppError.ServerUnreachable(
                 "Server error (HTTP $statusCode). The server may be temporarily unavailable."
             )
             else -> AppError.SyncFailed(
