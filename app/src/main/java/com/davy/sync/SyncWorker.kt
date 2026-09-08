@@ -93,12 +93,12 @@ class SyncWorker @AssistedInject constructor(
             // A periodic collision is covered by the run already in flight. A manual or
             // content-triggered one carries a local edit, and dropping it loses that edit
             // until the next periodic run.
-            if (tags.contains(TAG_PERIODIC_SYNC)) {
-                Timber.i("Sync already running for signature=$syncSignature – skipping periodic duplicate")
-                return Result.success()
-            }
-            Timber.i("Sync already running for signature=$syncSignature – retrying local changes later")
-            return Result.retry()
+            val periodicDuplicate = tags.contains(TAG_PERIODIC_SYNC)
+            Timber.i(
+                "Sync already running for signature=$syncSignature – " +
+                    if (periodicDuplicate) "skipping periodic duplicate" else "retrying local changes later"
+            )
+            return if (periodicDuplicate) Result.success() else Result.retry()
         }
 
         Timber.d("========================================")
