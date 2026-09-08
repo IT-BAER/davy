@@ -38,7 +38,7 @@ class SyncManager @Inject constructor(
     
     companion object {
         private const val DEFAULT_SYNC_INTERVAL_MINUTES = 60L
-        private const val TAG_PERIODIC_SYNC = "periodic_sync"
+        private val TAG_PERIODIC_SYNC = SyncWorker.TAG_PERIODIC_SYNC
         private const val TAG_MANUAL_SYNC = "manual_sync"
         const val SYNC_TYPE_ALL = "all"
         const val SYNC_TYPE_CALENDAR = "calendar"
@@ -118,6 +118,7 @@ class SyncManager @Inject constructor(
             .putLong(SyncWorker.INPUT_ACCOUNT_ID, accountId)
             .putString(SyncWorker.INPUT_SYNC_TYPE, actualSyncType)
             .putBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, forceWebCal)
+            .putBoolean(SyncWorker.INPUT_WEBCAL_ONLY, forceWebCal)
 
         if (includePushOnlyFlag) {
             inputDataBuilder.putBoolean("push_only", true)
@@ -585,7 +586,8 @@ class SyncManager @Inject constructor(
                 SyncWorker.INPUT_ACCOUNT_ID to accountId,
                 SyncWorker.INPUT_SYNC_TYPE to SYNC_TYPE_CALENDAR,
                 "webcal_id" to webCalId,
-                SyncWorker.INPUT_FORCE_WEB_CAL to true
+                SyncWorker.INPUT_FORCE_WEB_CAL to true,
+                SyncWorker.INPUT_WEBCAL_ONLY to true
             )
             
             val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()

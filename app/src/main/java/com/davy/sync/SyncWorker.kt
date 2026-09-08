@@ -58,6 +58,15 @@ class SyncWorker @AssistedInject constructor(
         const val INPUT_ACCOUNT_ID = "account_id"
         const val INPUT_SYNC_TYPE = "sync_type"
         const val INPUT_FORCE_WEB_CAL = "force_webcal"
+
+        /**
+         * Set by webcal-only triggers. INPUT_FORCE_WEB_CAL alone cannot distinguish them
+         * from a full manual sync, which also sets it and does expect CalDAV to run.
+         */
+        const val INPUT_WEBCAL_ONLY = "webcal_only"
+
+        /** Tag carried by periodic sync requests, so collisions can be told apart. */
+        const val TAG_PERIODIC_SYNC = "periodic_sync"
         
         const val SYNC_TYPE_ALL = "all"
         const val SYNC_TYPE_CALENDAR = "calendar"
@@ -67,6 +76,10 @@ class SyncWorker @AssistedInject constructor(
         private val runningSyncs = Collections.synchronizedSet(mutableSetOf<String>())
     }
     
+    /** True when this invocation exists only to refresh WebCal subscriptions. */
+    private val webCalOnly: Boolean
+        get() = inputData.getBoolean(INPUT_WEBCAL_ONLY, false)
+
     override suspend fun doWork(): Result {
         val accountId = inputData.getLong(INPUT_ACCOUNT_ID, -1L)
         val syncType = inputData.getString(INPUT_SYNC_TYPE) ?: SYNC_TYPE_ALL
@@ -77,8 +90,15 @@ class SyncWorker @AssistedInject constructor(
 
         val syncSignature = buildSyncSignature(accountId, syncType, calendarId, addressBookId, forceWebCal)
         if (!runningSyncs.add(syncSignature)) {
-            Timber.i("Sync already running for signature=$syncSignature – skipping duplicate invocation")
-            return Result.success()
+            // A periodic collision is covered by the run already in flight. A manual or
+            // content-triggered one carries a local edit, and dropping it loses that edit
+            // until the next periodic run.
+            if (tags.contains(TAG_PERIODIC_SYNC)) {
+                Timber.i("Sync already running for signature=$syncSignature – skipping periodic duplicate")
+                return Result.success()
+            }
+            Timber.i("Sync already running for signature=$syncSignature – retrying local changes later")
+            return Result.retry()
         }
 
         Timber.d("========================================")
@@ -227,7 +247,11 @@ class SyncWorker @AssistedInject constructor(
         Timber.d("========================================")
         
         try {
-            if (calendarId != -1L) {
+            if (webCalOnly) {
+                // The hourly webcal job used to fall through into a full CalDAV account
+                // sync, duplicating the separate calendar job every hour.
+                Timber.d("WebCal-only sync: skipping CalDAV collections")
+            } else if (calendarId != -1L) {
                 // Sync specific calendar only
                 if (pushOnly) {
                     Timber.d("→ Calling CalDAVSyncService.syncCalendar($calendarId, pushOnly=true)...")

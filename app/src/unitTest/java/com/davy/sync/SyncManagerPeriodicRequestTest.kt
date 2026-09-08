@@ -86,6 +86,8 @@ class SyncManagerPeriodicRequestTest {
     assertThat(workSpec.input.keyValueMap.containsKey("push_only")).isFalse()
         assertThat(workSpec.input.getString(SyncWorker.INPUT_SYNC_TYPE)).isEqualTo(SyncManager.SYNC_TYPE_CALENDAR)
         assertThat(workSpec.input.getBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, true)).isFalse()
+        // The calendar job must never be marked webcal-only, or CalDAV would stop syncing.
+        assertThat(workSpec.input.getBoolean(SyncWorker.INPUT_WEBCAL_ONLY, true)).isFalse()
 
         val tags = request.tags
         assertThat(tags).contains("periodic_sync")
@@ -113,6 +115,8 @@ class SyncManagerPeriodicRequestTest {
         assertThat(workSpec.input.getBoolean("push_only", false)).isTrue()
         assertThat(workSpec.input.getString(SyncWorker.INPUT_SYNC_TYPE)).isEqualTo(SyncManager.SYNC_TYPE_CALENDAR)
         assertThat(workSpec.input.getBoolean(SyncWorker.INPUT_FORCE_WEB_CAL, false)).isTrue()
+        // Marks this job as webcal-only so it no longer runs a full CalDAV sync as well.
+        assertThat(workSpec.input.getBoolean(SyncWorker.INPUT_WEBCAL_ONLY, false)).isTrue()
 
         val tags = request.tags
         assertThat(tags).contains("periodic_sync")
