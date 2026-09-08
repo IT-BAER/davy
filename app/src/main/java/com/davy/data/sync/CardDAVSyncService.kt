@@ -49,6 +49,7 @@ class CardDAVSyncService @Inject constructor(
     private val contactContentProviderAdapter: ContactContentProviderAdapter,
     private val androidAccountManager: AndroidAccountManager,
     private val httpClient: OkHttpClient,
+    private val addressBookEtagLister: com.davy.data.remote.carddav.AddressBookEtagLister,
     private val categoriesStrategy: CategoriesStrategy,
     private val vCard4Strategy: VCard4Strategy,
     private val androidGroupManager: AndroidGroupManager
@@ -237,8 +238,6 @@ class CardDAVSyncService @Inject constructor(
             var serverCtag: String? = null
             var hasLocalContacts = false
             var hasChanged = false
-            var localContactCount = 0
-            var serverContactCount: Int? = null
             if (!pushOnly) {
                 // Step 1: Fetch server ctag to check if anything changed
                 serverCtag = fetchServerCtag(addressBook.url, account.username, password, account.accountName, account.id)
@@ -246,23 +245,8 @@ class CardDAVSyncService @Inject constructor(
                     Timber.e("Failed to fetch server ctag for ${addressBook.displayName}")
                     return SyncResult()
                 }
-                // Check if we have any contacts locally for this address book
-                val localContacts = contactRepository.getByAddressBookId(addressBook.id)
-                hasLocalContacts = localContacts.isNotEmpty()
-                localContactCount = localContacts.size
                 hasChanged = addressBook.ctag != serverCtag
-                
-                // Fallback check: Get server contact count if ctag hasn't changed
-                // This handles cases where ctag update is delayed or contacts added externally
-                if (!hasChanged && hasLocalContacts) {
-                    serverContactCount = getServerContactCount(addressBook.url, account.username, password)
-                    if (serverContactCount != null && serverContactCount != localContactCount) {
-                        Timber.d("  ⚠️ Count mismatch detected: Server has $serverContactCount contacts, local has $localContactCount")
-                        hasChanged = true // Force sync due to count mismatch
-                    }
-                }
-                
-                Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged, Local contacts: $localContactCount")
+                Timber.d("  Server ctag: $serverCtag, Local ctag: ${addressBook.ctag}, Changed: $hasChanged")
             }
             
             // Step 1.5: Prepare group-related changes before upload
@@ -277,11 +261,28 @@ class CardDAVSyncService @Inject constructor(
                 Timber.d("  Uploaded $contactsUploaded contacts")
             }
             
+            // Listed after the upload so a contact just pushed is present on the server,
+            // and shared by the deletion check and the count fallback below. Null means the
+            // listing is unknown, and both consumers skip rather than act on it.
+            val serverListing = addressBookEtagLister.list(addressBook.url, account.username, password)
+
             // Step 3: Delete removed contacts (before download)
             Timber.d("  Deleting removed contacts...")
-            contactsDeleted = deleteRemovedContacts(account, addressBook, password)
+            contactsDeleted = deleteRemovedContacts(account, addressBook, password, serverListing)
             if (contactsDeleted > 0) {
                 Timber.d("  Deleted $contactsDeleted contacts")
+            }
+
+            if (!pushOnly) {
+                val localContacts = contactRepository.getByAddressBookId(addressBook.id)
+                hasLocalContacts = localContacts.isNotEmpty()
+                // A ctag can lag behind a change, so compare counts as a fallback.
+                if (!hasChanged && hasLocalContacts && serverListing != null &&
+                    serverListing.size != localContacts.size
+                ) {
+                    Timber.d("  ⚠️ Count mismatch: server has ${serverListing.size}, local has ${localContacts.size}")
+                    hasChanged = true
+                }
             }
             
             // Step 4: Download contacts only when not in push-only mode
@@ -409,48 +410,6 @@ class CardDAVSyncService @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Exception fetching server ctag")
-            null
-        }
-    }
-    
-    /**
-     * Gets the count of contacts on the server for an address book.
-     * Used as a fallback check when ctag comparison alone isn't sufficient.
-     * 
-     * @param url Address book URL
-     * @param username Account username
-     * @param password Account password
-     * @return Number of contacts on server, or null if query failed
-     */
-    private suspend fun getServerContactCount(
-        url: String,
-        username: String,
-        password: String
-    ): Int? = withContext(Dispatchers.IO) {
-        try {
-            val addressBookQuery = AddressBookQuery()
-            val requestXml = addressBookQuery.createQueryAllRequest(url)
-            val requestBody = addressBookQuery.createRequestBody(requestXml)
-            val request = Request.Builder()
-                .url(url)
-                .method("REPORT", requestBody)
-                .header("Depth", "1")
-                .header("Content-Type", "application/xml; charset=utf-8")
-                .header("Authorization", Credentials.basic(username, password))
-                .build()
-            
-            httpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                Timber.w("Failed to fetch server contact count: ${response.code}")
-                return@withContext null
-            }
-            
-            val responseXml = response.body?.string() ?: return@withContext null
-            val contacts = addressBookQuery.parseQueryResponse(responseXml)
-            contacts.size
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Exception fetching server contact count")
             null
         }
     }
@@ -998,7 +957,12 @@ class CardDAVSyncService @Inject constructor(
         count
     }
     
-    private suspend fun deleteRemovedContacts(account: Account, addressBook: AddressBook, password: String): Int = withContext(Dispatchers.IO) {
+    private suspend fun deleteRemovedContacts(
+        account: Account,
+        addressBook: AddressBook,
+        password: String,
+        serverContacts: List<com.davy.data.remote.carddav.FetchedContact>?
+    ): Int = withContext(Dispatchers.IO) {
         var count = 0
         try {
             // Get the address book Android account
@@ -1113,24 +1077,8 @@ class CardDAVSyncService @Inject constructor(
             
             // Part 2: Detect contacts deleted on server - compare local vs server lists
             Timber.d("  Checking for contacts deleted on server...")
-            
-            // Get all contacts from server
-            val addressBookQuery = AddressBookQuery()
-            val requestXml = addressBookQuery.createQueryAllRequest(addressBook.url)
-            val requestBody = addressBookQuery.createRequestBody(requestXml)
-            val request = Request.Builder()
-                .url(addressBook.url)
-                .method("REPORT", requestBody)
-                .header("Depth", "1")
-                .header("Content-Type", "application/xml; charset=utf-8")
-                .header("Authorization", Credentials.basic(account.username, password))
-                .build()
-            
-            httpClient.newCall(request).execute().use { response ->
-            if (response.isSuccessful) {
-                val responseXml = response.body?.string() ?: ""
-                val serverContacts = addressBookQuery.parseQueryResponse(responseXml)
-                
+
+            if (serverContacts != null) {
                 // Extract server filenames (SOURCE_ID)
                 val serverSourceIds = serverContacts.mapNotNull { contact ->
                     contact.url.substringAfterLast("/").takeIf { it.isNotEmpty() }
@@ -1177,8 +1125,7 @@ class CardDAVSyncService @Inject constructor(
                     }
                 }
             }
-            }
-            
+
             // Purge old soft-deleted contacts
             contactRepository.purgeSoftDeleted()
         } catch (e: Exception) {
