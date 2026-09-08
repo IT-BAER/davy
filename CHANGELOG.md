@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2026-09-08
+
+<en-US>
+### Fixed
+- Contact sync no longer downloads every vCard once an hour just to check for deletions, which cuts mobile data and battery use substantially
+- The hourly WebCal refresh no longer triggers a second full CalDAV sync
+- Contact and calendar edits made while a sync is already running are retried instead of dropped
+</en-US>
+
+<de-DE>
+### Behoben
+- Die Kontaktsynchronisation lädt nicht mehr stündlich alle vCards herunter, nur um Löschungen zu erkennen, das spart deutlich mobile Daten und Akku
+- Die stündliche WebCal-Aktualisierung startet keine zweite vollständige CalDAV-Synchronisation mehr
+- Änderungen an Kontakten und Terminen während einer laufenden Synchronisation werden wiederholt statt verworfen
+</de-DE>
+
 ## [1.1.4] - 2026-03-18
 
 <en-US>

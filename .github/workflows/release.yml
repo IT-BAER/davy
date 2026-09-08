@@ -402,7 +402,9 @@ jobs:
           releaseFiles: ./aab/*.aab
           track: ${{ steps.track.outputs.track }}
           releaseName: DAVy v${{ needs.validate-changelog.outputs.version_name }}
-          status: draft
+          # A draft Play release is not distributed to anyone. Internal testing rolls out
+          # immediately; every wider track still needs a manual review in the Console.
+          status: ${{ steps.track.outputs.track == 'internal' && 'completed' || 'draft' }}
           whatsNewDirectory: ${{ steps.notes.outputs.play_notes_dir }}
           mappingFile: ./mapping/mapping.txt
 
