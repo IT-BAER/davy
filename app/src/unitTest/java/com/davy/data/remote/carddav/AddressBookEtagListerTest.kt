@@ -64,13 +64,40 @@ class AddressBookEtagListerTest {
     }
 
     @Test
-    fun `an empty collection is reported as an empty list, not as a failure`() = runBlocking {
+    fun `an empty collection is reported as an empty list, not as a failure`() = runBlocking<Unit> {
+        server.enqueue(MockResponse().setResponseCode(207).setBody(emptyMultistatus()))
         server.enqueue(MockResponse().setResponseCode(207).setBody(emptyMultistatus()))
 
         val entries = lister.list(server.url("/addressbooks/rog/contacts/").toString(), "rog", "secret")
 
         assertThat(entries).isNotNull()
         assertThat(entries!!).isEmpty()
+        // Emptiness is confirmed with the full-payload query before callers act on it.
+        assertThat(server.requestCount).isEqualTo(2)
+        server.takeRequest()
+        assertThat(server.takeRequest().body.readUtf8()).contains("address-data")
+    }
+
+    @Test
+    fun `a successful response the parser cannot read is not reported as an empty collection`() =
+        runBlocking<Unit> {
+            server.enqueue(MockResponse().setResponseCode(207).setBody("<html>proxy notice</html>"))
+            server.enqueue(MockResponse().setResponseCode(207).setBody(multistatusWithTwoContacts()))
+
+            val entries = lister.list(server.url("/addressbooks/rog/contacts/").toString(), "rog", "secret")
+
+            assertThat(entries).isNotNull()
+            assertThat(entries!!).hasSize(2)
+        }
+
+    @Test
+    fun `a failed confirmation returns null rather than an empty list`() = runBlocking<Unit> {
+        server.enqueue(MockResponse().setResponseCode(207).setBody(emptyMultistatus()))
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val entries = lister.list(server.url("/addressbooks/rog/contacts/").toString(), "rog", "secret")
+
+        assertThat(entries).isNull()
     }
 
     @Test
