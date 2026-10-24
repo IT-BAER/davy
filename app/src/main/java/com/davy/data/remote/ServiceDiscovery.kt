@@ -235,11 +235,14 @@ class ServiceDiscovery @Inject constructor(
     /**
      * Resolves a redirect target against the request URL. Synology Calendar redirects to its
      * internal backend (http://localhost:/caldav.php/); a loopback target keeps its path on the request's origin.
+     * An https to http downgrade is refused because the target receives Basic credentials.
      */
     private fun resolveRedirect(requestUrl: HttpUrl, location: String): String? {
         val target = requestUrl.resolve(location) ?: return null
         val isLoopback = target.host == "localhost" || target.host == "::1" || target.host.startsWith("127.")
-        if (!isLoopback || target.host == requestUrl.host) return target.toString()
+        if (!isLoopback || target.host == requestUrl.host) {
+            return if (requestUrl.isHttps && !target.isHttps) null else target.toString()
+        }
         return target.newBuilder()
             .scheme(requestUrl.scheme)
             .host(requestUrl.host)
