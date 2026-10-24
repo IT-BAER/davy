@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-24
+
+<en-US>
+### Fixed
+- Synology NAS: calendars are now found as well as contacts. Synology Calendar points discovery at an internal address, which DAVy now maps back to your server
+- A full DAV address such as https://example.com/caldav/ is now tried exactly as entered, including the trailing slash
+- Calendars and contacts are searched separately, so a server that announces only one of them through the standard discovery address is still fully detected
+- The test button on the add-account screen no longer cuts off its German "failed" label
+
+### Security
+- Account discovery no longer follows a redirect from HTTPS to plain HTTP, so your credentials are never sent unencrypted
+</en-US>
+
+<de-DE>
+### Behoben
+- Synology NAS: Kalender werden jetzt zusätzlich zu Kontakten gefunden. Synology Calendar verweist die Erkennung auf eine interne Adresse, die DAVy jetzt auf deinen Server zurückführt
+- Eine vollständige DAV-Adresse wie https://example.com/caldav/ wird jetzt genau wie eingegeben versucht, inklusive abschließendem Schrägstrich
+- Kalender und Kontakte werden getrennt gesucht, damit ein Server, der nur einen der beiden Dienste über die Standard-Erkennungsadresse meldet, trotzdem vollständig erkannt wird
+- Die Test-Schaltfläche beim Hinzufügen eines Kontos schneidet die Beschriftung „Fehler“ nicht mehr ab
+
+### Sicherheit
+- Die Kontoerkennung folgt keiner Weiterleitung mehr von HTTPS auf unverschlüsseltes HTTP, deine Zugangsdaten werden also nie unverschlüsselt gesendet
+</de-DE>
+
 ## [1.1.5] - 2026-09-08
 
 <en-US>
