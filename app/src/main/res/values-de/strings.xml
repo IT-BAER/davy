@@ -362,7 +362,7 @@
     <string name="re_auth_waiting">Warte auf Authentifizierung im Browser…</string>
     <string name="testing">Wird getestet...</string>
     <string name="valid">Gültig</string>
-    <string name="failed">Fehlgeschlagen</string>
+    <string name="failed">Fehler</string>
     <string name="test">Testen</string>
     <string name="applying">Wird angewendet...</string>
     <string name="applied">Angewendet!</string>

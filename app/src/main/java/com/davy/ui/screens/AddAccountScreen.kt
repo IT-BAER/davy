@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -1176,7 +1177,7 @@ fun AddAccountScreen(
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(id = R.string.testing))
+                                        Text(stringResource(id = R.string.testing), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                     uiState.credentialTestResult?.startsWith("✓") == true -> {
                                         Icon(
@@ -1196,7 +1197,7 @@ fun AddAccountScreen(
                                                 )
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(id = R.string.valid))
+                                        Text(stringResource(id = R.string.valid), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                     uiState.credentialTestResult?.startsWith("✗") == true -> {
                                         Icon(
@@ -1205,7 +1206,7 @@ fun AddAccountScreen(
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(id = R.string.failed))
+                                        Text(stringResource(id = R.string.failed), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                     else -> {
                                         Icon(
@@ -1214,7 +1215,7 @@ fun AddAccountScreen(
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(id = R.string.test))
+                                        Text(stringResource(id = R.string.test), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
                             }
@@ -1233,7 +1234,7 @@ fun AddAccountScreen(
                                         color = MaterialTheme.colorScheme.onPrimary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(id = R.string.connecting))
+                                    Text(stringResource(id = R.string.connecting), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 } else {
                                     Icon(
                                         imageVector = Icons.Default.Add,
@@ -1241,7 +1242,7 @@ fun AddAccountScreen(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(id = R.string.add_account))
+                                    Text(stringResource(id = R.string.add_account), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                             }
                         }
