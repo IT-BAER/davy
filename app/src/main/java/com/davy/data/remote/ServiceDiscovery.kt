@@ -240,9 +240,7 @@ class ServiceDiscovery @Inject constructor(
     private fun resolveRedirect(requestUrl: HttpUrl, location: String): String? {
         val target = requestUrl.resolve(location) ?: return null
         val isLoopback = target.host == "localhost" || target.host == "::1" || target.host.startsWith("127.")
-        if (!isLoopback || target.host == requestUrl.host) {
-            return if (requestUrl.isHttps && !target.isHttps) null else target.toString()
-        }
+        if (!isLoopback) return if (requestUrl.isHttps && !target.isHttps) null else target.toString()
         return target.newBuilder()
             .scheme(requestUrl.scheme)
             .host(requestUrl.host)
