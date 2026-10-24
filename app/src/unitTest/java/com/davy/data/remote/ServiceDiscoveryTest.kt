@@ -226,6 +226,78 @@ class ServiceDiscoveryTest {
     }
   }
 
+  // Responses measured on a Synology DSM 7 server with Synology Calendar and Synology Contacts
+  private fun synologyDispatcher(baseUrl: String) = object : Dispatcher() {
+    override fun dispatch(request: RecordedRequest): MockResponse = when (request.path) {
+      "/.well-known/caldav", "/caldav/.well-known/caldav", "/caldav/.well-known/carddav" -> MockResponse()
+        .setResponseCode(301)
+        .addHeader("Location", "http://localhost:/caldav.php/")
+      "/.well-known/carddav" -> MockResponse()
+        .setResponseCode(302)
+        .addHeader("Location", "$baseUrl/carddav/")
+      "/caldav/", "/caldav.php/", "/carddav/" -> MockResponse()
+        .setResponseCode(207)
+        .setBody(multistatusWithPrincipalOnly())
+      "/caldav" -> MockResponse().setResponseCode(if (request.method == "PROPFIND") 405 else 404)
+      else -> MockResponse().setResponseCode(404)
+    }
+  }
+
+  @Test
+  fun `synology base url finds calendar through loopback well-known redirect`() = runBlocking {
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+    server.dispatcher = synologyDispatcher(baseUrl)
+
+    val result = discovery.discoverServices(baseUrl, "user", "pass")
+
+    assertThat(result.calDavUrl).isEqualTo("$baseUrl/caldav.php/")
+    assertThat(result.cardDavUrl).isEqualTo("$baseUrl/carddav/")
+  }
+
+  @Test
+  fun `synology caldav url with trailing slash finds both services`() = runBlocking {
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+    server.dispatcher = synologyDispatcher(baseUrl)
+
+    val result = discovery.discoverServices("$baseUrl/caldav/", "user", "pass")
+
+    assertThat(result.calDavUrl).isEqualTo("$baseUrl/caldav.php/")
+    assertThat(result.cardDavUrl).isEqualTo("$baseUrl/carddav/")
+  }
+
+  @Test
+  fun `typed DAV path is used when no well-known exists`() = runBlocking {
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse = when (request.path) {
+        "/radicale/user/" -> MockResponse().setResponseCode(207).setBody(multistatusWithPrincipalOnly())
+        else -> MockResponse().setResponseCode(404)
+      }
+    }
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+
+    val result = discovery.discoverServices("$baseUrl/radicale/user", "user", "pass")
+
+    assertThat(result.calDavUrl).isEqualTo("$baseUrl/radicale/user/")
+    assertThat(result.cardDavUrl).isEqualTo("$baseUrl/radicale/user/")
+  }
+
+  @Test
+  fun `calendar falls back to common paths when only contacts well-known works`() = runBlocking {
+    val baseUrl = server.url("/").toString().removeSuffix("/")
+    server.dispatcher = object : Dispatcher() {
+      override fun dispatch(request: RecordedRequest): MockResponse = when (request.path) {
+        "/.well-known/carddav" -> MockResponse().setResponseCode(308).addHeader("Location", "../carddav/")
+        "/caldav/", "/carddav/" -> MockResponse().setResponseCode(207).setBody(multistatusWithPrincipalOnly())
+        else -> MockResponse().setResponseCode(404)
+      }
+    }
+
+    val result = discovery.discoverServices(baseUrl, "user", "pass")
+
+    assertThat(result.calDavUrl).isEqualTo("$baseUrl/caldav/")
+    assertThat(result.cardDavUrl).isEqualTo("$baseUrl/carddav/")
+  }
+
     private fun multistatusWithHomeSets(): String = """
         <?xml version="1.0" encoding="utf-8"?>
         <d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:card="urn:ietf:params:xml:ns:carddav">

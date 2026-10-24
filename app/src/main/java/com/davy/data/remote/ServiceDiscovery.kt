@@ -2,6 +2,8 @@ package com.davy.data.remote
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -55,6 +57,7 @@ class ServiceDiscovery @Inject constructor(
             
             // CalDAV-specific paths
             "caldav",
+            "caldav/",                 // Synology Calendar
             "caldav.php",
             "cal.php/calendars",       // Baikal CalDAV
             "calendars",
@@ -63,6 +66,7 @@ class ServiceDiscovery @Inject constructor(
             
             // CardDAV-specific paths
             "carddav",
+            "carddav/",                // Synology Contacts
             "carddav.php",
             "card.php/addressbooks",   // Baikal CardDAV
             "addressbooks",
@@ -113,64 +117,17 @@ class ServiceDiscovery @Inject constructor(
         password: String
     ): ServiceEndpoints {
         val normalizedUrl = normalizeServerUrl(serverUrl)
-        
+
         Timber.d("Starting service discovery for: %s", normalizedUrl)
-        
+
         // Track if any response was from Cloudflare (blocking WebDAV methods)
         var cloudflareDetected = false
-        
-        // Try well-known URIs first (most common for modern servers)
-        var calDavUrl = discoverWellKnownEndpoint(normalizedUrl, CALDAV_WELL_KNOWN, username, password) { cloudflareDetected = true }
-        var cardDavUrl = discoverWellKnownEndpoint(normalizedUrl, CARDDAV_WELL_KNOWN, username, password) { cloudflareDetected = true }
-        
-    Timber.d("Well-known discovery - CalDAV: %s, CardDAV: %s", calDavUrl, cardDavUrl)
-        
-        // If well-known URIs failed, try common server paths (Nextcloud, ownCloud)
-        var isNextcloudPath = false
-        if (calDavUrl == null && cardDavUrl == null) {
-            Timber.d("Well-known URIs failed, trying Nextcloud/ownCloud paths")
-            
-            val nextcloudDavUrl = "$normalizedUrl/$NEXTCLOUD_DAV_PATH"
-            
-            // Try Nextcloud/ownCloud path
-            if (isNextcloudOrOwnCloud(nextcloudDavUrl, username, password) { cloudflareDetected = true }) {
-                Timber.d("Nextcloud/ownCloud detected at: %s", nextcloudDavUrl)
-                calDavUrl = nextcloudDavUrl
-                cardDavUrl = nextcloudDavUrl
-                isNextcloudPath = true
-            } else {
-                // Try ownCloud-specific path
-                val owncloudDavUrl = "$normalizedUrl/$OWNCLOUD_DAV_PATH"
-                if (isNextcloudOrOwnCloud(owncloudDavUrl, username, password) { cloudflareDetected = true }) {
-                    Timber.d("ownCloud detected at: %s", owncloudDavUrl)
-                    calDavUrl = owncloudDavUrl
-                    cardDavUrl = owncloudDavUrl
-                    isNextcloudPath = true
-                } else {
-                    Timber.w("Neither Nextcloud nor ownCloud path responded")
+        val onCloudflareDetected = { cloudflareDetected = true }
+        val isCloudflareDetected = { cloudflareDetected }
 
-                    // If Cloudflare was already detected, don't waste time probing more paths
-                    if (!cloudflareDetected) {
-                        // As a last resort, probe a few common DAV endpoints used by various servers
-                        for (path in COMMON_DAV_PATHS) {
-                            val candidate = "$normalizedUrl/$path"
-                            if (probeDavEndpoint(candidate, username, password)) {
-                                Timber.d("Detected DAV endpoint at common path: %s", candidate)
-                                calDavUrl = candidate
-                                cardDavUrl = candidate
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Validate discovered endpoints with PROPFIND
-        // Always validate to ensure it's actually a DAV server, not just any HTTP endpoint
-        val validatedCalDav = calDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = true) { cloudflareDetected = true } }
-        val validatedCardDav = cardDavUrl?.let { validateEndpoint(it, username, password, isCalDAV = false) { cloudflareDetected = true } }
-        
+        val validatedCalDav = discoverService(normalizedUrl, CALDAV_WELL_KNOWN, true, username, password, isCloudflareDetected, onCloudflareDetected)
+        val validatedCardDav = discoverService(normalizedUrl, CARDDAV_WELL_KNOWN, false, username, password, isCloudflareDetected, onCloudflareDetected)
+
         if (validatedCalDav == null && validatedCardDav == null) {
             // If Cloudflare was blocking requests, throw specific exception
             if (cloudflareDetected) {
@@ -183,6 +140,46 @@ class ServiceDiscovery @Inject constructor(
             calDavUrl = validatedCalDav,
             cardDavUrl = validatedCardDav
         )
+    }
+
+    /**
+     * Finds one service: well-known URI (host root per RFC 6764, then typed URL), the typed URL itself,
+     * then Nextcloud/ownCloud and common paths. The first candidate that validates wins.
+     */
+    private suspend fun discoverService(
+        normalizedUrl: String,
+        wellKnownPath: String,
+        isCalDAV: Boolean,
+        username: String,
+        password: String,
+        isCloudflareDetected: () -> Boolean,
+        onCloudflareDetected: () -> Unit
+    ): String? {
+        val validate: suspend (String) -> String? = { validateEndpoint(it, username, password, isCalDAV, onCloudflareDetected) }
+        val typedUrl = normalizedUrl.toHttpUrlOrNull()
+        val hasPath = typedUrl != null && typedUrl.encodedPath != "/"
+
+        // Root first: Synology answers well-known below /caldav/ with the Calendar backend for both services
+        val wellKnownBases = listOfNotNull(typedUrl?.resolve("/")?.toString()?.removeSuffix("/"), normalizedUrl).distinct()
+        for (base in wellKnownBases) {
+            discoverWellKnownEndpoint(base, wellKnownPath, username, password, onCloudflareDetected)
+                ?.let { validate(it) }
+                ?.let { return it }
+        }
+
+        // Collection URLs need the trailing slash that normalizeServerUrl removed (Synology answers 404/405 without it)
+        if (hasPath) validate("$normalizedUrl/")?.let { return it }
+
+        for (path in listOf(NEXTCLOUD_DAV_PATH, OWNCLOUD_DAV_PATH)) {
+            validate("$normalizedUrl/$path")?.let { return it }
+        }
+
+        // If Cloudflare was already detected, don't waste time probing more paths
+        if (isCloudflareDetected()) return null
+        for (path in COMMON_DAV_PATHS) {
+            validate("$normalizedUrl/$path")?.let { return it }
+        }
+        return null
     }
 
     /**
@@ -217,16 +214,7 @@ class ServiceDiscovery @Inject constructor(
 
             noRedirectClient.newCall(request).execute().use { response ->
                 when {
-                    // 301/302 redirect - follow to actual endpoint
-                    response.code in 301..302 -> {
-                        response.header("Location")?.let { location ->
-                            if (location.startsWith("http")) {
-                                location
-                            } else {
-                                "$serverUrl$location"
-                            }
-                        }
-                    }
+                    response.isRedirect -> response.header("Location")?.let { resolveRedirect(request.url, it) }
                     // 200 OK - this IS the endpoint
                     response.isSuccessful -> wellKnownUrl
                     // Cloudflare blocking WebDAV methods
@@ -245,158 +233,19 @@ class ServiceDiscovery @Inject constructor(
     }
 
     /**
-     * Check if URL is a Nextcloud or ownCloud DAV endpoint.
-     * 
-     * @param davUrl DAV endpoint URL to check
-     * @param username Username for authentication
-     * @param password Password for authentication
-     * @return true if the URL is a valid Nextcloud/ownCloud DAV endpoint
+     * Resolves a redirect target against the request URL. Synology Calendar redirects to its
+     * internal backend (http://localhost:/caldav.php/); a loopback target keeps its path on the request's origin.
      */
-    private suspend fun isNextcloudOrOwnCloud(
-        davUrl: String,
-        username: String,
-        password: String,
-        onCloudflareDetected: () -> Unit = {}
-    ): Boolean = withContext(Dispatchers.IO) {
-        return@withContext try {
-            Timber.d("Checking if %s is Nextcloud/ownCloud", davUrl)
-            
-            val propfindBody = """
-                <?xml version="1.0" encoding="utf-8" ?>
-                <d:propfind xmlns:d="DAV:">
-                    <d:prop>
-                        <d:resourcetype />
-                        <d:current-user-principal />
-                    </d:prop>
-                </d:propfind>
-            """.trimIndent()
-            
-            val request = Request.Builder()
-                .url(davUrl)
-                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
-                .header("Authorization", createBasicAuthHeader(username, password))
-                .header(DEPTH_HEADER, "0")
-                .build()
-            
-            httpClient.newCall(request).execute().use { response ->
-            val responseCode = response.code
-            
-            Timber.d("Nextcloud check for %s returned code: %s", davUrl, responseCode)
-            
-            // For Nextcloud/ownCloud, we require either:
-            // - 207 Multi-Status with valid XML response (actual DAV server)
-            // - 401 Unauthorized (server exists but needs auth - we'll validate later)
-            when (responseCode) {
-                207 -> {
-                    // Validate it's actually a DAV response with multistatus
-                    val responseBody = response.body?.string()
-                    if (responseBody != null) {
-                        try {
-                            val factory = DocumentBuilderFactory.newInstance()
-                            factory.isNamespaceAware = true
-                            val builder = factory.newDocumentBuilder()
-                            val document: Document = builder.parse(org.xml.sax.InputSource(StringReader(responseBody)))
-                            val xpath = XPathFactory.newInstance().newXPath()
-                            val multistatus = xpath.evaluate("//*[local-name()='multistatus']", document, XPathConstants.NODE)
-                            
-                            if (multistatus != null) {
-                                Timber.d("Valid DAV multistatus response from %s", davUrl)
-                                true
-                            } else {
-                                Timber.w("Response code 207 but no multistatus element at %s", davUrl)
-                                false
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e, "Failed to parse 207 response from %s", davUrl)
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                }
-                401 -> {
-                    // 401 means endpoint exists and requires auth (which we provided, so it's validating)
-                    // This is acceptable as we'll do full validation later
-                    Timber.d("Endpoint exists but requires auth at %s", davUrl)
-                    true
-                }
-                else -> {
-                    if (CloudflareBlockingException.isCloudflareBlock(response)) {
-                        Timber.w("Cloudflare blocking PROPFIND to %s (cf-ray: %s)", davUrl, response.header("cf-ray"))
-                        onCloudflareDetected()
-                    } else {
-                        Timber.w("Unexpected response code %s from %s", responseCode, davUrl)
-                    }
-                    false
-                }
-            }
-            }
-        } catch (e: Exception) {
-            // Log exception for debugging
-            Timber.e(e, "Error checking Nextcloud/ownCloud endpoint %s: %s", davUrl, e.message)
-            false
-        }
-    }
-
-    /**
-     * Generic DAV endpoint probe using PROPFIND. Stricter validation to avoid false positives.
-     * Only accepts 207 Multi-Status or 401 Unauthorized as valid DAV indicators.
-     */
-    private suspend fun probeDavEndpoint(
-        davUrl: String,
-        username: String,
-        password: String
-    ): Boolean = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val propfindBody = """
-                <?xml version="1.0" encoding="utf-8" ?>
-                <d:propfind xmlns:d="DAV:">
-                    <d:prop>
-                        <d:resourcetype />
-                    </d:prop>
-                </d:propfind>
-            """.trimIndent()
-            
-            val request = Request.Builder()
-                .url(davUrl)
-                .method(PROPFIND_METHOD, propfindBody.toRequestBody(CONTENT_TYPE_XML.toMediaType()))
-                .header("Authorization", createBasicAuthHeader(username, password))
-                .header(DEPTH_HEADER, "0")
-                .build()
-
-            httpClient.newCall(request).execute().use { response ->
-            val responseCode = response.code
-
-            when (responseCode) {
-                // 207 Multi-Status is the standard WebDAV success response
-                207 -> {
-                    // Validate it's actually a DAV response
-                    val responseBody = response.body?.string()
-                    if (responseBody != null) {
-                        try {
-                            val factory = DocumentBuilderFactory.newInstance()
-                            factory.isNamespaceAware = true
-                            val builder = factory.newDocumentBuilder()
-                            val document: Document = builder.parse(org.xml.sax.InputSource(StringReader(responseBody)))
-                            val xpath = XPathFactory.newInstance().newXPath()
-                            val multistatus = xpath.evaluate("//*[local-name()='multistatus']", document, XPathConstants.NODE)
-                            multistatus != null
-                        } catch (e: Exception) {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                }
-                // 401 means endpoint exists and requires auth (acceptable)
-                401 -> true
-                // All other codes rejected (including 403, 405, 429 which could be non-DAV servers)
-                else -> false
-            }
-            }
-        } catch (e: Exception) {
-            false
-        }
+    private fun resolveRedirect(requestUrl: HttpUrl, location: String): String? {
+        val target = requestUrl.resolve(location) ?: return null
+        val isLoopback = target.host == "localhost" || target.host == "::1" || target.host.startsWith("127.")
+        if (!isLoopback || target.host == requestUrl.host) return target.toString()
+        return target.newBuilder()
+            .scheme(requestUrl.scheme)
+            .host(requestUrl.host)
+            .port(requestUrl.port)
+            .build()
+            .toString()
     }
 
     /**
