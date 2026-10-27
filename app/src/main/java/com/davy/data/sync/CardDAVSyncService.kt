@@ -492,18 +492,7 @@ class CardDAVSyncService @Inject constructor(
         etag: String
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            // Convert relative URL to absolute URL if needed
-            val absoluteContactUrl = if (contactUrl.startsWith("http://") || contactUrl.startsWith("https://")) {
-                contactUrl
-            } else {
-                // Build absolute URL from address book base URL
-                val baseUrl = addressBook.url.substringBefore("/remote.php") // Get scheme://host:port
-                if (contactUrl.startsWith("/")) {
-                    "$baseUrl$contactUrl"
-                } else {
-                    "${addressBook.url.trimEnd('/')}/$contactUrl"
-                }
-            }
+            val absoluteContactUrl = ContactPut.resolveContactUrl(addressBook.url, contactUrl)
             
             Timber.d("    ==== Processing contact: $absoluteContactUrl ====")
             
@@ -802,17 +791,9 @@ class CardDAVSyncService @Inject constructor(
                     } else {
                         contact.contactUrl!!
                     }
-                    
-                    // Fix relative URLs (legacy contacts might have relative paths)
-                    if (!contactUrl.startsWith("http://") && !contactUrl.startsWith("https://")) {
-                        val baseUrl = addressBook.url.substringBefore("/remote.php")
-                        contactUrl = if (contactUrl.startsWith("/")) {
-                            "$baseUrl$contactUrl"
-                        } else {
-                            "${addressBook.url.trimEnd('/')}/$contactUrl"
-                        }
-                        Timber.d("    Fixed relative URL to: $contactUrl")
-                    }
+
+                    // Legacy contacts might have relative paths
+                    contactUrl = ContactPut.resolveContactUrl(addressBook.url, contactUrl)
                     
                     val requestBuilder = Request.Builder()
                         .url(contactUrl)
@@ -1013,17 +994,8 @@ class CardDAVSyncService @Inject constructor(
                         // DELETE request to server
                         Timber.d("    Deleting contact on server: ${contact.displayName} (${contact.contactUrl})")
                         
-                        // Fix relative URLs (legacy contacts might have relative paths)
-                        var contactUrl = contact.contactUrl!!
-                        if (!contactUrl.startsWith("http://") && !contactUrl.startsWith("https://")) {
-                            val baseUrl = addressBook.url.substringBefore("/remote.php")
-                            contactUrl = if (contactUrl.startsWith("/")) {
-                                "$baseUrl$contactUrl"
-                            } else {
-                                "${addressBook.url.trimEnd('/')}/$contactUrl"
-                            }
-                            Timber.d("    Fixed relative URL to: $contactUrl")
-                        }
+                        // Legacy contacts might have relative paths
+                        val contactUrl = ContactPut.resolveContactUrl(addressBook.url, contact.contactUrl!!)
                         
                         // Try with ETag first
                         var requestBuilder = Request.Builder()

@@ -17,6 +17,19 @@ class AddressBookQuery {
     companion object {
         private const val CARDDAV_NAMESPACE = "urn:ietf:params:xml:ns:carddav"
         private const val DAV_NAMESPACE = "DAV:"
+
+        // Prefix-agnostic: Nextcloud writes <d:href>, Radicale (Synology) writes <href> with
+        // DAV: as default namespace and CardDAV as CR:. Self-closing tags never match.
+        private fun element(name: String) = Regex(
+            """<(?:[\w.-]+:)?$name(?:\s[^>]*)?(?<!/)>(.*?)</(?:[\w.-]+:)?$name\s*>""",
+            RegexOption.DOT_MATCHES_ALL
+        )
+
+        private val RESPONSE = element("response")
+        private val HREF = element("href")
+        private val GETETAG = element("getetag")
+        private val ADDRESS_DATA = element("address-data")
+        private val STATUS = Regex("""<(?:[\w.-]+:)?status\s*>\s*HTTP/[\d.]+ (\d+)""")
     }
     
     /**
@@ -172,33 +185,24 @@ class AddressBookQuery {
         val contacts = mutableListOf<FetchedContact>()
         
         // Simple XML parsing (production should use proper XML parser)
-        val responsePattern = Regex(
-            """<d:response>(.*?)</d:response>""",
-            RegexOption.DOT_MATCHES_ALL
-        )
-        
-        responsePattern.findAll(responseXml).forEach { match ->
+        RESPONSE.findAll(responseXml).forEach { match ->
             val responseBlock = match.groupValues[1]
-            
+
             // Extract href
-            val hrefPattern = Regex("""<d:href>(.*?)</d:href>""")
-            val url = hrefPattern.find(responseBlock)?.groupValues?.get(1)?.trim()
-            
+            val url = HREF.find(responseBlock)?.groupValues?.get(1)?.trim()
+
             // Extract ETag
-            val etagPattern = Regex("""<d:getetag>(.*?)</d:getetag>""")
-            val etagRaw = etagPattern.find(responseBlock)?.groupValues?.get(1)?.trim()
+            val etagRaw = GETETAG.find(responseBlock)?.groupValues?.get(1)?.trim()
             // Decode HTML entities and remove quotes (server returns &quot;abc123&quot; but we need abc123)
             val etag = etagRaw?.replace("&quot;", "\"")?.trim('"')
-            
-            // Extract vCard data (namespace can be 'c:' or 'card:')
-            val vcardPattern = Regex("""<(?:c|card):address-data>(.*?)</(?:c|card):address-data>""", RegexOption.DOT_MATCHES_ALL)
-            val vcardDataRaw = vcardPattern.find(responseBlock)?.groupValues?.get(1)?.trim()
+
+            // Extract vCard data (CardDAV prefix varies: c:, card:, CR:)
+            val vcardDataRaw = ADDRESS_DATA.find(responseBlock)?.groupValues?.get(1)?.trim()
             // Decode HTML entities (&#13; = carriage return)
             val vcardData = vcardDataRaw?.replace("&#13;", "\r")?.replace("&#10;", "\n")
-            
+
             // Extract status
-            val statusPattern = Regex("""<d:status>HTTP/[\d.]+ (\d+)""")
-            val statusMatch = statusPattern.find(responseBlock)
+            val statusMatch = STATUS.find(responseBlock)
             val status = statusMatch?.groupValues?.get(1)?.toIntOrNull() ?: 200
             
             if (url != null) {

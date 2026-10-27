@@ -159,6 +159,30 @@ object ContactPut {
     }
 
     /**
+     * Turns a contact href from a multistatus response into an absolute URL.
+     *
+     * @param addressBookUrl The absolute address book URL
+     * @param href The href as the server returned it (absolute, root-relative or relative)
+     * @return The absolute contact URL
+     */
+    fun resolveContactUrl(addressBookUrl: String, href: String): String {
+        if (href.startsWith("http://") || href.startsWith("https://")) {
+            return href
+        }
+        if (!href.startsWith("/")) {
+            return "${addressBookUrl.trimEnd('/')}/$href"
+        }
+        // Nextcloud keeps its original join because local contacts are keyed by the URL it built.
+        val baseUrl = if ("/remote.php" in addressBookUrl) {
+            addressBookUrl.substringBefore("/remote.php")
+        } else {
+            val pathStart = addressBookUrl.indexOf('/', addressBookUrl.indexOf("://") + 3)
+            if (pathStart < 0) addressBookUrl else addressBookUrl.substring(0, pathStart)
+        }
+        return "$baseUrl$href"
+    }
+
+    /**
      * Validates vCard data before upload.
      *
      * Performs basic validation:
