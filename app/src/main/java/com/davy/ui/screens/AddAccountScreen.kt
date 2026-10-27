@@ -2139,7 +2139,7 @@ class AddAccountViewModel @Inject constructor(
                                 Timber.d("PERFORMING INITIAL CONTACT SYNC")
                                 Timber.d("Syncing %s address book(s)...", addressbooks.size)
                                 
-                                val syncResult = cardDAVSyncService.syncAccount(account)
+                                val syncResult = cardDAVSyncService.syncAccount(account.copy(id = accountId))
                                 
                                 android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
                                 Timber.d("Initial contact sync complete:")
@@ -2940,7 +2940,7 @@ class AddAccountViewModel @Inject constructor(
                         Timber.d("PERFORMING INITIAL CONTACT SYNC (Provider Flow)")
                         Timber.d("Syncing %s address book(s)...", addressBooks.size)
 
-                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        val syncResult = cardDAVSyncService.syncAccount(account.copy(id = accountId))
                         android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
                         Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
                             syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)
@@ -3213,7 +3213,7 @@ class AddAccountViewModel @Inject constructor(
                         Timber.d("PERFORMING INITIAL CONTACT SYNC (Provider-Auth Flow)")
                         Timber.d("Syncing %s address book(s)...", addressBooks.size)
 
-                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        val syncResult = cardDAVSyncService.syncAccount(account.copy(id = accountId))
                         android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
                         Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
                             syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)
@@ -3488,7 +3488,7 @@ class AddAccountViewModel @Inject constructor(
                         Timber.d("PERFORMING INITIAL CONTACT SYNC (Nextcloud Flow)")
                         Timber.d("Syncing %s address book(s)...", addressBooks.size)
 
-                        val syncResult = cardDAVSyncService.syncAccount(account)
+                        val syncResult = cardDAVSyncService.syncAccount(account.copy(id = accountId))
                         android.util.Log.e("DAVy-AddAccount", "Initial contact sync complete: ${syncResult.contactsDownloaded} downloaded")
                         Timber.d("Initial contact sync complete: downloaded=%s uploaded=%s deleted=%s errors=%s",
                             syncResult.contactsDownloaded, syncResult.contactsUploaded, syncResult.contactsDeleted, syncResult.errors)

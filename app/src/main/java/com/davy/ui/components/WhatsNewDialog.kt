@@ -64,6 +64,7 @@ fun resetWhatsNewVersion(context: Context) {
 fun getChangelogForVersion(version: String): String {
     // Map version to changelog string resource
     return when {
+            version.startsWith("1.2.1") -> stringResource(id = R.string.whats_new_v1_2_1)
             version.startsWith("1.2.0") -> stringResource(id = R.string.whats_new_v1_2_0)
             version.startsWith("1.1.5") -> stringResource(id = R.string.whats_new_v1_1_5)
             version.startsWith("1.1.4") -> stringResource(id = R.string.whats_new_v1_1_4)
@@ -76,7 +77,7 @@ fun getChangelogForVersion(version: String): String {
             version.startsWith("1.0.0") -> stringResource(id = R.string.whats_new_v1_0_0)
             // Add more versions as needed:
             // version.startsWith("1.2") -> stringResource(id = R.string.whats_new_v1_2_0)
-            else -> stringResource(id = R.string.whats_new_v1_2_0) // Default to latest
+            else -> stringResource(id = R.string.whats_new_v1_2_1) // Default to latest
     }
 }
 
